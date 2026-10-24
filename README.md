@@ -1,26 +1,28 @@
-# FORMA: supplier risk and production planning
+# FORMA: infrastructure and incident workspace
 
-A shared hackathon workspace for infrastructure delivery, supplier intelligence and recovery planning:
+Explore infrastructure dependencies, inspect manufacturer evidence, follow real incident reports and rehearse recovery decisions.
 
-- **POD overview at `/`**: inspect a DSX POD inspired 3D container, switch to wireframe or 2D, and select ten tracked subsystems. Cutaway, Enclosed and Exploded views reveal the racks, modular outer panels and roof cooling deck. Red and amber markers identify disrupted deliveries.
-- **Component recovery at `/planning?component=compute-a`**: inspect the affected supplier shipment, compare transport alternatives, and explicitly confirm a recovery route. Incoming simulated incidents update availability and ETA without refreshing.
-- **Supplier intelligence at `/suppliers`**: Simon's existing dashboard, with 10,000 anonymized suppliers, maps, profiles, comparison and optional research agents.
-- **Manufacturing planning at `/planning`**: the original FORMA order and manufacturing demo remains available.
+- **Overview at `/`**: an interactive container model with ten researched hardware references, source links and explicit manufacturing-origin limits. Neutral markers mean shipment status is not verified. Model geometry and product compatibility remain illustrative.
+- **Incidents at `/incidents`**: current GDACS and EONET hazard observations, Germany A2 road notices and Dutch NDW traffic reports. Historical IMF PortWatch records have a separate history view. Search and filter by source, event type, severity, status and country. Provider updates arrive automatically; users cannot clear or alter them.
+- **Recovery rehearsal at `/?mode=demo`**: the earlier component-delivery scenario remains available with explicitly fictional shipments, routes, prices and disruptions. Select a part and open `/planning?component=…` to compare alternatives. The action banner selects and reveals the suggested route; confirmation is separate.
+- **Manufacturing planner at `/planning`**: our original order, capacity, scenario and constrained planning-copilot workflow.
 
-Simon’s frontend is the design template for every view: shared controls, theme colors, typography, rounded surfaces and animations. **Reset view** restores the full 3D model after switching modes or moving the camera. The new pod's supplier assignments, geometry, transport costs and incident scenarios are illustrative. They are not actual NVIDIA supplier reports, live flight/rail data or an official CAD model. The supplier directory and manufacturing demo keep their separate datasets.
+Simon’s frontend supplies the shared design system. The workspace navigation uses the functionality built for FORMA. His original supplier-risk/research implementation is outside the demo and remains in the repository pending its separate removal PR; this change does not claim to remove it.
+
+Real incidents are evidence to inspect, not proof of an affected delivery. The workspace has no confirmed purchase orders, dispatch sites, carrier routes or live inventory. Manufacturer factory footprints are not shipment origins. [Hardware evidence](docs/PART_PROVENANCE.md) and [source coverage](docs/LIVE_INCIDENT_SOURCES.md) explain these boundaries.
 
 ```mermaid
 flowchart LR
-  Events[Simulated incident catalog] --> SSE[Server-sent event stream]
-  SSE --> State[Shared incident state]
-  State --> Routes[Assess transport routes]
-  Routes --> Model[3D pod overview]
-  Model --> Detail[Component recovery]
-  Detail --> Decision[Reviewed local confirmation]
-  Model --> Suppliers[Existing supplier dashboard]
+  Sources[Public incident providers] --> Cache[Bounded requests and source cache]
+  Cache --> SSE[Snapshot API and SSE updates]
+  SSE --> Incidents[Filter and inspect source reports]
+  Products[Manufacturer documentation] --> Model[Hardware reference overview]
+  Model --> Evidence[Product and origin evidence]
+  Fixtures[Explicit rehearsal fixtures] --> Routes[Compare recovery options]
+  Routes --> Review[User review and local confirmation]
 ```
 
-See [the overview and push workflow](docs/DSX_OVERVIEW.md) and [dataset assumptions](docs/DSX_DATA.md).
+Public providers are fetched on their individual schedules. The server pushes snapshots to open browsers, which reconnect automatically. Last successful data stays visible with stale/unavailable labels during outages. Caches are per server process, not a durable event archive. No real incident is automatically assigned to a fictional transport leg.
 
 ## Start locally
 
@@ -31,13 +33,13 @@ npm ci
 npm run dev
 ```
 
-Open **http://localhost:3000** for the pod overview, **http://localhost:3000/suppliers** for supplier intelligence and **http://localhost:3000/planning** for the manufacturing demo. Stop the server with Ctrl+C. No credentials or Python installation are needed to explore the bundled supplier data or run the planning demo. Map tiles and climate panels use public network services.
+Open **http://localhost:3000** for the hardware overview, **http://localhost:3000/incidents** for source reports and **http://localhost:3000/?mode=demo** for the recovery rehearsal. Stop the server with Ctrl+C. The hardware catalog and rehearsals need no credentials; live reports need network access. The current public feeds need no API keys or Python installation.
 
 `package-lock.json` is the canonical JavaScript lockfile. `npm ci` also applies the checked-in `metal-fx` patch. Use `npm run build` followed by `npm start` to run the production build on port 3000.
 
 Repository: [Sy-D/openai-devday-hackathon-oct-berlin](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin). The original frontend integration was merged into main in [PR #2](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/2); the earlier FORMA draft is preserved at `c89d43b` on `codex/forma-first-draft`. Both branches are available to teammates. See [the handoff](docs/HANDOFF.md) for verification and hosting status.
 
-## Optional AI features
+## Optional AI and legacy features
 
 Keep credentials server-side in the ignored root `.env` file. If no `.env` exists, copy `.env.example` to `.env`, then fill in only the providers you intend to use. Do not overwrite an existing configuration or commit secrets. Restart the server after changing configuration.
 
@@ -49,7 +51,7 @@ Keep credentials server-side in the ignored root `.env` file. If no `.env` exist
 
 The two AI integrations have separate configuration. Setting an OpenAI key does not configure the supplier agents. Never prefix secrets with `NEXT_PUBLIC_` or `VITE_`. Planning API details and the one-request live check are in [docs/AI.md](docs/AI.md).
 
-### Supplier agent setup
+### Legacy supplier agent setup (separate removal pending)
 
 Install Python 3.12 or later, then run these commands from the repository root:
 

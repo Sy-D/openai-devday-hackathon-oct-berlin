@@ -1,3 +1,21 @@
+# Current handoff: live incidents and hardware references
+
+The live workspace defaults to `/`; the deterministic shipment rehearsal is now `/?mode=demo`. `/incidents` receives source-controlled updates, with filters, evidence links, freshness and explicit history. The default overview contains ten manufacturer-backed candidates and unknown shipment states, not fictional supplier assignments. See [source coverage](LIVE_INCIDENT_SOURCES.md) and [product provenance](PART_PROVENANCE.md).
+
+The component recovery banner selects the recommended available route and immediately reveals/focuses its review section. It does not confirm or book anything. On mobile, selecting hardware brings its inspection into view; closing returns keyboard focus to the trigger. Reset view restores the base camera, cutaway, selection and filters. Delivery-action and inventory overflow repairs are included.
+
+Verification for this change: 84 unit/API tests; 31 existing production-browser tests; eight added overview tests; provider HTTP/SSE smoke, including GET success and POST/PUT/DELETE 405. Source failure, stale retention, provider updates/removals, stream disconnect and invalid snapshot handling are covered. Browser checks include 320/390/768/1440px overview layouts. Run the commands below to verify your checkout.
+
+Outstanding external items: a real OpenAI reply needs server-side credentials; Vercel workspace authorization remains deferred; a teammate still needs to verify startup on another machine. Simon's non-design supplier code is being removed separately. No open removal PR was visible at implementation time; preserve and integrate it when published. Shared navigation no longer links to those features.
+
+For this project, finish implementation, refresh the preview and publish before updating Notion and Excalidraw. Live observations do not prove shipment impact, product qualification or booked transport.
+
+---
+
+## Historical implementation handoff
+
+The sections below describe the preceding integration and its separate datasets. Where they conflict, the current handoff above and the source files take precedence.
+
 # FORMA: application handoff
 
 Updated 24 October 2026.

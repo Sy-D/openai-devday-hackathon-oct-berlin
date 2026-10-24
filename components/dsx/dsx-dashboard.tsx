@@ -116,7 +116,7 @@ export default function DsxDashboard() {
   }))
 
   return (
-    <AppShell breadcrumb={["Workspace", "Overview"]}>
+    <AppShell breadcrumb={["Workspace", "Recovery rehearsal"]}>
       <main id="main" className={styles.workspace} tabIndex={-1}>
         <header className={styles.hero}>
           <div>
@@ -131,7 +131,7 @@ export default function DsxDashboard() {
             </p>
           </div>
           <div className={styles.heroActions}>
-            <Badge variant="outline">Simulated workspace</Badge>
+            <Badge variant="outline">Recovery rehearsal · simulated</Badge>
             <FeedStatus />
           </div>
         </header>
@@ -443,8 +443,11 @@ export default function DsxDashboard() {
                     </Link>
                   </>
                 )}
-                <Link className={styles.textLink} href="/suppliers">
-                  Explore supplier intelligence <ChevronRight size={14} />
+                <Link
+                  className={styles.textLink}
+                  href={`/?component=${selected.part.id}`}
+                >
+                  View researched hardware <ChevronRight size={14} />
                 </Link>
               </section>
             ) : (

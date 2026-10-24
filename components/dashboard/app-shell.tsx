@@ -5,13 +5,11 @@ import { useTheme } from "next-themes"
 import {
   Building2,
   ChevronRight,
-  FileText,
   Factory,
-  GitCompareArrows,
   LayoutDashboard,
-  Boxes,
+  Radio,
+  FlaskConical,
   Moon,
-  Search,
   Sun,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -26,7 +24,6 @@ import {
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
@@ -34,15 +31,10 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { AnimatedNumber } from "./animated-number"
 
-/**
- * Shared app chrome: sidebar + header. Nav uses deep links
- * (/suppliers?panel=compare|research|memo) so it also works off the overview page.
- */
+/** Shared design system with navigation for the FORMA workspace. */
 export function AppShell({
   breadcrumb,
-  compareCount,
   children,
   overlay,
 }: {
@@ -68,9 +60,7 @@ export function AppShell({
                 <Building2 className="size-5" />
               </div>
               <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-                <p className="text-sm font-semibold tracking-tight">
-                  FORMA
-                </p>
+                <p className="text-sm font-semibold tracking-tight">FORMA</p>
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   Infrastructure intelligence
                 </p>
@@ -93,9 +83,23 @@ export function AppShell({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton isActive={breadcrumb.at(-1) === "Suppliers"} tooltip="Suppliers" render={<Link href="/suppliers" />}>
-                      <Boxes />
-                      <span>Suppliers</span>
+                    <SidebarMenuButton
+                      isActive={breadcrumb.at(-1) === "Incidents"}
+                      tooltip="Incidents"
+                      render={<Link href="/incidents" />}
+                    >
+                      <Radio />
+                      <span>Incidents</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={breadcrumb.at(-1) === "Recovery rehearsal"}
+                      tooltip="Recovery rehearsal"
+                      render={<Link href="/?mode=demo" />}
+                    >
+                      <FlaskConical />
+                      <span>Recovery rehearsal</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
@@ -106,38 +110,6 @@ export function AppShell({
                     >
                       <Factory />
                       <span>Production planning</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      tooltip="Compare suppliers"
-                      render={<Link href="/suppliers?panel=compare" />}
-                    >
-                      <GitCompareArrows />
-                      <span>Compare</span>
-                    </SidebarMenuButton>
-                    {compareCount !== undefined && (
-                      <SidebarMenuBadge>
-                        <AnimatedNumber value={compareCount} />
-                      </SidebarMenuBadge>
-                    )}
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      tooltip="Research agent"
-                      render={<Link href="/suppliers?panel=research" />}
-                    >
-                      <Search />
-                      <span>Research agent</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      tooltip="Export shortlist memo"
-                      render={<Link href="/suppliers?panel=memo" />}
-                    >
-                      <FileText />
-                      <span>Decision memo</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -151,9 +123,7 @@ export function AppShell({
               </div>
               <div className="group-data-[collapsible=icon]:hidden">
                 <p className="text-xs font-medium">Procurement workspace</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  FORMA
-                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">FORMA</p>
               </div>
             </div>
           </SidebarFooter>

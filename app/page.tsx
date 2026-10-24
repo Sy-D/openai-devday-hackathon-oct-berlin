@@ -1,20 +1,22 @@
 import type { Metadata } from "next"
-import { redirect } from "next/navigation"
 import DsxDashboard from "@/components/dsx/dsx-dashboard"
+import LiveDsxDashboard from "@/components/dsx/live-dsx-dashboard"
 
 export const metadata: Metadata = {
-  title: "POD delivery overview | FORMA",
+  title: "Infrastructure workspace | FORMA",
   description:
-    "Inspect every infrastructure component and recover disrupted supplier deliveries.",
+    "Explore sourced hardware references and monitor real infrastructure incidents.",
 }
 
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ panel?: string }>
+  searchParams: Promise<{ mode?: string; component?: string }>
 }) {
-  const { panel } = await searchParams
-  if (panel === "compare" || panel === "research" || panel === "memo")
-    redirect(`/suppliers?panel=${panel}`)
-  return <DsxDashboard />
+  const { mode, component } = await searchParams
+  return mode === "demo" ? (
+    <DsxDashboard />
+  ) : (
+    <LiveDsxDashboard initialComponent={component} />
+  )
 }
