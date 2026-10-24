@@ -55,7 +55,7 @@ test.beforeEach(async ({ page }) => {
   })
 })
 
-test("default overview shows documented product candidates and neutral shipment markers", async ({
+test("default overview shows documented products and actionable planning markers", async ({
   page,
 }) => {
   await page.goto("/")
@@ -84,14 +84,18 @@ test("default overview shows documented product candidates and neutral shipment 
   ).toHaveCount(10)
   const viewer = page.getByTestId("rack-viewer")
   await expect(viewer).toHaveAttribute("data-renderer", /webgl|fallback/)
-  await expect(viewer.locator('button[data-status="unknown"]')).toHaveCount(10)
+  await expect(viewer.locator('button[data-status="blocked"]')).toHaveCount(1)
+  await expect(viewer.locator('button[data-status="delayed"]')).toHaveCount(9)
   await expect(
-    viewer.locator(
-      'button[data-status="blocked"], button[data-status="delayed"], button[data-status="delivered"]'
+    viewer.getByRole("button", {
+      name: "Inspect Optical interconnects: Review delivery",
+    })
+  ).toBeVisible()
+  await expect(
+    page.getByText(
+      "Red: review delivery · Amber: plan delivery · Green: reviewed",
+      { exact: true }
     )
-  ).toHaveCount(0)
-  await expect(
-    page.getByText("Neutral markers = shipment not verified", { exact: true })
   ).toBeVisible()
   await expect(
     page.getByRole("link", { name: /Source-reported flood observation/ })

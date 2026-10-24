@@ -12,13 +12,16 @@ This is the active implementation checklist. The shared planning Page will be re
 
 ## Finish and verify
 
+- [x] **Verified — Recording path and review dots:** red/amber/green markers follow review state. Browser regression proves save turns the part green and changed evidence turns it red. Exact recording clicks and narration are in DEMO.md; actual-provider rehearsal passed. Report popup CSS was repaired; final visual readback follows the refreshed preview.
+
 - [x] **Verified — Usable location search and map:** explicit city/address/facility search selects named locations; coordinates are collapsed under Advanced. Real Photon lookup succeeded for Berlin. Styled component picker, OpenFreeMap light/dark tiles, endpoint labels, legend, fit and loading state are implemented. Actual desktop and 390px controls/map screenshots were inspected; browser regression checks lookup-to-route payload and component navigation.
 
 - [x] **Verified — Connected decision flow:** model part → offer → origin/destination/timing → live reports → actual road alternatives → saved decision. Production browser checks cover save/reload, relevant-update review, changed route/location guards and in-flight response races. Actual provider smoke also preserved a saved decision across incident-page navigation.
 - [x] **Verified — Fill missing data:** all ten components have a planning-ready priced option. Three seller offers retain observed prices; eight category estimates fill missing prices. Origins and timing are editable; freight/emissions assumptions and sources are expandable. No supplier quote, stock confirmation or scripted incident is invented. This implements the latest permission to use assumptions for missing values.
 - [x] **Verified — Visual repairs:** modular AI data-center labels, stronger action colors, compact part cards and unclipped badge are visible. Rendered desktop/mobile screenshots inspected; 320/390/768/1440px browser layout checks pass.
 - [x] **Verified — Local checks:** 112 unit/API tests and all 22 production browser tests pass. Production build/TypeScript pass; lint has zero errors and two existing legacy warnings. Actual Photon, Valhalla and incident-provider workflow passed, including saved decisions and live reported-delay changes. Retired simulation-only suites were replaced with current flow coverage.
-- [ ] **In progress — Final publication:** push the complete connected application, open a PR, verify CI and merge when checks allow. Do not merge Simon's full branch; only adopt verified frontend improvements.
+- [x] **Published — Branch and PR:** connected application pushed to `codex/connected-procurement`; [PR #7](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/7) is open. Remote SHA verified. Only selected frontend improvements from Simon were adopted.
+- [ ] **In progress — CI and merge:** verify the latest PR head and merge when checks pass.
 - [x] **Verified — Two-minute demo script:** [DEMO.md](DEMO.md) traces the optical module, Glinde/Berlin route, current traffic evidence, alternatives and saved decision. Actual browser clicks and calculations passed; human spoken timing remains below. The script uses the displayed result even when keeping the baseline is best.
 - [ ] **Pending — Documentation and cleanup after implementation:** update shared Page, Notion and Excalidraw; stop extra preview/test servers while retaining localhost:3000; preserve teammate work and the current branch.
 

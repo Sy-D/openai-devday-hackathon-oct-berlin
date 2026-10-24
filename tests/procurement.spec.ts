@@ -190,6 +190,18 @@ test("sourced product to real route decision persists and relevant updates reope
   ).toContainText("Saved delivery decision")
   await page.reload()
   await expect(chosen).toHaveAttribute("aria-pressed", "true")
+  await page
+    .getByRole("link", { name: "Back to this part", exact: true })
+    .click()
+  await expect(
+    page.getByRole("button", {
+      name: "Inspect Optical interconnects: Delivery reviewed",
+      exact: true,
+    })
+  ).toHaveAttribute("data-status", "on-track")
+  await page
+    .getByRole("link", { name: "Plan this delivery", exact: true })
+    .click()
   await expect(
     page.getByLabel("Delivery deadline", { exact: true })
   ).toHaveValue("")
@@ -235,6 +247,15 @@ test("sourced product to real route decision persists and relevant updates reope
       exact: true,
     })
   ).toBeVisible()
+  await page
+    .getByRole("link", { name: "Back to this part", exact: true })
+    .click()
+  await expect(
+    page.getByRole("button", {
+      name: "Inspect Optical interconnects: Review delivery",
+      exact: true,
+    })
+  ).toHaveAttribute("data-status", "blocked")
 })
 
 test("routing outage does not invent a route or permit a saved decision", async ({

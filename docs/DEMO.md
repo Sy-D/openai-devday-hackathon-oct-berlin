@@ -6,6 +6,18 @@ Open `/` and `/planning?component=optics`. Use the NVIDIA MMA4Z00-NS400 offer fr
 
 Keep the original route and at least one alternative loaded. Current provider reports change; read the values visible in the app. Never promise a particular new alert during the two minutes. Product/transport assumptions remain available in **Basis and evidence** and the cost/timing disclosure. No purchase or carrier booking occurs.
 
+## Exact recording clicks
+
+1. Open `/` in dark mode at a desktop width. Select the red **Optical interconnects** marker, then **Plan this delivery**. Colors describe review work: red needs review, amber needs a plan, green has a reviewed decision.
+2. Keep the DELTA **NVIDIA MMA4Z00-NS400** offer selected. The published price is shown with its source. The default dispatch is Glinde and the example destination is NTT Berlin 1; no coordinates need to be entered.
+3. Under **Define the journey**, click **Use planning timing**, then **Calculate road routes**. To demonstrate another address later, type it into **Find a city, address or facility**, click **Search**, then select the result.
+4. Click **Fit all routes**. Wait until the basemap has loaded before starting the recording. Read one current A24 report beneath the map; do not promise a particular report or delay value.
+5. Click **Avoid reported area** on that report. Scroll to **04 / DECISION** and show the before/after comparison. If the alternative still overlaps the reported road section, the app retains its reported delay.
+6. Choose **Original road route** if it remains faster and cheaper, or the better alternative if current results support it. Click **Save route decision**.
+7. Click **Back to this part**. The component marker is green after review. Relevant changed evidence or inputs bring the decision back for review. This saves a planning record; it does not buy a part or book a carrier.
+
+**Recording setup:** rehearse and load the map/route once, then return to the model. Keep the same browser so calculated routes are retained. Record at 1440px or wider; use one presenter, no developer tools and no setup during the two minutes. Do not clear incidents. The script below is about 240 spoken words.
+
 ## Stage script
 
 | Time | Action | Say |

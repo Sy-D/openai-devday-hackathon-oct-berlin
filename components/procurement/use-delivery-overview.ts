@@ -93,10 +93,10 @@ export function useDeliveryOverview(snapshot: IncidentSnapshot | null) {
           ? "changed"
           : needsCalculation
             ? "unplanned"
-            : exposures.length
-              ? "exposed"
-              : draft.saved && snapshot
-                ? "reviewed"
+            : draft.saved && snapshot
+              ? "reviewed"
+              : exposures.length
+                ? "exposed"
                 : "ready"
         const label =
           status === "changed"

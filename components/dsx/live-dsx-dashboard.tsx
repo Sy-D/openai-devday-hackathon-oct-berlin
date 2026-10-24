@@ -57,11 +57,6 @@ const componentNames = {
   enclosure: "Container and roof",
 } satisfies Record<PartComponentId, string>
 const references = Object.values(partCatalog)
-const viewerParts: RackPart[] = references.map((part) => ({
-  id: part.componentId,
-  name: componentNames[part.componentId],
-  status: "unknown",
-}))
 
 export default function LiveDsxDashboard({
   initialComponent,
@@ -70,6 +65,31 @@ export default function LiveDsxDashboard({
 }) {
   const { snapshot } = useLiveIncidents()
   const deliveryStates = useDeliveryOverview(snapshot)
+  const viewerParts: RackPart[] = references.map((part) => {
+    const delivery = deliveryStates.find(
+      (item) => item.componentId === part.componentId
+    )
+    const review =
+      delivery?.status === "changed" ||
+      delivery?.status === "exposed" ||
+      (delivery?.status === "unplanned" && part.componentId === "optics")
+    return {
+      id: part.componentId,
+      name: componentNames[part.componentId],
+      status:
+        delivery?.status === "reviewed"
+          ? "on-track"
+          : review
+            ? "blocked"
+            : "delayed",
+      statusLabel:
+        delivery?.status === "reviewed"
+          ? "Delivery reviewed"
+          : review
+            ? "Review delivery"
+            : "Plan delivery",
+    }
+  })
   const needsReview = deliveryStates.filter(
     (item) => item.status === "changed" || item.status === "exposed"
   )
@@ -394,7 +414,9 @@ export default function LiveDsxDashboard({
             </div>
             <div className={styles.modelFooter}>
               <span>Drag to orbit · scroll to zoom · right-drag to pan</span>
-              <span>Neutral markers = shipment not verified</span>
+              <span>
+                Red: review delivery · Amber: plan delivery · Green: reviewed
+              </span>
             </div>
           </section>
           <aside
