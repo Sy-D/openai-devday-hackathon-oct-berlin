@@ -9,7 +9,6 @@ import {
   type LayerEvent,
 } from "leaflet"
 import { useMap } from "react-leaflet"
-import { setWorkerUrl } from "maplibre-gl"
 import {
   Map as GeographicMap,
   MapTileLayer,
@@ -21,10 +20,6 @@ import {
 import { transportEdges, transportNodes } from "@/src/data/dsx"
 import type { RouteAssessment } from "@/src/lib/dsx-routing"
 import styles from "./dsx.module.css"
-
-setWorkerUrl(
-  new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).toString()
-)
 
 type TileStatus = "loading" | "ready" | "error"
 

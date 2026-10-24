@@ -337,9 +337,18 @@ function MapVectorLayer({
         }
 
         async function addLayer() {
-            const { maplibreGL } = await import("@maplibre/maplibre-gl-leaflet")
+            const [{ maplibreGL }, { setWorkerUrl }] = await Promise.all([
+                import("@maplibre/maplibre-gl-leaflet"),
+                import("maplibre-gl"),
+            ])
             if (cancelled) return
 
+            setWorkerUrl(
+                new URL(
+                    "maplibre-gl/dist/maplibre-gl-worker.mjs",
+                    import.meta.url
+                ).toString()
+            )
             const layer = maplibreGL({
                 style: styleUrlRef.current,
                 attributionControl: false,
