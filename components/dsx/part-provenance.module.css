@@ -9,7 +9,25 @@
 }
 
 .panel[data-compact] {
-  padding: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.panel[data-compact] .candidate {
+  margin-left: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.panel[data-compact] .eyebrow > svg {
+  display: none;
+}
+
+.panel[data-compact] .sources,
+.panel[data-compact] .disclosure {
+  border: 0;
 }
 
 .eyebrow {
