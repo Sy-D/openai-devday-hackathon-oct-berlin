@@ -1,6 +1,29 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip"
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
@@ -8,7 +31,6 @@ import {
   ArrowDown,
   ArrowRight,
   ArrowUpRight,
-  Bell,
   Box,
   Check,
   CheckCheck,
@@ -32,7 +54,6 @@ import {
   TriangleAlert,
   Truck,
   X,
-  Zap,
 } from "lucide-react"
 import NetworkMap from "./components/NetworkMap"
 import AssistantDrawer from "./components/AssistantDrawer"
@@ -79,7 +100,6 @@ const labels = {
   transit: "In transit",
   planned: "Plan confirmed",
 } satisfies Record<Order["state"], string>
-type ForecastStyle = React.CSSProperties & { "--value": string }
 export default function App() {
   const [initial] = useState(loadState)
   const [view, setView] = useState<View>("overview"),
@@ -112,7 +132,6 @@ export default function App() {
     [assistant, setAssistant] = useState(false),
     [confirm, setConfirm] = useState(false),
     [settings, setSettings] = useState(false),
-    [notifications, setNotifications] = useState(false),
     [toast, setToast] = useState(""),
     [lateConsent, setLateConsent] = useState(false),
     [partTab, setPartTab] = useState<"parts" | "timeline">("parts"),
@@ -131,7 +150,6 @@ export default function App() {
   const attention = actions.length
   const onTime =
     Math.round(((orders.length - attention) / orders.length) * 1000) / 10
-  const forecastStyle: ForecastStyle = { "--value": `${onTime}%` }
   const totalParts = orders.reduce((sum, o) => sum + o.quantity * 4, 0)
   const filtered = orders.filter(
     (o) =>
@@ -157,12 +175,12 @@ export default function App() {
           ? `${order.id} needs plan review`
           : scenarioChanged(order)
             ? `${order.id} scenario needs a plan`
-            : `Let’s get ${order.id} back on track`
+            : `${order.id} needs a production plan`
   const riskDescription =
     status === "production" || status === "transit"
       ? `The current ${labels[status].toLowerCase()} forecast is ${order.dueHours - order.baselineEta}h ahead of the delivery target. Explore alternatives below.`
       : status === "planned"
-        ? `${plans.find((p) => p.id === assigned?.planId)?.name} plan confirmed for ${order.quantity} kits. Your network is ready to deliver.`
+        ? `${plans.find((p) => p.id === assigned?.planId)?.name} plan confirmed for ${order.quantity} kits.`
         : reviewReasons.length
           ? reviewReasons.join(" ")
           : scenarioChanged(order)
@@ -187,50 +205,10 @@ export default function App() {
     }
   }, [toast])
   useEffect(() => {
-    if (!confirm && !settings && !assistant) return
-    const previous = document.activeElement
-    const dialog = document.querySelector<HTMLElement>('[aria-modal="true"]')
-    const focusable = () =>
-      Array.from(
-        dialog?.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), input:not([disabled]), [tabindex="0"]'
-        ) ?? []
-      )
-    focusable()[0]?.focus()
-    const overflow = document.body.style.overflow
-    document.body.style.overflow = "hidden"
-    const trap = (event: KeyboardEvent) => {
-      if (event.key !== "Tab") return
-      const items = focusable(),
-        first = items[0],
-        last = items.at(-1)
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault()
-        last?.focus()
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault()
-        first?.focus()
-      }
-    }
-    dialog?.addEventListener("keydown", trap)
-    return () => {
-      dialog?.removeEventListener("keydown", trap)
-      document.body.style.overflow = overflow
-      if (previous instanceof HTMLElement || previous instanceof SVGElement)
-        previous.focus()
-    }
-  }, [confirm, settings, assistant])
-  useEffect(() => {
     const listener = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault()
         searchRef.current?.focus()
-      }
-      if (e.key === "Escape") {
-        setConfirm(false)
-        setSettings(false)
-        setNotifications(false)
-        setAssistant(false)
       }
     }
     window.addEventListener("keydown", listener)
@@ -258,11 +236,10 @@ export default function App() {
         "balanced"
     )
     setView("overview")
-    setNotifications(false)
     requestAnimationFrame(() => {
       const section =
         target === "inputs" ? scenarioRef.current : plannerRef.current
-      section?.scrollIntoView({ behavior: "smooth", block: "start" })
+      section?.scrollIntoView({ behavior: "instant", block: "start" })
       section?.focus({ preventScroll: true })
     })
   }
@@ -372,50 +349,56 @@ export default function App() {
         <div className="main-shell">
           <header className="topbar">
             <nav className="planning-view-nav" aria-label="Main navigation">
-              <button
+              <Button
+                variant="ghost"
                 className={view === "overview" ? "active" : ""}
                 aria-pressed={view === "overview"}
                 onClick={() => nav("overview")}
               >
                 <LayoutDashboard size={16} />
                 Overview
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 className={view === "orders" ? "active" : ""}
                 aria-pressed={view === "orders"}
                 onClick={() => nav("orders")}
               >
                 <Box size={16} />
-                Orders<span>24</span>
-              </button>
-              <button
+                Orders<span>{orders.length}</span>
+              </Button>
+              <Button
+                variant="ghost"
                 className={view === "network" ? "active" : ""}
                 aria-pressed={view === "network"}
                 onClick={() => nav("network")}
               >
                 <Network size={16} />
                 Production network
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 className={view === "activity" ? "active" : ""}
                 aria-pressed={view === "activity"}
                 onClick={() => nav("activity")}
               >
                 <Activity size={16} />
                 Activity
-              </button>
+              </Button>
             </nav>
             <div className="topbar-actions">
-              <button
-                className="notification-button"
+              <Button
+                variant="ghost"
+                className="size-11"
                 aria-label="Workspace settings"
                 onClick={() => setSettings(true)}
               >
                 <Settings2 size={18} />
-              </button>
+              </Button>
               <div className="search-field">
                 <Search size={15} />
-                <input
+                <Input
+                  className="h-11 pl-9"
                   ref={searchRef}
                   value={query}
                   onChange={(e) => {
@@ -426,77 +409,27 @@ export default function App() {
                   placeholder="Search orders…"
                   aria-label="Search orders"
                 />
-                <kbd>⌘ K</kbd>
-              </div>
-              <span className="demo-badge">
-                <span />
-                Demo workspace
-              </span>
-              <div className="notification-wrap">
-                <button
-                  className="notification-button"
-                  aria-label="Show notifications"
-                  aria-expanded={notifications}
-                  onClick={() => setNotifications(!notifications)}
-                >
-                  <Bell size={19} />
-                  {attention > 0 && <i />}
-                </button>
-                {notifications && (
-                  <div className="notifications-panel">
-                    <h3>
-                      Needs your attention <span>{attention}</span>
-                    </h3>
-                    {orders
-                      .filter(
-                        (o) =>
-                          orderStatus(o, assignments, disrupted) === "action"
-                      )
-                      .map((o) => (
-                        <button key={o.id} onClick={() => selectOrder(o)}>
-                          <span className="warning-icon">
-                            <TriangleAlert size={15} />
-                          </span>
-                          <span>
-                            <b>{o.id}</b>
-                            <small>{o.name} needs a new plan</small>
-                          </span>
-                          <ArrowUpRight size={15} />
-                        </button>
-                      ))}
-                    {attention === 0 && <p>All orders are on track.</p>}
-                  </div>
-                )}
               </div>
             </div>
           </header>
           <section className="workspace-content">
             <div className="page-heading">
               <div>
-                <div className="eyebrow">PRODUCTION, CONNECTED.</div>
                 <h1>
                   {view === "overview"
-                    ? "Every part. A clearer path."
+                    ? "Production planning"
                     : view === "orders"
-                      ? "Your orders, in motion."
+                      ? "Orders"
                       : view === "network"
-                        ? "A network of possibilities."
-                        : "The story of your network."}
+                        ? "Production network"
+                        : "Planning activity"}
                 </h1>
-                <p>
-                  {view === "overview"
-                    ? "Your manufacturing network, working together."
-                    : view === "orders"
-                      ? "Track every order from production to its final destination."
-                      : view === "network"
-                        ? "The right capabilities, in the right place, at the right time."
-                        : "Production decisions and network changes, all in one place."}
-                </p>
+                <p>Demo workspace · 27 Oct 2026, 08:00 CET</p>
               </div>
               <div className="heading-actions">
                 <Button
                   variant="outline"
-                  className="button secondary compact"
+                  className="h-11"
                   onClick={() => {
                     reset()
                     setTour(true)
@@ -507,7 +440,7 @@ export default function App() {
                 </Button>
                 <Button
                   variant="default"
-                  className="button primary compact"
+                  className="h-11"
                   onClick={() => setAssistant(true)}
                 >
                   <Sparkles size={15} />
@@ -523,12 +456,13 @@ export default function App() {
                   order, compare routes, then confirm a plan. Try a disruption
                   next.
                 </span>
-                <button
+                <Button
+                  variant="ghost"
                   aria-label="Dismiss demo guide"
                   onClick={() => setTour(false)}
                 >
                   <X size={16} />
-                </button>
+                </Button>
               </div>
             )}
             <NeedsAction
@@ -536,40 +470,23 @@ export default function App() {
               onOpen={(action) => selectOrder(action.order, action.target)}
             />
             <section className="metric-grid" aria-label="Network metrics">
-              <button className="metric-card" onClick={() => nav("orders")}>
-                <span className="metric-label">
-                  Active orders
-                  <Box size={17} />
-                </span>
-                <span className="metric-value">
-                  24
-                  <small className="metric-change">
-                    <ArrowUpRight size={13} /> 4 this week
-                  </small>
-                </span>
+              <Button
+                variant="ghost"
+                className="metric-card"
+                onClick={() => nav("orders")}
+              >
+                <span className="metric-label">Active orders</span>
+                <span className="metric-value">{orders.length}</span>
                 <span className="metric-foot">
                   Across your production network
                 </span>
-                <div className="metric-sparkline">
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                </div>
-              </button>
-              <button className="metric-card" onClick={() => nav("orders")}>
-                <span className="metric-label">
-                  Production volume
-                  <LayersIcon />
-                </span>
+              </Button>
+              <Button
+                variant="ghost"
+                className="metric-card"
+                onClick={() => nav("orders")}
+              >
+                <span className="metric-label">Production volume</span>
                 <span className="metric-value">
                   {totalParts.toLocaleString()}
                   <small>parts</small>
@@ -578,46 +495,41 @@ export default function App() {
                   {orders.reduce((s, o) => s + o.quantity, 0)} kits ·{" "}
                   {money(orders.reduce((s, o) => s + o.value, 0))} order value
                 </span>
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 className="metric-card"
                 onClick={() => {
                   setView("orders")
                   setFilter("all")
                 }}
               >
-                <span className="metric-label">
-                  On-time forecast
-                  <Clock3 size={17} />
-                </span>
+                <span className="metric-label">On-time forecast</span>
                 <span className="metric-value">
                   {onTime}
                   <small>%</small>
-                  <span className="mini-ring" style={forecastStyle} />
                 </span>
                 <span className="metric-foot">
-                  {24 - attention} of 24 active orders on track
+                  {orders.length - attention} of {orders.length} active orders
+                  on track
                 </span>
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 className="metric-card attention-card"
                 onClick={() => {
                   setView("orders")
                   setFilter("action")
                 }}
               >
-                <span className="metric-label">
-                  Needs attention
-                  <TriangleAlert size={17} />
-                </span>
+                <span className="metric-label">Needs attention</span>
                 <span className="metric-value">
                   {attention.toString().padStart(2, "0")}
-                  <small className="attention-pill">Action required</small>
                 </span>
                 <span className="metric-foot">
                   Review at-risk delivery plans <ArrowRight size={14} />
                 </span>
-              </button>
+              </Button>
             </section>
             {(view === "overview" || view === "network") && (
               <>
@@ -668,24 +580,25 @@ export default function App() {
                   className="planning-grid"
                   aria-label="Production route planner"
                 >
-                  <Card className="network-card">
-                    <div className="card-header">
-                      <div>
-                        <h2>
-                          Production network
-                          <span className="count-pill">Europe</span>
-                        </h2>
-                        <p>One connected journey, from part to product.</p>
+                  <Card className="network-card gap-0 py-0">
+                    <CardHeader className="flex flex-wrap items-center justify-between gap-3 p-5">
+                      <div className="space-y-1">
+                        <CardTitle>
+                          <h2>Production network</h2>
+                        </CardTitle>
+                        <CardDescription>
+                          Selected route to Berlin · {plan.name}
+                        </CardDescription>
                       </div>
                       <Button
                         variant="ghost"
-                        className={`button ghost disruption-button ${disrupted ? "disrupted" : ""}`}
+                        className="h-11"
                         onClick={simulate}
                       >
                         <FlaskConical size={15} />
                         {disrupted ? "Restore capacity" : "Simulate disruption"}
                       </Button>
-                    </div>
+                    </CardHeader>
                     <NetworkMap
                       plan={plan}
                       orderQuantity={order.quantity}
@@ -708,22 +621,25 @@ export default function App() {
                           </>
                         )}
                       </span>
-                      <button
+                      <Button
+                        variant="ghost"
                         onClick={() => {
                           setPartTab(partTab === "parts" ? "timeline" : "parts")
                         }}
                       >
                         {partTab === "parts" ? "View timeline" : "View parts"}
                         <ArrowUpRight size={14} />
-                      </button>
+                      </Button>
                     </div>
                   </Card>
-                  <Card className="plan-panel">
+                  <Card className="plan-panel gap-4 p-5">
                     <div className="plan-panel-header">
                       <div className="eyebrow">ROUTE PLANNER</div>
                       <span className="order-id">{order.id}</span>
                     </div>
-                    <h2>{order.name}</h2>
+                    <CardTitle>
+                      <h2>{order.name}</h2>
+                    </CardTitle>
                     <div className="order-meta">
                       <span>
                         <Package size={14} />
@@ -740,7 +656,8 @@ export default function App() {
                       aria-label="Production route options"
                     >
                       {plans.map((p) => (
-                        <button
+                        <Button
+                          variant="ghost"
                           key={p.id}
                           data-testid={`plan-${p.id}`}
                           className={`plan-option ${p.id === planId ? "selected" : ""} ${!p.feasible ? "infeasible" : ""}`}
@@ -756,9 +673,6 @@ export default function App() {
                               <span className="recommended-label">
                                 Recommended
                               </span>
-                            )}
-                            {p.id === "express" && recommended?.id !== p.id && (
-                              <Zap size={13} />
                             )}
                           </div>
                           <div className="plan-option-values">
@@ -779,7 +693,7 @@ export default function App() {
                                   : `${p.bufferHours}h buffer`}
                             </small>
                           </div>
-                        </button>
+                        </Button>
                       ))}
                     </div>
                     {!recommended && (
@@ -793,14 +707,24 @@ export default function App() {
                     <div className="plan-confidence">
                       <span>
                         Estimated on-time confidence{" "}
-                        <span
-                          className="info-tooltip"
-                          tabIndex={0}
-                          aria-label="Illustrative score based on factory reliability and deadline buffer. Not a calibrated probability."
-                          title="Illustrative score based on factory reliability and deadline buffer. Not a calibrated probability."
-                        >
-                          i
-                        </span>
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-11"
+                                aria-label="About on-time confidence"
+                              />
+                            }
+                          >
+                            i
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Illustrative score based on factory reliability and
+                            deadline buffer. Not a calibrated probability.
+                          </TooltipContent>
+                        </Tooltip>
                       </span>
                       <strong>
                         {plan.feasible ? `${plan.confidence}%` : "Unavailable"}
@@ -832,7 +756,7 @@ export default function App() {
                       </p>
                     )}
                     <Button
-                      className={`button assign-button ${isCurrent ? "confirmed" : ""}`}
+                      className="h-11 w-full"
                       data-testid="confirm-plan"
                       disabled={!plan.feasible || isCurrent}
                       onClick={() => {
@@ -859,34 +783,33 @@ export default function App() {
                     </p>
                   </Card>
                 </section>
-                <Card className="parts-card">
+                <Card className="parts-card gap-0 py-0">
                   <div className="parts-tabs">
-                    <button
+                    <Button
+                      variant="ghost"
                       className={partTab === "parts" ? "active" : ""}
                       onClick={() => setPartTab("parts")}
                     >
                       Parts & assembly<span>3 components</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
                       className={partTab === "timeline" ? "active" : ""}
                       onClick={() => setPartTab("timeline")}
                     >
                       Delivery timeline
-                    </button>
+                    </Button>
                     <span className="parts-card-note">
                       <Leaf size={13} />
                       {plan.co2Kg} kg estimated CO₂
                     </span>
                   </div>
                   {partTab === "parts" ? (
-                    <div className="parts-flow">
+                    <CardContent className="parts-flow">
                       {plan.legs.map((leg) => {
                         const part = parts.find((p) => p.id === leg.partId)!
                         return (
                           <div className="part-cell" key={leg.partId}>
-                            <div className={`part-icon ${part.id}`}>
-                              <Box size={21} />
-                            </div>
                             <div>
                               <strong>{part.name}</strong>
                               <span>
@@ -906,9 +829,6 @@ export default function App() {
                         )
                       })}
                       <div className="assembly-cell">
-                        <span className="assembly-icon">
-                          <LayersIcon />
-                        </span>
                         <div>
                           <strong>
                             Assemble in {siteById(plan.assemblyId).city}
@@ -920,7 +840,7 @@ export default function App() {
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </CardContent>
                   ) : (
                     <Timeline plan={plan} />
                   )}
@@ -928,23 +848,24 @@ export default function App() {
               </>
             )}
             {(view === "overview" || view === "orders") && (
-              <Card className="orders-card">
-                <div className="card-header">
-                  <div>
-                    <h2>
-                      Active orders<span className="count-pill">24</span>
-                    </h2>
-                    <p>A little visibility goes a long way.</p>
+              <Card className="orders-card gap-0 py-0">
+                <CardHeader className="flex flex-wrap items-center justify-between gap-3 p-5">
+                  <div className="space-y-1">
+                    <CardTitle>
+                      <h2>
+                        Active orders{" "}
+                        <Badge variant="secondary">{orders.length}</Badge>
+                      </h2>
+                    </CardTitle>
+                    <CardDescription>
+                      Select an order to review its production routes.
+                    </CardDescription>
                   </div>
-                  <Button
-                    variant="ghost"
-                    className="button ghost"
-                    onClick={exportPlan}
-                  >
+                  <Button variant="ghost" className="h-11" onClick={exportPlan}>
                     <Download size={15} />
                     Export selected plan
                   </Button>
-                </div>
+                </CardHeader>
                 <div className="table-toolbar">
                   <div className="table-tabs">
                     {[
@@ -953,14 +874,15 @@ export default function App() {
                       ["production", "In production"],
                       ["transit", "In transit"],
                     ].map(([key, label]) => (
-                      <button
+                      <Button
+                        variant="ghost"
                         key={key}
                         className={filter === key ? "active" : ""}
                         onClick={() => setFilter(key)}
                       >
                         {label}
                         {key === "action" && <span>{attention}</span>}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                   <span className="table-sort">
@@ -990,7 +912,8 @@ export default function App() {
                             onClick={() => selectOrder(o)}
                           >
                             <td>
-                              <button
+                              <Button
+                                variant="ghost"
                                 className="order-link"
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -998,14 +921,11 @@ export default function App() {
                                 }}
                               >
                                 {o.id}
-                              </button>
+                              </Button>
                               <small>{o.customer}</small>
                             </td>
                             <td>
-                              <span className="table-product">
-                                <Box size={15} />
-                                {o.name}
-                              </span>
+                              <span className="table-product">{o.name}</span>
                             </td>
                             <td>{o.quantity} kits</td>
                             <td>
@@ -1038,7 +958,7 @@ export default function App() {
                       </p>
                       <Button
                         variant="outline"
-                        className="button secondary"
+                        className="h-11"
                         onClick={() => {
                           setQuery("")
                           setFilter("all")
@@ -1057,24 +977,26 @@ export default function App() {
                     of {filtered.length} orders
                   </span>
                   <div>
-                    <button
+                    <Button
+                      variant="ghost"
                       aria-label="Previous orders"
                       disabled={page === 0}
                       onClick={() => setPage((p) => p - 1)}
                     >
                       <ChevronLeft size={16} />
-                    </button>
+                    </Button>
                     <span>
                       Page {page + 1} of{" "}
                       {Math.max(1, Math.ceil(filtered.length / 5))}
                     </span>
-                    <button
+                    <Button
+                      variant="ghost"
                       aria-label="Next orders"
                       disabled={(page + 1) * 5 >= filtered.length}
                       onClick={() => setPage((p) => p + 1)}
                     >
                       <ChevronRight size={16} />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </Card>
@@ -1084,7 +1006,7 @@ export default function App() {
                 {factories
                   .filter((f) => f.kind !== "customer")
                   .map((f) => (
-                    <Card className="factory-card" key={f.id}>
+                    <Card className="factory-card gap-3 p-5" key={f.id}>
                       <div>
                         <span className="factory-avatar">
                           <FactoryIcon size={20} />
@@ -1159,14 +1081,14 @@ export default function App() {
                 ) : (
                   <div className="empty-state">
                     <Activity size={30} />
-                    <h3>Your next decision starts the story</h3>
+                    <h3>No planning activity yet</h3>
                     <p>
                       Confirm a production plan or simulate a capacity change to
                       see it here.
                     </p>
                     <Button
                       variant="default"
-                      className="button primary"
+                      className="h-11"
                       onClick={() => nav("overview")}
                     >
                       Open route planner
@@ -1177,113 +1099,111 @@ export default function App() {
               </section>
             )}
             <footer className="page-footer">
-              <span>
-                <span className="small-brand-mark" />
-                forma. <span>Make the connection.</span>
-              </span>
-              <span>
-                All factories, costs and forecasts are synthetic · Demo clock:
-                27 Oct 2026, 08:00 CET
-              </span>
+              Synthetic factories, costs and forecasts. Decisions are saved in
+              this browser.
             </footer>
           </section>
         </div>
-        {assistant && (
-          <AssistantDrawer
-            key={`${orderId}:${order.quantity}:${order.dueHours}:${disrupted}`}
-            order={order}
-            plans={plans}
-            factories={currentFactories}
-            selectedPlanId={planId}
-            onSelect={(id) => {
-              setPlanId(id)
-              setView("overview")
-              setToast(
-                "Copilot suggestion selected. Review the route before confirming."
-              )
-            }}
-            onClose={() => setAssistant(false)}
-          />
-        )}
-        {confirm && (
-          <div className="modal-backdrop" onClick={() => setConfirm(false)}>
-            <section
-              className="confirm-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="confirm-title"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                className="icon-button modal-close"
-                aria-label="Close plan review"
-                onClick={() => setConfirm(false)}
-              >
-                <X size={20} />
-              </button>
-              <div className="modal-icon">
-                <RouteIcon />
-              </div>
-              <div className="eyebrow">ONE MORE LOOK</div>
-              <h2 id="confirm-title">A better path for {order.id}.</h2>
-              <p>
+        <AssistantDrawer
+          open={assistant}
+          key={`${orderId}:${order.quantity}:${order.dueHours}:${disrupted}`}
+          order={order}
+          plans={plans}
+          factories={currentFactories}
+          selectedPlanId={planId}
+          onSelect={(id) => {
+            setPlanId(id)
+            setView("overview")
+            setToast(
+              "Copilot suggestion selected. Review the route before confirming."
+            )
+          }}
+          onClose={() => setAssistant(false)}
+        />
+        <Dialog open={confirm} onOpenChange={setConfirm}>
+          <DialogContent
+            className="forma-app max-h-[90dvh] overflow-y-auto sm:max-w-lg"
+            showCloseButton={false}
+            finalFocus={isCurrent ? plannerRef : undefined}
+          >
+            <DialogHeader>
+              <DialogTitle>Review plan for {order.id}</DialogTitle>
+              <DialogDescription>
                 Confirm the {plan.name.toLowerCase()} plan for {order.quantity}{" "}
                 {order.name.toLowerCase()}s.
-              </p>
-              <div className="confirm-route">
-                {plan.legs.slice(0, 2).map((l) => (
-                  <span key={l.partId}>{siteById(l.factoryId).city}</span>
-                ))}
-                <ArrowRight size={15} />
-                <strong>{siteById(plan.assemblyId).city}</strong>
-                <ArrowRight size={15} />
-                <span>Berlin</span>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogClose
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-3 right-3 size-11"
+                  aria-label="Close plan review"
+                />
+              }
+            >
+              <X />
+            </DialogClose>
+            <div className="confirm-route">
+              {plan.legs.slice(0, 2).map((l) => (
+                <span key={l.partId}>{siteById(l.factoryId).city}</span>
+              ))}
+              <ArrowRight size={15} />
+              <strong>{siteById(plan.assemblyId).city}</strong>
+              <ArrowRight size={15} />
+              <span>Berlin</span>
+            </div>
+            <div className="cost-breakdown">
+              <div>
+                <span>Production & purchased components</span>
+                <strong>{money(plan.productionCost)}</strong>
               </div>
-              <div className="cost-breakdown">
-                <div>
-                  <span>Production & purchased components</span>
-                  <strong>{money(plan.productionCost)}</strong>
-                </div>
-                <div>
-                  <span>Assembly</span>
-                  <strong>{money(plan.assemblyCost)}</strong>
-                </div>
-                <div>
-                  <span>Transport · {plan.legs.length + 1} legs</span>
-                  <strong>{money(plan.transportCost)}</strong>
-                </div>
-                <div className="cost-total">
-                  <span>Total plan cost</span>
-                  <strong>{money(plan.totalCost)}</strong>
-                </div>
+              <div>
+                <span>Assembly</span>
+                <strong>{money(plan.assemblyCost)}</strong>
               </div>
-              <div
-                className={`arrival-callout ${plan.bufferHours < 0 ? "late" : ""}`}
+              <div>
+                <span>Transport · {plan.legs.length + 1} legs</span>
+                <strong>{money(plan.transportCost)}</strong>
+              </div>
+              <div className="cost-total">
+                <span>Total plan cost</span>
+                <strong>{money(plan.totalCost)}</strong>
+              </div>
+            </div>
+            <div
+              className={`arrival-callout ${plan.bufferHours < 0 ? "late" : ""}`}
+            >
+              <Clock3 size={20} />
+              <div>
+                <strong>{arrivalLabel(plan.etaHours)}</strong>
+                <span>
+                  {plan.bufferHours >= 0
+                    ? `${plan.bufferHours} hours ahead of the delivery target`
+                    : `${-plan.bufferHours} hours after the delivery target`}
+                </span>
+              </div>
+            </div>
+            {plan.bufferHours < 0 && (
+              <label className="late-consent">
+                <Checkbox
+                  checked={lateConsent}
+                  onCheckedChange={setLateConsent}
+                />
+                I understand this plan misses the deadline and keeps the order
+                flagged.
+              </label>
+            )}
+            <DialogFooter>
+              <DialogClose
+                render={<Button variant="outline" className="h-11" />}
               >
-                <Clock3 size={20} />
-                <div>
-                  <strong>{arrivalLabel(plan.etaHours)}</strong>
-                  <span>
-                    {plan.bufferHours >= 0
-                      ? `${plan.bufferHours} hours ahead of the delivery target`
-                      : `${-plan.bufferHours} hours after the delivery target`}
-                  </span>
-                </div>
-              </div>
-              {plan.bufferHours < 0 && (
-                <label className="late-consent">
-                  <input
-                    type="checkbox"
-                    checked={lateConsent}
-                    onChange={(e) => setLateConsent(e.target.checked)}
-                  />
-                  I understand this plan misses the deadline and keeps the order
-                  flagged.
-                </label>
-              )}
+                Cancel
+              </DialogClose>
               <Button
                 variant="default"
-                className="button primary modal-confirm"
+                className="h-11"
                 disabled={
                   !plan.feasible || (plan.bufferHours < 0 && !lateConsent)
                 }
@@ -1292,101 +1212,79 @@ export default function App() {
                 Confirm production plan
                 <Check size={17} />
               </Button>
-              <p className="modal-footnote">
-                Demo action only. No factories are contacted or orders placed.
-              </p>
-            </section>
-          </div>
-        )}
-        {settings && (
-          <div className="modal-backdrop" onClick={() => setSettings(false)}>
-            <section
-              className="settings-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="settings-title"
-              onClick={(e) => e.stopPropagation()}
+            </DialogFooter>
+            <p className="text-xs text-muted-foreground">
+              Demo action only. No factories are contacted or orders placed.
+            </p>
+          </DialogContent>
+        </Dialog>
+        <Dialog open={settings} onOpenChange={setSettings}>
+          <DialogContent
+            className="forma-app sm:max-w-lg"
+            showCloseButton={false}
+          >
+            <DialogClose
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-3 right-3 size-11"
+                  aria-label="Close settings"
+                />
+              }
             >
-              <button
-                className="icon-button modal-close"
-                aria-label="Close settings"
-                onClick={() => setSettings(false)}
-              >
-                <X size={20} />
-              </button>
-              <div className="eyebrow">DEMO WORKSPACE</div>
-              <h2 id="settings-title">Built for the what-if.</h2>
-              <p>
-                Explore a synthetic European manufacturing network. Plans
-                account for factory compatibility, queues, component transport
-                and assembly dependencies.
-              </p>
-              <dl>
-                <div>
-                  <dt>Network</dt>
-                  <dd>6 print centers · 2 assembly hubs</dd>
-                </div>
-                <div>
-                  <dt>Planning clock</dt>
-                  <dd>27 Oct 2026 · 08:00 CET</dd>
-                </div>
-                <div>
-                  <dt>Forecast</dt>
-                  <dd>Illustrative, not calibrated</dd>
-                </div>
-                <div>
-                  <dt>Storage</dt>
-                  <dd>This browser only</dd>
-                </div>
-              </dl>
-              <Button
-                variant="outline"
-                className="button secondary"
-                onClick={reset}
-              >
-                <RotateCcw size={16} />
-                Reset demo workspace
-              </Button>
-              <p className="modal-footnote">
-                Resets your demo assignments, disruptions and activity.
-              </p>
-            </section>
-          </div>
-        )}
+              <X />
+            </DialogClose>
+            <DialogHeader>
+              <DialogTitle>Demo workspace settings</DialogTitle>
+              <DialogDescription>
+                Plans account for compatibility, queues, transport and assembly
+                dependencies.
+              </DialogDescription>
+            </DialogHeader>
+            <dl className="settings-details">
+              <div>
+                <dt>Network</dt>
+                <dd>6 print centers · 2 assembly hubs</dd>
+              </div>
+              <div>
+                <dt>Planning clock</dt>
+                <dd>27 Oct 2026 · 08:00 CET</dd>
+              </div>
+              <div>
+                <dt>Forecast</dt>
+                <dd>Illustrative, not calibrated</dd>
+              </div>
+              <div>
+                <dt>Storage</dt>
+                <dd>This browser only</dd>
+              </div>
+            </dl>
+            <Button variant="outline" className="h-11" onClick={reset}>
+              <RotateCcw size={16} />
+              Reset demo workspace
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Resets your demo assignments, scenarios, disruptions and activity.
+            </p>
+          </DialogContent>
+        </Dialog>
         {toast && (
           <div className="toast" role="status">
             <CircleCheck size={19} />
             <span>{toast}</span>
-            <button
+            <Button
+              variant="ghost"
               aria-label="Dismiss notification"
               onClick={() => setToast("")}
             >
               <X size={15} />
-            </button>
+            </Button>
           </div>
         )}
       </div>
     </div>
   )
-}
-function LayersIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" />
-    </svg>
-  )
-}
-function RouteIcon() {
-  return <Network size={27} />
 }
 function Timeline({ plan }: { plan: Plan }) {
   const max = Math.max(plan.deadlineHours, plan.etaHours) + 6

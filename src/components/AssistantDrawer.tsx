@@ -1,12 +1,15 @@
-import { useEffect, useRef, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
-  ArrowRight,
-  ArrowUp,
-  Check,
-  LoaderCircle,
-  Sparkles,
-  X,
-} from "lucide-react"
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetClose,
+} from "@/components/ui/sheet"
+import { useEffect, useRef, useState } from "react"
+import { ArrowRight, ArrowUp, Check, LoaderCircle, X } from "lucide-react"
 import { duration, money, type Factory, type Order } from "../data/network"
 import { type Plan, type PlanId } from "../lib/planner"
 
@@ -17,6 +20,7 @@ type Message = {
   mode?: "live" | "demo"
 }
 export default function AssistantDrawer({
+  open,
   order,
   plans,
   factories,
@@ -24,6 +28,7 @@ export default function AssistantDrawer({
   onSelect,
   onClose,
 }: {
+  open: boolean
   order: Order
   plans: Plan[]
   factories: Factory[]
@@ -42,7 +47,7 @@ export default function AssistantDrawer({
     inputRef = useRef<HTMLInputElement>(null),
     requestStarted = useRef(false)
   useEffect(() => {
-    inputRef.current?.focus()
+    if (!open) return
     const controller = new AbortController()
     fetch("/api/health", { signal: controller.signal })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
@@ -63,9 +68,9 @@ export default function AssistantDrawer({
           setProviderLabel("Assistant server unavailable")
       })
     return () => controller.abort()
-  }, [])
+  }, [open])
   useEffect(() => {
-    bottom.current?.scrollIntoView({ behavior: "smooth" })
+    bottom.current?.scrollIntoView({ behavior: "instant", block: "nearest" })
   }, [messages, busy])
   async function send(text: string) {
     if (busy || !text.trim()) return
@@ -124,35 +129,34 @@ export default function AssistantDrawer({
     }
   }
   return (
-    <div className="drawer-backdrop" onClick={onClose}>
-      <aside
-        className="assistant-drawer"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="assistant-title"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") onClose()
-        }}
+    <Sheet
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose()
+      }}
+    >
+      <SheetContent
+        className="forma-app gap-0 data-[side=right]:w-full data-[side=right]:sm:max-w-md"
+        showCloseButton={false}
+        initialFocus={inputRef}
       >
-        <header className="drawer-header">
-          <div className="assistant-symbol">
-            <Sparkles size={20} />
-          </div>
-          <div>
-            <h2 id="assistant-title">Your planning copilot</h2>
-            <p>{providerLabel}</p>
-          </div>
-          <button
-            className="icon-button"
-            onClick={onClose}
-            aria-label="Close copilot"
+        <SheetHeader className="border-b pr-16">
+          <SheetTitle>Planning copilot</SheetTitle>
+          <SheetDescription>{providerLabel}</SheetDescription>
+          <SheetClose
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-3 right-3 size-11"
+                aria-label="Close copilot"
+              />
+            }
           >
-            <X size={20} />
-          </button>
-        </header>
+            <X />
+          </SheetClose>
+        </SheetHeader>
         <div className="assistant-order">
-          <span className="live-dot" />
           <span>
             Working on <strong>{order.id}</strong> · {order.quantity} kits ·
             deadline {duration(order.dueHours)}
@@ -161,17 +165,10 @@ export default function AssistantDrawer({
         <div className="chat-body">
           {messages.length === 0 && (
             <div className="chat-welcome">
-              <div className="large-spark">
-                <Sparkles size={30} />
-              </div>
-              <h3>
-                A clearer path
-                <br />
-                from part to delivery.
-              </h3>
+              <h3>Review this order’s options</h3>
               <p>
-                Compare the real options in this demo. I can explain the
-                trade-offs and suggest a plan for you to review.
+                Ask about costs, timing or factory compatibility. Review
+                suggestions before confirming a plan.
               </p>
               <div className="suggested-prompts">
                 {[
@@ -179,26 +176,22 @@ export default function AssistantDrawer({
                   "Which plan gets this order there fastest?",
                   "Why can’t every factory print these parts?",
                 ].map((q) => (
-                  <button key={q} onClick={() => send(q)}>
+                  <Button variant="outline" key={q} onClick={() => send(q)}>
                     {q}
                     <ArrowUp size={16} />
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
           )}
           {messages.map((message, i) => (
             <div key={i} className={`chat-message ${message.role}`}>
-              {message.role === "assistant" && (
-                <span className="chat-avatar">
-                  <Sparkles size={14} />
-                </span>
-              )}
               <div>
                 <p>{message.text}</p>
                 {message.planId && (
-                  <button
-                    className="chat-plan-button"
+                  <Button
+                    variant="outline"
+                    className="h-auto min-h-11 whitespace-normal"
                     onClick={() => onSelect(message.planId!)}
                   >
                     {selectedPlanId === message.planId ? (
@@ -210,7 +203,7 @@ export default function AssistantDrawer({
                     {money(
                       plans.find((p) => p.id === message.planId)!.totalCost
                     )}
-                  </button>
+                  </Button>
                 )}
                 {message.mode === "demo" && (
                   <small>Deterministic demo response</small>
@@ -239,7 +232,8 @@ export default function AssistantDrawer({
           }}
         >
           <div>
-            <input
+            <Input
+              className="h-11"
               ref={inputRef}
               aria-label="Ask the planning copilot"
               placeholder="Ask about this order…"
@@ -247,17 +241,20 @@ export default function AssistantDrawer({
               onChange={(e) => setInput(e.target.value)}
               maxLength={2000}
             />
-            <button
+            <Button
+              variant="default"
+              className="size-11"
+              size="icon"
               type="submit"
               aria-label="Send message"
               disabled={busy || !input.trim()}
             >
               <ArrowUp size={19} />
-            </button>
+            </Button>
           </div>
           <p>Suggestions only. You confirm every production plan.</p>
         </form>
-      </aside>
-    </div>
+      </SheetContent>
+    </Sheet>
   )
 }

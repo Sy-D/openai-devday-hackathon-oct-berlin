@@ -36,13 +36,10 @@ export default function NeedsAction({
           </h2>
           <p>
             {actions.length
-              ? "Start here. These orders need a decision to stay on track."
+              ? "Review delivery, capacity or order changes."
               : "Every order has an on-time plan or is progressing on track in this demo."}
           </p>
         </div>
-        {actions.length > 0 && (
-          <span className="action-live-label">Updated with your scenario</span>
-        )}
       </div>
       {actions.length > 0 && (
         <div className="action-grid" id="needs-action-orders">
@@ -64,6 +61,7 @@ export default function NeedsAction({
               <p>{action.detail}</p>
               <Button
                 variant="outline"
+                className="h-11"
                 onClick={() => onOpen(action)}
                 aria-label={`${action.nextStep} for ${action.order.id}`}
               >
@@ -77,7 +75,7 @@ export default function NeedsAction({
       {actions.length > 3 && (
         <Button
           variant="outline"
-          className="action-expand"
+          className="action-expand h-11"
           type="button"
           aria-expanded={expanded}
           aria-controls="needs-action-orders"

@@ -3,13 +3,13 @@ test.beforeEach(async({page})=>{await page.goto('/planning');await page.evaluate
 
 test('urgent order can be recovered, persisted, disrupted and recovered again',async({page})=>{
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
-  await expect(page.getByRole('heading',{name:'Every part. A clearer path.'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Production planning'})).toBeVisible();
   await expect(page.getByTestId('plan-balanced')).toContainText('11h buffer');
   await page.getByTestId('plan-express').click();
   await expect(page.getByTestId('plan-express')).toHaveAttribute('aria-pressed','true');
   await page.getByTestId('plan-balanced').click();
   await page.getByTestId('confirm-plan').click();
-  await expect(page.getByRole('dialog',{name:'A better path for FM-2048.'})).toContainText('€3,222');
+  await expect(page.getByRole('dialog',{name:'Review plan for FM-2048'})).toContainText('€3,222');
   await page.getByRole('button',{name:'Confirm production plan',exact:true}).click();
   await expect(page.getByText('FM-2048 is back on track')).toBeVisible();
   await expect(page.locator('.attention-card .metric-value')).toContainText('02');
@@ -45,7 +45,8 @@ test('copilot uses the running API and suggestion requires separate confirmation
 });
 
 test('search, factory capability inspection, timeline and mobile layout work',async({page})=>{
-  await page.getByRole('button',{name:'Inspect Atelier 3D, Lyon'}).click();
+  await page.getByText('Inspect network locations · 10').click();
+  await page.getByRole('button',{name:'Inspect Atelier 3D, Lyon',exact:true}).click();
   await expect(page.getByText('No compatible parts in this order')).toBeVisible();
   await page.getByRole('button',{name:'Close facility details'}).click();
   await page.getByRole('button',{name:'Delivery timeline',exact:true}).click();

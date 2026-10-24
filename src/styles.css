@@ -1,2220 +1,1109 @@
-/* The planning workflow shares Simon's global theme and component library. */
 .forma-app {
-  font-family: inherit;
+  min-width: 0;
   color: var(--foreground);
-  background: var(--background);
-  --ink: var(--foreground);
-  --line: var(--border);
-  --green: var(--risk-low);
-  --mint: color-mix(in oklch, var(--risk-low) 8%, transparent);
-  --amber: var(--risk-medium);
-  --paper: var(--card);
-}
-
-/* System fallbacks keep the full demo usable without venue connectivity. */
-
-.forma-app {
-  font-family: inherit;
-  color: var(--foreground);
-  background: var(--muted);
-  font-synthesis: none;
-  font-size: 13px;
-  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
-}
-.forma-app * {
-  box-sizing: border-box;
-}
-.forma-app {
-  margin: 0;
-}
-.forma-app button,
-.forma-app input {
-  font: inherit;
-}
-.forma-app button,
-.forma-app a,
-.forma-app input {
-  -webkit-tap-highlight-color: transparent;
-}
-.forma-app button:disabled {
-  cursor: default;
-}
-.forma-app button,
-.forma-app input,
-.forma-app a {
-  outline-offset: 4px;
-}
-.forma-app button:focus-visible,
-.forma-app a:focus-visible,
-.forma-app input:focus-visible,
-.forma-app [tabindex]:focus-visible {
-  outline: 2px solid var(--ring);
-}
-.forma-app a {
-  color: inherit;
 }
 .forma-app h1,
 .forma-app h2,
-.forma-app h3,
-.forma-app p {
-  margin: 0;
+.forma-app h3 {
+  text-wrap: balance;
 }
-.forma-app button svg {
-  flex-shrink: 0;
+.forma-app [data-slot="button"],
+.forma-app [data-slot="select-trigger"] {
+  min-height: 44px;
 }
-.forma-app svg {
-  vertical-align: middle;
+.forma-app :focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
 }
-.forma-app ::selection {
-  background: var(--muted);
-}
-.forma-app .app-shell {
-  display: flex;
-  min-height: 100vh;
-}
-.forma-app .sidebar {
-  width: 218px;
-  flex-shrink: 0;
-  background: var(--primary);
-  color: var(--muted-foreground);
-  position: fixed;
-  inset: 0 auto 0 0;
-  display: flex;
-  flex-direction: column;
-  padding: 32px 17px 0;
-  z-index: 30;
-}
-.forma-app .brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  font-family: inherit;
-  font-size: 36px;
-  font-weight: 800;
-  letter-spacing: -2px;
-  padding-left: 11px;
-  line-height: 1;
-}
-.forma-app .brand-period {
-  color: var(--muted-foreground);
-}
-.forma-app .brand-mark {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  transform: rotate(-25deg);
-  width: 29px;
-  align-items: center;
-  margin: 0 3px 1px 0;
-}
-.forma-app .brand-mark i {
-  height: 5px;
-  background: var(--muted);
-  width: 23px;
-  border-radius: 1px;
-}
-.forma-app .brand-mark i:nth-child(2) {
-  width: 17px;
-}
-.forma-app .brand-mark i:nth-child(3) {
-  width: 11px;
-}
-.forma-app .workspace-picker {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: var(--muted-foreground);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 10px 8px;
-  margin-top: 37px;
-  text-align: left;
-  font-size: 12px;
-  line-height: 1.5;
-  width: 100%;
-  white-space: nowrap;
-}
-.forma-app .workspace-picker > span:nth-child(2) {
-  flex: 1;
-}
-.forma-app .workspace-picker small {
-  display: block;
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-.forma-app .workspace-icon {
-  background: var(--primary);
-  padding: 6px;
-  border-radius: var(--radius-md);
-  color: var(--muted-foreground);
-}
-.forma-app .nav-label {
-  font-size: 11px;
-  letter-spacing: 1.7px;
-  font-weight: 600;
-  color: var(--muted-foreground);
-  margin: 33px 13px 14px;
-}
-.forma-app .sidebar nav {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.forma-app .sidebar nav button {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  border-radius: var(--radius-md);
-  height: 43px;
-  text-align: left;
-  color: var(--muted-foreground);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 0 13px;
-}
-.forma-app .sidebar nav button:hover,
-.forma-app .settings-nav:hover {
-  color: var(--primary-foreground);
-  background: var(--primary);
-}
-.forma-app .sidebar nav button.active {
-  background: var(--muted);
-  color: var(--foreground);
-}
-.forma-app .sidebar nav svg {
-  stroke-width: 1.6;
-}
-.forma-app .nav-count {
-  margin-left: auto;
-  font-size: 12px;
-  padding: 1px 5px;
-  background: var(--primary);
-  border-radius: 4px;
-  color: var(--muted-foreground);
-}
-.forma-app .active .nav-count {
-  background: var(--muted);
-  color: var(--foreground);
-}
-.forma-app .activity-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--muted);
-  margin-left: auto;
-}
-.forma-app .sidebar-bottom {
-  margin-top: auto;
-  padding-top: 70px;
-}
-.forma-app .copilot-promo {
-  position: relative;
-  border: 1px solid var(--border);
-  background: radial-gradient(
-    ellipse at 100% 0,
-    color-mix(in oklch, var(--foreground) 44%, transparent),
-    transparent 65%
-  );
-  padding: 17px 14px;
-  border-radius: var(--radius-2xl);
-}
-.forma-app .promo-star {
-  color: var(--muted-foreground);
-  margin-bottom: 13px;
-}
-.forma-app .copilot-promo h3 {
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
-  letter-spacing: -0.2px;
-  color: var(--muted-foreground);
-}
-.forma-app .copilot-promo p {
-  color: var(--muted-foreground);
-  font-size: 12px;
-  line-height: 1.6;
-  margin-top: 9px;
-}
-.forma-app .copilot-promo button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  border-top: 1px solid var(--border);
-  margin-top: 15px;
-  padding: 12px 0 0;
-  color: var(--muted-foreground);
-  font-size: 12px;
-}
-.forma-app .settings-nav {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 23px 0 20px;
-  padding: 8px 11px;
-  color: var(--muted-foreground);
-  font-size: 12px;
-  border-radius: var(--radius-md);
-}
-.forma-app .profile {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  border-top: 1px solid var(--border);
-  padding: 20px 4px 24px;
-  font-size: 12px;
-}
-.forma-app .avatar {
+.forma-app .workspace-content {
   display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  background: var(--muted);
-  color: var(--foreground);
-  border-radius: 50%;
-  font-size: 12px;
-  font-weight: 600;
-}
-.forma-app .profile small {
-  display: block;
-  color: var(--muted-foreground);
-  font-size: 11px;
-  margin-top: 3px;
-}
-.forma-app .online-indicator {
-  margin-left: auto;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--risk-low);
-}
-.forma-app .main-shell {
-  margin-left: 218px;
-  min-width: 0;
-  width: calc(100% - 218px);
+  gap: 24px;
+  padding: 24px;
 }
 .forma-app .topbar {
-  height: 68px;
-  border-bottom: 1px solid var(--line);
-  background: var(--muted);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
-  gap: 20px;
-}
-.forma-app .breadcrumb {
-  display: flex;
-  align-items: center;
   gap: 12px;
-  color: var(--muted-foreground);
-  font-size: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
 }
-.forma-app .breadcrumb span {
-  color: var(--muted-foreground);
+.forma-app .planning-view-nav button,
+.forma-app .parts-tabs button,
+.forma-app .table-tabs button {
+  transition: none;
 }
-.forma-app .breadcrumb svg {
-  color: var(--muted-foreground);
-}
-.forma-app .topbar-actions {
+.forma-app .planning-view-nav {
   display: flex;
-  align-items: center;
-  gap: 21px;
+  flex-wrap: wrap;
+  gap: 4px;
 }
-.forma-app .search-field {
+.forma-app .planning-view-nav .active,
+.forma-app .table-tabs .active,
+.forma-app .parts-tabs .active {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+.forma-app .planning-view-nav button > span {
+  color: var(--muted-foreground);
+}
+.forma-app .topbar-actions,
+.forma-app .heading-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--muted-foreground);
 }
-.forma-app .search-field input {
-  border: 0;
-  background: transparent;
-  width: 143px;
-  padding: 7px 0;
-  font-size: 12px;
-  color: var(--foreground);
-}
-.forma-app .search-field input::placeholder {
-  color: var(--muted-foreground);
-}
-.forma-app .search-field kbd {
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-family: inherit;
-  font-size: 11px;
-  padding: 3px 5px;
-  color: var(--muted-foreground);
-}
-.forma-app .demo-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 6px 9px;
-  color: var(--foreground);
-  font-size: 11px;
-  white-space: nowrap;
-}
-.forma-app .demo-badge > span {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--primary);
-}
-.forma-app .notification-wrap {
+.forma-app .search-field {
   position: relative;
+  width: 220px;
 }
-.forma-app .notification-button {
-  position: relative;
-  color: var(--muted-foreground);
-  padding: 6px;
-}
-.forma-app .notification-button i {
+.forma-app .search-field > svg {
   position: absolute;
-  right: 6px;
-  top: 4px;
-  width: 5px;
-  height: 5px;
-  background: var(--primary);
-  border-radius: 50%;
-  border: 1px solid white;
-}
-.forma-app .notifications-panel {
-  position: absolute;
-  top: 43px;
-  right: 0;
-  width: 320px;
-  background: var(--card);
-  box-shadow: 0 8px 35px color-mix(in oklch, var(--foreground) 10%, transparent);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-2xl);
-  padding: 16px;
-  z-index: 50;
-}
-.forma-app .notifications-panel h3 {
-  font-size: 13px;
-  margin-bottom: 12px;
-}
-.forma-app .notifications-panel h3 span {
-  background: var(--muted);
-  font-size: 12px;
-  padding: 2px 6px;
-  margin-left: 8px;
-  border-radius: 4px;
-  color: var(--foreground);
-}
-.forma-app .notifications-panel > button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-align: left;
-  width: 100%;
-  padding: 12px 2px;
-  border-top: 1px solid var(--line);
-}
-.forma-app .notifications-panel button span:nth-child(2) {
-  flex: 1;
-}
-.forma-app .notifications-panel b {
-  font-size: 12px;
-  font-weight: 600;
-}
-.forma-app .notifications-panel small {
-  display: block;
-  font-size: 12px;
+  left: 12px;
+  top: 15px;
+  z-index: 1;
+  pointer-events: none;
   color: var(--muted-foreground);
-  margin-top: 4px;
-}
-.forma-app .warning-icon {
-  padding: 7px;
-  border-radius: var(--radius-md);
-  color: var(--risk-medium);
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-}
-.forma-app .workspace-content {
-  max-width: 1600px;
-  margin: auto;
-  padding: 32px 32px 0;
 }
 .forma-app .page-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
   gap: 16px;
 }
-.forma-app .eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.7px;
-  color: var(--muted-foreground);
-  margin-bottom: 11px;
-}
-.forma-app h1 {
-  font-family: inherit;
-  font-size: 29px;
-  letter-spacing: -1.25px;
-  line-height: 1.35;
+.forma-app .page-heading h1 {
+  font-size: 26px;
+  line-height: 1.25;
   font-weight: 600;
-  color: var(--foreground);
+  letter-spacing: -0.025em;
+}
+.forma-app .page-heading p,
+.forma-app .page-footer {
+  font-size: 12px;
+  color: var(--muted-foreground);
 }
 .forma-app .page-heading p {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  margin-top: 8px;
-}
-.forma-app .heading-actions {
-  display: flex;
-  gap: 9px;
-  padding-top: 6px;
-}
-.forma-app .button.compact {
-  padding: 10px 13px;
-}
-.forma-app .tour-banner {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  background: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 13px 15px;
-  margin: -6px 0 20px;
-  font-size: 12px;
-  color: var(--foreground);
-}
-.forma-app .tour-banner span {
-  flex: 1;
-}
-.forma-app .tour-banner strong {
-  font-weight: 600;
-}
-.forma-app .metric-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-.forma-app .metric-card {
-  position: relative;
-  overflow: hidden;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  text-align: left;
-  padding: 17px 18px 15px;
-  min-height: 123px;
-  transition: border-color 0.15s;
-}
-.forma-app .metric-card:hover {
-  border-color: var(--border);
-}
-.forma-app .metric-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: var(--muted-foreground);
-  font-size: 12px;
-}
-.forma-app .metric-label > svg {
-  color: var(--muted-foreground);
-  stroke-width: 1.45;
-}
-.forma-app .metric-value {
-  position: relative;
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-  font-family: inherit;
-  letter-spacing: -1px;
-  font-size: 29px;
-  font-weight: 600;
-  line-height: 1.4;
-  margin-top: 9px;
-  z-index: 1;
-}
-.forma-app .metric-value small {
-  font-size: 12px;
-  font-family: inherit;
-  letter-spacing: 0;
-  font-weight: 400;
-  color: var(--muted-foreground);
-  margin-left: 1px;
-}
-.forma-app .metric-value .metric-change {
-  color: var(--muted-foreground);
-  font-size: 11px;
-  margin-left: 3px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  letter-spacing: -0.1px;
-}
-.forma-app .metric-foot {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  color: var(--muted-foreground);
   margin-top: 6px;
-  position: relative;
-  z-index: 1;
-  white-space: nowrap;
 }
-.forma-app .metric-sparkline {
-  position: absolute;
-  right: 18px;
-  bottom: 32px;
-  display: flex;
-  gap: 3px;
-  align-items: flex-end;
-  opacity: 0.35;
-  height: 32px;
-}
-.forma-app .metric-sparkline i {
-  background: var(--muted);
-  width: 4px;
-  border-radius: 2px;
-  height: 30%;
-}
-.forma-app .metric-sparkline i:nth-child(3n) {
-  height: 55%;
-}
-.forma-app .metric-sparkline i:nth-child(2n) {
-  height: 70%;
-}
-.forma-app .metric-sparkline i:nth-child(4n) {
-  height: 90%;
-}
-.forma-app .metric-sparkline i:last-child {
-  height: 100%;
-}
-.forma-app .mini-ring {
-  display: block;
-  background: conic-gradient(var(--primary) var(--value), var(--muted) 0);
-  width: 39px;
-  height: 39px;
-  border-radius: 50%;
-  position: absolute;
-  right: 0;
-  top: -1px;
-}
-.forma-app .mini-ring:after {
-  content: "";
-  background: var(--card);
-  position: absolute;
-  inset: 5px;
-  border-radius: 50%;
-}
-.forma-app .attention-card {
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  border-color: color-mix(in oklch, var(--risk-medium) 25%, transparent);
-}
-.forma-app .attention-card .metric-label > svg {
-  color: var(--risk-medium);
-}
-.forma-app .metric-value .attention-pill {
-  font-size: 11px;
-  letter-spacing: 0.1px;
-  margin-left: auto;
-  align-self: center;
-  color: var(--risk-medium);
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  padding: 4px 7px;
-  border-radius: 4px;
-}
-.forma-app .attention-card .metric-foot {
-  color: var(--risk-medium);
-  justify-content: space-between;
-}
+.forma-app .tour-banner,
 .forma-app .risk-banner {
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid color-mix(in oklch, var(--risk-medium) 25%, transparent);
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  padding: 13px 17px;
-  border-radius: var(--radius-2xl);
-  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-size: 13px;
 }
-.forma-app .risk-icon {
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  color: var(--risk-medium);
-  width: 35px;
-  height: 35px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-md);
-  flex-shrink: 0;
-}
+.forma-app .tour-banner > span,
 .forma-app .risk-banner > div:nth-child(2) {
   flex: 1;
 }
-.forma-app .risk-banner strong {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--risk-medium);
-}
+.forma-app .risk-banner strong,
 .forma-app .risk-banner > div > span {
   display: block;
-  font-size: 12px;
+}
+.forma-app .risk-banner > div > span {
   margin-top: 4px;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+}
+.forma-app .risk-icon {
   color: var(--risk-medium);
 }
-.forma-app .risk-banner.resolved {
-  background: color-mix(in oklch, var(--risk-low) 8%, transparent);
-  border-color: color-mix(in oklch, var(--risk-low) 25%, transparent);
-}
-.forma-app .risk-banner.resolved .risk-icon {
-  background: color-mix(in oklch, var(--risk-low) 8%, transparent);
+.forma-app .resolved .risk-icon {
   color: var(--risk-low);
 }
-.forma-app .risk-banner.resolved strong {
-  color: var(--risk-low);
+.forma-app .needs-action {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
 }
-.forma-app .risk-banner.resolved > div > span {
-  color: var(--risk-low);
+.forma-app .action-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 16px;
 }
-.forma-app .status-badge {
-  display: inline-flex;
+.forma-app .action-heading-icon {
+  color: var(--foreground);
+  margin-top: 2px;
+}
+.forma-app .action-heading h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+.forma-app .action-heading h2 > span {
+  margin-left: 6px;
+  color: var(--muted-foreground);
+}
+.forma-app .action-heading p {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  margin-top: 4px;
+}
+.forma-app .action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.forma-app .order-action {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.forma-app .action-order {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 5px;
-  border-radius: var(--radius-md);
-  padding: 5px 7px;
-  font-size: 11px;
-  white-space: nowrap;
+  gap: 8px;
+  font-size: 12px;
+}
+.forma-app .action-order > span {
+  color: var(--muted-foreground);
+}
+.forma-app .order-action h3 {
+  font-size: 14px;
   font-weight: 500;
 }
-.forma-app .status-badge.action {
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  color: var(--risk-medium);
+.forma-app .order-action p {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+  flex: 1;
 }
-.forma-app .status-badge.production {
-  background: color-mix(in oklch, var(--risk-low) 8%, transparent);
-  color: var(--risk-low);
+.forma-app .order-action button {
+  margin-top: 4px;
 }
-.forma-app .status-badge.transit {
-  background: color-mix(in oklch, var(--chart-3) 8%, transparent);
-  color: var(--chart-3);
+.forma-app .action-expand {
+  margin-top: 16px;
 }
-.forma-app .status-badge.planned {
-  background: color-mix(in oklch, var(--risk-low) 8%, transparent);
-  color: var(--risk-low);
+.forma-app .metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-block: 1px solid var(--border);
+  padding: 4px 0;
 }
-.forma-app .tiny-dot {
-  width: 4px;
-  height: 4px;
-  background: currentColor;
-  border-radius: 50%;
-  display: inline-block;
+.forma-app .metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  height: auto;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  white-space: normal;
+  text-align: left;
+}
+.forma-app .metric-label {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.forma-app .metric-value {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 500;
+}
+.forma-app .metric-value > small {
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+.forma-app .metric-foot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.forma-app .scenario-anchor,
+.forma-app .planning-grid {
+  scroll-margin-top: 20px;
+}
+.forma-app .scenario-heading p {
+  margin-top: 4px;
+}
+.forma-app .scenario-card form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+}
+.forma-app .scenario-field {
+  display: grid;
+  gap: 7px;
+  width: 160px;
+  font-size: 12px;
+}
+.forma-app .scenario-field > span {
+  color: var(--muted-foreground);
+}
+.forma-app .scenario-field > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.forma-app .scenario-field > div > span {
+  color: var(--muted-foreground);
+}
+.forma-app .scenario-deadline {
+  display: grid;
+  gap: 6px;
+  flex: 1;
+  min-width: 180px;
+  padding-bottom: 4px;
+  font-size: 12px;
+}
+.forma-app .scenario-deadline > span {
+  color: var(--muted-foreground);
+}
+.forma-app .scenario-deadline > strong {
+  font-weight: 500;
+}
+.forma-app .scenario-help {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 20px;
+  margin-top: 16px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.forma-app .scenario-error {
+  color: var(--destructive);
 }
 .forma-app .planning-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 301px;
-  gap: 21px;
-  margin-bottom: 20px;
-  scroll-margin-top: 20px;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+  align-items: start;
+  gap: 20px;
 }
 .forma-app .network-card,
 .forma-app .plan-panel,
 .forma-app .parts-card,
-.forma-app .orders-card,
-.forma-app .factory-card,
-.forma-app .activity-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  overflow: hidden;
+.forma-app .orders-card {
+  min-width: 0;
 }
-.forma-app .card-header {
+.forma-app .network-card h2,
+.forma-app .orders-card h2 {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 20px 21px 18px;
-}
-.forma-app .card-header h2 {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-family: inherit;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  font-size: 14px;
-}
-.forma-app .card-header p {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  margin-top: 6px;
-}
-.forma-app .count-pill {
-  background: var(--muted);
-  color: var(--muted-foreground);
-  border: 1px solid var(--border);
-  font-size: 11px;
-  padding: 3px 6px;
-  border-radius: 4px;
-  font-weight: 500;
-  font-family: inherit;
-  letter-spacing: 0;
-}
-.forma-app .disruption-button {
-  border: 1px solid color-mix(in oklch, var(--risk-medium) 25%, transparent);
-  font-size: 11px !important;
-  padding: 7px 8px !important;
-}
-.forma-app .disruption-button.disrupted {
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  color: var(--risk-medium);
-  border-color: color-mix(in oklch, var(--risk-medium) 25%, transparent);
-}
-.forma-app .network-map {
-  height: 400px;
-  position: relative;
-  background: var(--muted);
-  overflow: hidden;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-.forma-app .map-svg {
-  height: 100%;
-  width: 100%;
-  display: block;
-  object-fit: cover;
-}
-.forma-app .map-caption {
-  position: absolute;
-  top: 15px;
-  left: 18px;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: color-mix(in oklch, var(--foreground) 95%, transparent);
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  font-size: 11px;
-  color: var(--muted-foreground);
-  box-shadow: 0 2px 5px color-mix(in oklch, var(--foreground) 2%, transparent);
-}
-.forma-app .map-caption-count {
-  font-size: 11px;
-  color: var(--muted-foreground);
-  border-left: 1px solid var(--border);
-  margin-left: 6px;
-  padding-left: 9px;
-}
-.forma-app .live-dot {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--risk-low);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--foreground) 7%, transparent);
-}
-.forma-app .country-label {
-  fill: var(--muted-foreground);
-  font-size: 11px;
-  letter-spacing: 2px;
-  font-family: inherit;
-  text-anchor: middle;
-  font-weight: 500;
-}
-.forma-app .map-node {
-  cursor: pointer;
-  transition: opacity 0.2s;
-  outline: none;
-}
-.forma-app .map-node:hover circle:first-child {
-  stroke: var(--border);
-  stroke-width: 2px;
-}
-.forma-app .map-node:focus-visible circle {
-  stroke: var(--border);
-  stroke-width: 3px;
-}
-.forma-app .map-node.inactive {
-  opacity: 0.65;
-}
-.forma-app .city-label {
-  fill: var(--muted-foreground);
-  font-size: 12px;
-  font-weight: 500;
-  paint-order: stroke;
-  stroke: var(--border);
-  stroke-width: 3px;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.forma-app .destination-label {
-  fill: var(--muted-foreground);
-  font-weight: 700;
-  font-size: 12px;
-}
-.forma-app .destination-sub {
-  fill: var(--muted-foreground);
-  font-size: 11px;
-  letter-spacing: 1.8px;
-  paint-order: stroke;
-  stroke: var(--border);
-  stroke-width: 2px;
-}
-.forma-app .route-path {
-  transition: all 0.35s;
-}
-.forma-app .map-legend {
-  position: absolute;
-  left: 18px;
-  bottom: 15px;
-  display: flex;
-  gap: 13px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  background: color-mix(in oklch, var(--foreground) 86%, transparent);
-  padding: 6px 8px;
-  border-radius: 4px;
-}
-.forma-app .map-legend span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.forma-app .legend-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--primary);
-  display: inline-block;
-}
-.forma-app .legend-dot.supplier {
-  background: var(--primary);
-}
-.forma-app .legend-diamond {
-  width: 6px;
-  height: 6px;
-  display: inline-block;
-  transform: rotate(45deg);
-  background: var(--card);
-  border: 1px solid var(--border);
-}
-.forma-app .map-controls {
-  position: absolute;
-  right: 15px;
-  bottom: 35px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: 0 2px 4px color-mix(in oklch, var(--foreground) 2%, transparent);
-  display: flex;
-  flex-direction: column;
-}
-.forma-app .map-controls button {
-  width: 27px;
-  height: 27px;
-  color: var(--muted-foreground);
-  display: grid;
-  place-items: center;
-}
-.forma-app .map-controls button + button {
-  border-top: 1px solid var(--border);
-}
-.forma-app .map-controls button:disabled {
-  color: var(--muted-foreground);
-}
-.forma-app .map-controls button:hover:not(:disabled) {
-  background: var(--muted);
-}
-.forma-app .map-attribution {
-  position: absolute;
-  bottom: 5px;
-  right: 9px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-.forma-app .map-summary {
-  position: absolute;
-  bottom: 54px;
-  left: 18px;
-  background: color-mix(in oklch, var(--foreground) 94%, transparent);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--muted-foreground);
-  box-shadow: 0 3px 12px color-mix(in oklch, var(--foreground) 2%, transparent);
-}
-.forma-app .map-summary strong {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--foreground);
-}
-.forma-app .map-summary span {
-  display: block;
-  font-size: 11px;
-  margin-top: 3px;
-  color: var(--muted-foreground);
-}
-.forma-app .summary-separator {
-  height: 24px;
-  width: 1px;
-  background: var(--muted);
-  margin: 0 1px;
-}
-.forma-app .map-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 14px 18px;
-  color: var(--muted-foreground);
-  font-size: 11px;
-}
-.forma-app .map-footer > span,
-.forma-app .map-footer button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.forma-app .map-footer button {
-  font-size: 11px;
-  color: var(--muted-foreground);
-  padding: 0;
-}
-.forma-app .legend-line {
-  width: 16px;
-  height: 2px;
-  background: var(--primary);
-  display: block;
-}
-.forma-app .plan-panel {
-  padding: 20px 18px 13px;
-  display: flex;
-  flex-direction: column;
+  gap: 8px;
 }
 .forma-app .plan-panel-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 11px;
+  gap: 12px;
 }
-.forma-app .plan-panel-header .eyebrow {
-  margin: 0;
-  font-size: 11px;
-  letter-spacing: 1.4px;
+.forma-app .eyebrow,
+.forma-app .order-id {
+  font-size: 12px;
+  color: var(--muted-foreground);
 }
 .forma-app .order-id {
-  font-size: 11px;
-  background: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 4px 5px;
-  color: var(--muted-foreground);
-  font-variant-numeric: tabular-nums;
-}
-.forma-app .plan-panel > h2 {
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 17px;
-  letter-spacing: -0.5px;
+  color: var(--foreground);
+  font-weight: 500;
 }
 .forma-app .order-meta {
   display: flex;
-  align-items: center;
-  gap: 9px;
+  flex-wrap: wrap;
+  gap: 8px 16px;
   color: var(--muted-foreground);
-  font-size: 11px;
-  margin-top: 10px;
+  font-size: 12px;
 }
-.forma-app .order-meta span {
+.forma-app .order-meta > span {
   display: flex;
   align-items: center;
-  gap: 4px;
-}
-.forma-app .order-meta svg {
-  stroke-width: 1.5;
+  gap: 6px;
 }
 .forma-app .plan-options {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 8px;
-  margin: 21px 0 18px;
 }
 .forma-app .plan-option {
-  position: relative;
-  text-align: left;
+  transition: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  height: auto;
+  min-height: 82px;
+  gap: 12px;
+  padding: 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 11px 11px 10px;
-  transition:
-    background 0.2s,
-    border 0.2s;
-}
-.forma-app .plan-option:hover {
-  background: var(--muted);
-  border-color: var(--border);
+  border-radius: var(--radius-lg);
+  white-space: normal;
+  text-align: left;
 }
 .forma-app .plan-option.selected {
-  background: var(--muted);
-  border-color: var(--border);
-  box-shadow: 0 0 0 0.5px
-    color-mix(in oklch, var(--foreground) 100%, transparent);
+  border-color: var(--foreground);
+  background: var(--secondary);
+}
+.forma-app .plan-option.infeasible {
+  border-style: dashed;
 }
 .forma-app .plan-option-top {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
 }
 .forma-app .plan-option-top strong {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--foreground);
-}
-.forma-app .plan-option.selected strong {
-  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 500;
 }
 .forma-app .radio-mark {
-  border: 1px solid var(--border);
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--muted-foreground);
   border-radius: 50%;
   display: grid;
   place-items: center;
-  flex-shrink: 0;
-}
-.forma-app .selected .radio-mark {
-  border-color: var(--border);
 }
 .forma-app .radio-mark > span {
-  background: var(--primary);
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
+  background: var(--foreground);
 }
 .forma-app .recommended-label {
   margin-left: auto;
-  background: var(--muted);
-  border-radius: 4px;
-  font-size: 6.5px;
-  letter-spacing: 0.1px;
-  padding: 3px 5px;
   color: var(--muted-foreground);
-}
-.forma-app .plan-option-top > svg {
-  margin-left: auto;
-  color: var(--muted-foreground);
+  font-size: 11px;
 }
 .forma-app .plan-option-values {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 9px;
-  padding-left: 19px;
-  font-size: 12px;
-  color: var(--foreground);
-  letter-spacing: -0.2px;
-}
-.forma-app .plan-option.selected .plan-option-values {
-  color: var(--foreground);
-  font-weight: 500;
-}
-.forma-app .option-divider {
-  height: 10px;
-  width: 1px;
-  background: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
 }
 .forma-app .plan-option-values small {
-  font-size: 11px;
   margin-left: auto;
-  font-weight: 500;
-  letter-spacing: 0;
-}
-.forma-app .on-time {
-  color: var(--risk-low);
+  font-size: 11px;
 }
 .forma-app .late {
-  color: var(--risk-medium) !important;
+  color: var(--destructive);
+}
+.forma-app .on-time {
+  color: var(--foreground);
+}
+.forma-app .option-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--border);
 }
 .forma-app .plan-confidence {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 9px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  margin-bottom: 15px;
-}
-.forma-app .plan-confidence strong {
-  color: var(--foreground);
+  gap: 6px;
   font-size: 12px;
-  font-weight: 600;
+  color: var(--muted-foreground);
 }
-.forma-app .info-tooltip {
-  display: inline-grid;
-  place-items: center;
-  font-family: inherit;
-  font-size: 11px;
-  border: 1px solid var(--border);
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-left: 3px;
-  cursor: help;
+.forma-app .plan-confidence > span {
+  display: flex;
+  align-items: center;
+}
+.forma-app .plan-confidence > strong {
+  color: var(--foreground);
+  font-weight: 500;
+}
+.forma-app .confidence-track,
+.forma-app .utilization-bar {
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--muted);
 }
 .forma-app .confidence-track {
-  width: 100%;
-  height: 4px;
-  border-radius: 4px;
-  background: var(--muted);
-  overflow: hidden;
+  grid-column: 1 / -1;
 }
-.forma-app .confidence-track i {
+.forma-app .confidence-track > i,
+.forma-app .utilization-bar > i {
   display: block;
   height: 100%;
-  background: var(--primary);
-  border-radius: 4px;
-  transition: width 0.25s;
+  background: var(--muted-foreground);
 }
 .forma-app .plan-delivery {
   display: flex;
-  gap: 7px;
   align-items: center;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  border-top: 1px solid var(--border);
-  padding-top: 14px;
-  margin-bottom: 17px;
+  gap: 8px;
+  font-size: 12px;
 }
 .forma-app .plan-delivery strong {
   font-weight: 500;
-  color: var(--foreground);
-  margin-left: 3px;
-}
-.forma-app .assign-button {
-  width: 100%;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border: 1px solid var(--border);
-  justify-content: space-between;
-  font-size: 12px;
-  padding: 12px 13px;
-  margin-top: auto;
-}
-.forma-app .assign-button:hover {
-  background: color-mix(in oklch, var(--primary) 80%, transparent);
-}
-.forma-app .assign-button.confirmed {
-  background: var(--muted);
-  color: var(--foreground);
-  border-color: var(--border);
-  opacity: 1;
 }
 .forma-app .plan-footnote {
-  font-size: 11px;
-  color: var(--muted-foreground);
   text-align: center;
-  margin-top: 9px;
+  color: var(--muted-foreground);
+  font-size: 11px;
 }
+.forma-app .route-availability,
 .forma-app .infeasible-note {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--destructive);
+}
+.forma-app .route-availability > svg {
+  display: inline;
+  margin-right: 4px;
+}
+.forma-app .map-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
   font-size: 11px;
   color: var(--muted-foreground);
-  margin-bottom: 12px;
-  line-height: 1.5;
 }
-.forma-app .parts-card {
-  margin-bottom: 25px;
-}
-.forma-app .parts-tabs {
+.forma-app .map-footer > span {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--border);
-  padding: 0 20px;
-  gap: 24px;
+  gap: 6px;
 }
-.forma-app .parts-tabs > button {
+.forma-app .map-footer button {
+  margin-left: auto;
+}
+.forma-app .legend-line {
+  width: 16px;
+  height: 2px;
+  background: var(--foreground);
+}
+.forma-app .planning-map-frame {
+  height: 420px;
+  position: relative;
+  isolation: isolate;
+  background: var(--muted);
+}
+.forma-app .planning-map-frame .leaflet-container {
+  height: 100%;
+  background: var(--muted);
+  font-family: inherit;
+  z-index: 0;
+}
+.forma-app .planning-map-status {
+  position: absolute;
+  bottom: 25px;
+  left: 12px;
+  right: 12px;
+  z-index: 800;
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  background: var(--card);
+  color: var(--muted-foreground);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  pointer-events: none;
+}
+.forma-app .planning-map-frame [data-slot="button"] {
+  min-width: 44px;
+  min-height: 44px;
+}
+.forma-app .planning-map-frame .leaflet-marker-icon {
+  width: 44px !important;
+  height: 44px !important;
+  background: transparent;
+  border: 0;
+}
+.forma-app .planning-map-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  position: relative;
+}
+.forma-app .marker-dot {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--card);
+  border-radius: 50%;
+  background: var(--muted-foreground);
+  box-shadow: 0 0 0 1px var(--muted-foreground);
+}
+.forma-app .selected .marker-dot {
+  background: var(--foreground);
+  box-shadow: 0 0 0 2px var(--foreground);
+}
+.forma-app .blocked .marker-dot {
+  background: var(--destructive);
+  box-shadow: 0 0 0 1px var(--destructive);
+}
+.forma-app .marker-label {
+  position: absolute;
+  top: 31px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 2px 4px;
+  background: var(--card);
+  color: var(--foreground);
+  border-radius: 3px;
+  font-size: 10px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.forma-app .leaflet-popup-content-wrapper,
+.forma-app .leaflet-popup-tip {
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+.forma-app .planning-map-popup {
+  width: 280px;
+  padding: 0;
+  font-family: inherit;
+  box-shadow: none;
+  border: 0;
+}
+
+.forma-app .planning-map-popup .leaflet-popup-close-button {
+  width: 44px;
+  height: 44px;
+  padding: 8px;
+  color: var(--foreground);
+}
+.forma-app .leaflet-control-attribution {
+  max-width: 100%;
+  font-size: 10px;
+  background: var(--card);
+  color: var(--muted-foreground);
+}
+.forma-app .leaflet-control-attribution a {
+  color: inherit;
+  text-decoration: underline;
+}
+.forma-app .map-route-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 16px;
+  padding: 16px 20px 8px;
   font-size: 12px;
   color: var(--muted-foreground);
-  padding: 14px 0 12px;
-  border-bottom: 2px solid transparent;
+}
+.forma-app .map-route-summary strong {
+  color: var(--foreground);
+  font-weight: 500;
+}
+.forma-app .map-route-list {
+  display: grid;
+  gap: 8px;
+  padding: 8px 20px 16px;
+  font-size: 12px;
+}
+.forma-app .map-route-list li {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.forma-app .map-route-list li > span {
+  color: var(--muted-foreground);
+}
+.forma-app .map-route-list strong {
+  font-weight: 500;
+}
+.forma-app .map-locations {
+  border-top: 1px solid var(--border);
+}
+.forma-app .map-locations summary {
+  min-height: 44px;
+  padding: 14px 20px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.forma-app .parts-tabs,
+.forma-app .table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin-bottom: -1px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
 }
-.forma-app .parts-tabs > button.active {
-  border-color: var(--border);
-  color: var(--foreground);
-  font-weight: 600;
-}
-.forma-app .parts-tabs > button span {
-  font-size: 11px;
-  padding: 3px 6px;
-  background: var(--muted);
+.forma-app .parts-tabs button span {
   color: var(--muted-foreground);
-  border-radius: 4px;
-  font-weight: 400;
+  font-size: 11px;
 }
 .forma-app .parts-card-note {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   margin-left: auto;
-  font-size: 11px;
   color: var(--muted-foreground);
+  font-size: 11px;
 }
 .forma-app .parts-flow {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1.1fr;
-  padding: 18px 20px;
-  gap: 13px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  padding: 20px;
 }
 .forma-app .part-cell {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  border-right: 1px solid var(--border);
-  padding-right: 8px;
+  min-width: 0;
 }
-.forma-app .part-icon {
-  flex-shrink: 0;
-  color: var(--muted-foreground);
-  background: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  width: 35px;
-  height: 35px;
-  display: grid;
-  place-items: center;
-}
-.forma-app .part-icon.fingers {
-  background: var(--muted);
-  color: var(--muted-foreground);
-  border-color: var(--border);
-}
-.forma-app .part-icon.actuator {
-  background: var(--muted);
-  color: var(--muted-foreground);
-  border-color: var(--border);
+.forma-app .part-cell strong,
+.forma-app .part-cell span,
+.forma-app .part-cell small {
+  display: block;
 }
 .forma-app .part-cell strong,
 .forma-app .assembly-cell strong {
-  font-size: 11px;
-  font-weight: 600;
-  display: block;
-  margin: 1px 0 5px;
-  color: var(--foreground);
+  font-weight: 500;
+  font-size: 13px;
 }
-.forma-app .part-cell span:not(.tiny-dot),
-.forma-app .assembly-cell span:not(.assembly-icon) {
-  display: block;
-  font-size: 7.5px;
+.forma-app .part-cell span,
+.forma-app .assembly-cell span {
   color: var(--muted-foreground);
-}
-.forma-app .part-cell i {
-  font-style: normal;
-  padding: 0 3px;
-  color: var(--muted-foreground);
+  font-size: 12px;
+  margin-top: 6px;
 }
 .forma-app .part-cell small {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
   color: var(--muted-foreground);
+  font-size: 12px;
   margin-top: 8px;
 }
-.forma-app .part-cell .tiny-dot {
-  width: 3px;
-  height: 3px;
+.forma-app .part-cell small svg {
+  display: inline;
+  margin: 0 6px;
 }
 .forma-app .assembly-cell {
+  grid-column: 1 / -1;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.forma-app .assembly-cell > div {
   display: flex;
-  align-items: center;
-  gap: 9px;
-  padding-left: 3px;
-}
-.forma-app .assembly-icon {
-  color: var(--muted-foreground);
-  background: var(--muted);
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-.forma-app .assembly-cell span {
-  line-height: 1.6;
-}
-.forma-app .orders-card {
-  margin-bottom: 23px;
-}
-.forma-app .orders-card .card-header {
-  padding-bottom: 15px;
-}
-.forma-app .table-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  align-items: baseline;
 }
 .forma-app .table-tabs {
   display: flex;
-  gap: 22px;
+  flex-wrap: wrap;
+  gap: 4px;
 }
-.forma-app .table-tabs > button {
-  border-bottom: 2px solid transparent;
-  font-size: 12px;
+.forma-app .table-tabs button > span {
   color: var(--muted-foreground);
-  padding: 12px 0 13px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: -1px;
-}
-.forma-app .table-tabs > button.active {
-  border-color: var(--border);
-  color: var(--foreground);
-  font-weight: 600;
-}
-.forma-app .table-tabs span {
-  font-size: 11px;
-  background: var(--muted);
-  padding: 2px 5px;
-  color: var(--muted-foreground);
-  border-radius: 4px;
 }
 .forma-app .table-sort {
   display: flex;
-  gap: 5px;
   align-items: center;
-  font-size: 11px;
+  gap: 6px;
+  margin-left: auto;
   color: var(--muted-foreground);
+  font-size: 11px;
+}
+.forma-app .table-scroll {
+  overflow-x: auto;
 }
 .forma-app table {
-  width: 100%;
   border-collapse: collapse;
+  width: 100%;
+  min-width: 680px;
+  font-size: 13px;
   text-align: left;
 }
 .forma-app th {
-  background: var(--muted);
-  color: var(--muted-foreground);
   font-size: 11px;
   font-weight: 500;
-  padding: 11px 20px;
-  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+  background: var(--muted);
+  padding: 12px 20px;
 }
 .forma-app td {
-  padding: 13px 20px;
-  border-bottom: 1px solid var(--border);
-  font-size: 12px;
-  color: var(--muted-foreground);
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
 }
 .forma-app td small {
   display: block;
-  font-size: 11px;
   color: var(--muted-foreground);
+  font-size: 11px;
   margin-top: 4px;
 }
-.forma-app td:last-child {
-  width: 20px;
-  color: var(--muted-foreground);
-  padding-left: 0;
-}
-.forma-app tbody tr {
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.forma-app tbody tr:hover {
-  background: var(--muted);
-}
 .forma-app .selected-row {
-  background: var(--card);
+  background: var(--secondary);
 }
 .forma-app .order-link {
   padding: 0;
-  color: var(--foreground);
-  font-weight: 600;
-  font-size: 12px;
-}
-.forma-app .order-link:hover {
-  text-decoration: underline;
+  font-size: 13px;
 }
 .forma-app .table-product {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--muted-foreground);
 }
-.forma-app .table-product svg {
-  color: var(--muted-foreground);
-  stroke-width: 1.4;
+.forma-app .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.forma-app .status-badge.action {
+  color: var(--destructive);
+}
+.forma-app .tiny-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+  border-radius: 50%;
 }
 .forma-app .table-footer {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
-  font-size: 11px;
-  color: var(--muted-foreground);
+  align-items: center;
+  gap: 12px;
   padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 12px;
 }
 .forma-app .table-footer > div {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-.forma-app .table-footer button {
-  width: 25px;
-  height: 25px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  display: grid;
-  place-items: center;
-  color: var(--muted-foreground);
-}
-.forma-app .table-footer button:disabled {
-  color: var(--muted-foreground);
-  cursor: default;
-}
-.forma-app .table-footer button:hover:not(:disabled) {
-  background: var(--muted);
+  gap: 8px;
 }
 .forma-app .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   text-align: center;
-  padding: 58px 24px;
-  color: var(--muted-foreground);
-}
-.forma-app .empty-state > svg {
-  margin-bottom: 13px;
+  min-height: 240px;
+  padding: 24px;
 }
 .forma-app .empty-state h3 {
-  font-family: inherit;
-  color: var(--foreground);
-  font-size: 17px;
-  font-weight: 600;
-  margin-bottom: 9px;
+  font-size: 16px;
+  font-weight: 500;
 }
 .forma-app .empty-state p {
-  font-size: 12px;
-  line-height: 1.7;
-  max-width: 380px;
-  margin: auto;
-}
-.forma-app .empty-state .button {
-  margin-top: 20px;
-}
-.forma-app .page-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: var(--muted-foreground);
-  font-size: 11px;
-  padding: 5px 0 23px;
-  gap: 15px;
-}
-.forma-app .page-footer > span:first-child {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: -0.6px;
+  color: var(--muted-foreground);
+  max-width: 360px;
+}
+.forma-app .factory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.forma-app .factory-card > div:first-child {
+  display: flex;
+  justify-content: space-between;
+}
+.forma-app .factory-card h3 {
+  font-size: 16px;
+  font-weight: 500;
+}
+.forma-app .factory-card p,
+.forma-app .factory-footer,
+.forma-app .utilization-label {
+  font-size: 12px;
   color: var(--muted-foreground);
 }
-.forma-app .page-footer > span:first-child > span:last-child {
+.forma-app .factory-footer,
+.forma-app .utilization-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.forma-app .factory-footer > span:last-child {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.forma-app .tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.forma-app .tag {
   font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0;
-  margin-left: 6px;
   color: var(--muted-foreground);
 }
-.forma-app .small-brand-mark {
-  display: block;
-  width: 9px;
-  height: 9px;
-  border: 2px solid var(--border);
-  transform: rotate(-25deg);
+.forma-app .activity-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+}
+.forma-app .card-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px;
+}
+.forma-app .card-header h2 {
+  font-size: 16px;
+  font-weight: 500;
+}
+.forma-app .card-header p {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  margin-top: 4px;
+}
+.forma-app .activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+.forma-app .activity-item p {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  margin-top: 4px;
+}
+.forma-app .activity-item time {
+  margin-left: auto;
+  color: var(--muted-foreground);
+  font-size: 11px;
 }
 .forma-app .timeline {
-  padding: 18px 22px 15px;
+  padding: 20px;
 }
 .forma-app .timeline-note {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 7px;
-  font-size: 11px;
+  gap: 8px;
+  font-size: 12px;
   color: var(--muted-foreground);
-  margin-bottom: 17px;
+  margin-bottom: 20px;
 }
 .forma-app .timeline-note > span {
   margin-left: auto;
-  font-size: 11px;
-  color: var(--muted-foreground);
 }
 .forma-app .timeline-row {
-  display: flex;
-  gap: 15px;
+  display: grid;
+  grid-template-columns: 160px 1fr 42px;
+  gap: 16px;
   align-items: center;
-  margin: 9px 0;
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-.forma-app .timeline-row > span {
-  width: 130px;
-  flex-shrink: 0;
+  margin: 12px 0;
+  font-size: 12px;
 }
 .forma-app .timeline-row > strong {
-  width: 30px;
-  text-align: right;
-  font-size: 11px;
   font-weight: 500;
+  text-align: right;
 }
 .forma-app .timeline-track {
   position: relative;
-  background: var(--muted);
-  height: 24px;
-  flex: 1;
   display: flex;
-  border-radius: 4px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+}
+.forma-app .timeline-production,
+.forma-app .timeline-assembly {
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  white-space: nowrap;
+  background: var(--secondary);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
   font-size: 11px;
 }
-.forma-app .timeline-track > div {
+.forma-app .timeline-shipping,
+.forma-app .timeline-final {
   display: flex;
   align-items: center;
   justify-content: center;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.forma-app .timeline-production {
-  background: var(--muted);
-  color: var(--muted-foreground);
-  border-radius: 4px 0 0 4px;
-}
-.forma-app .timeline-shipping {
-  background: var(--muted);
-  color: var(--muted-foreground);
-  border-radius: 0 4px 4px 0;
-}
-.forma-app .timeline-assembly {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-radius: 4px 0 0 4px;
-}
-.forma-app .timeline-final {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-radius: 0 4px 4px 0;
+  background: var(--muted-foreground);
+  color: var(--background);
+  border-radius: var(--radius-sm);
 }
 .forma-app .deadline-marker {
   position: absolute;
   top: -4px;
   bottom: -4px;
-  border-left: 1px dashed var(--border);
-  pointer-events: none;
+  border-left: 1px dashed var(--foreground);
 }
 .forma-app .timeline-scale {
   display: flex;
   justify-content: space-between;
-  margin-left: 145px;
-  margin-right: 45px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  margin-top: 10px;
-}
-.forma-app .facility-popover {
-  position: absolute;
-  right: 18px;
-  top: 65px;
-  width: 235px;
-  max-width: calc(100% - 36px);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  box-shadow: 0 7px 35px color-mix(in oklch, var(--foreground) 11%, transparent);
-  padding: 17px;
-  z-index: 10;
-}
-.forma-app .popover-close {
-  position: absolute;
-  right: 8px;
-  top: 8px;
-}
-.forma-app .facility-popover .eyebrow {
-  font-size: 11px;
-  margin-bottom: 8px;
-}
-.forma-app .facility-popover h3 {
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--foreground);
-}
-.forma-app .facility-popover p {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  margin: 7px 0 14px;
-}
-.forma-app .tag-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-.forma-app .tag {
-  display: inline-flex;
-  padding: 4px 6px;
-  background: var(--muted);
+  padding-left: 176px;
+  margin-top: 16px;
   color: var(--muted-foreground);
   font-size: 11px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-}
-.forma-app .tag.neutral {
-  background: var(--muted);
-  color: var(--muted-foreground);
-  border-color: var(--border);
-}
-.forma-app .facility-stats {
-  display: flex;
-  gap: 19px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  border-top: 1px solid var(--border);
-  margin-top: 14px;
-  padding-top: 12px;
-}
-.forma-app .facility-stats b {
-  color: var(--foreground);
-  font-weight: 600;
-  font-size: 12px;
-  margin-right: 3px;
-}
-.forma-app .compatibility-note {
-  display: flex;
-  gap: 6px;
-  align-items: flex-start;
-  margin-top: 13px;
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--risk-low);
-}
-.forma-app .compatibility-note svg {
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.forma-app .factory-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 25px;
-}
-.forma-app .factory-card {
-  padding: 22px;
-}
-.forma-app .factory-card > div:first-child {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 17px;
-}
-.forma-app .factory-avatar {
-  display: grid;
-  place-items: center;
-  background: var(--muted);
-  color: var(--muted-foreground);
-  width: 38px;
-  height: 38px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-.forma-app .factory-card h3 {
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--foreground);
-}
-.forma-app .factory-card > p {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  margin-top: 5px;
-  margin-bottom: 16px;
-}
-.forma-app .utilization-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  margin-top: 22px;
-}
-.forma-app .utilization-label strong {
-  font-weight: 500;
-  color: var(--muted-foreground);
-}
-.forma-app .utilization-bar {
-  height: 4px;
-  background: var(--muted);
-  border-radius: 4px;
-  margin-top: 8px;
-  overflow: hidden;
-}
-.forma-app .utilization-bar i {
-  display: block;
-  height: 100%;
-  background: var(--primary);
-  border-radius: 4px;
-}
-.forma-app .factory-footer {
-  display: flex;
-  justify-content: space-between;
-  border-top: 1px solid var(--border);
-  padding-top: 14px;
-  margin-top: 20px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-.forma-app .factory-footer > span:last-child {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-.forma-app .activity-card {
-  margin-bottom: 25px;
-}
-.forma-app .activity-item {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 22px;
-  border-top: 1px solid var(--border);
-}
-.forma-app .event-icon {
-  display: grid;
-  place-items: center;
-  background: var(--muted);
-  border-radius: var(--radius-md);
-  width: 38px;
-  height: 38px;
-  color: var(--muted-foreground);
-}
-.forma-app .activity-item strong {
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--foreground);
-}
-.forma-app .activity-item p {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  margin-top: 6px;
-}
-.forma-app .activity-item time {
-  margin-left: auto;
-  color: var(--muted-foreground);
-  font-size: 12px;
-}
-.forma-app .modal-backdrop,
-.forma-app .drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  background: color-mix(in oklch, var(--foreground) 30%, transparent);
-  backdrop-filter: blur(4px);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  animation: var(--animate-backdrop-in);
-}
-.forma-app .confirm-modal,
-.forma-app .settings-modal {
-  position: relative;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  box-shadow: 0 30px 100px
-    color-mix(in oklch, var(--foreground) 19%, transparent);
-  width: 470px;
-  max-width: 100%;
-  padding: 34px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-.forma-app .modal-close {
-  position: absolute;
-  right: 15px;
-  top: 15px;
-}
-.forma-app .icon-button {
-  display: grid;
-  place-items: center;
-  padding: 6px;
-  color: var(--muted-foreground);
-  border-radius: var(--radius-md);
-}
-.forma-app .icon-button:hover {
-  background: var(--muted);
-  color: var(--foreground);
-}
-.forma-app .modal-icon {
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-2xl);
-  width: 52px;
-  height: 52px;
-  background: var(--muted);
-  border: 1px solid var(--border);
-  color: var(--muted-foreground);
-  margin-bottom: 25px;
-}
-.forma-app .confirm-modal h2,
-.forma-app .settings-modal h2 {
-  font-family: inherit;
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: -1px;
-  line-height: 1.35;
-  color: var(--foreground);
-  margin: 7px 0 12px;
-}
-.forma-app .confirm-modal > p,
-.forma-app .settings-modal > p {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  line-height: 1.7;
 }
 .forma-app .confirm-route {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 5px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  background: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 12px 9px;
-  margin: 22px 0 24px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  font-size: 12px;
 }
-.forma-app .confirm-route strong {
-  font-weight: 600;
-  color: var(--foreground);
+.forma-app .cost-breakdown {
+  display: grid;
+  gap: 14px;
+  font-size: 13px;
 }
 .forma-app .cost-breakdown > div {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 20px;
+}
+.forma-app .cost-breakdown > div > span {
   color: var(--muted-foreground);
-  margin: 14px 0;
 }
 .forma-app .cost-breakdown strong {
-  font-weight: 600;
-  color: var(--foreground);
+  font-weight: 500;
+  white-space: nowrap;
 }
-.forma-app .cost-breakdown .cost-total {
+.forma-app .cost-total {
+  padding-top: 14px;
   border-top: 1px solid var(--border);
-  margin: 18px 0 22px;
-  padding-top: 17px;
-  font-size: 13px;
-  color: var(--muted-foreground);
 }
 .forma-app .cost-total strong {
-  font-family: inherit;
-  font-size: 22px;
-  letter-spacing: -0.7px;
-  line-height: 1;
-  color: var(--foreground);
+  font-size: 18px;
 }
 .forma-app .arrival-callout {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 14px;
-  background: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--muted-foreground);
-  margin-bottom: 23px;
+  gap: 12px;
+  font-size: 13px;
 }
 .forma-app .arrival-callout strong {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted-foreground);
   display: block;
+  font-weight: 500;
 }
 .forma-app .arrival-callout span {
-  font-size: 11px;
   display: block;
-  color: var(--muted-foreground);
+  font-size: 12px;
   margin-top: 4px;
-}
-.forma-app .arrival-callout.late {
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  border-color: color-mix(in oklch, var(--risk-medium) 25%, transparent);
-}
-.forma-app .arrival-callout.late strong,
-.forma-app .arrival-callout.late span {
-  color: var(--risk-medium);
-}
-.forma-app .modal-confirm {
-  width: 100%;
-  justify-content: space-between;
-}
-.forma-app .confirm-modal > .modal-footnote,
-.forma-app .settings-modal > .modal-footnote {
-  font-size: 11px;
-  text-align: center;
-  margin: 13px 0 0;
-  color: var(--muted-foreground);
 }
 .forma-app .late-consent {
   display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  font-size: 12px;
-  color: var(--risk-medium);
-  line-height: 1.6;
-  margin: 0 0 20px;
+  align-items: center;
+  min-height: 44px;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.5;
 }
-.forma-app .late-consent input {
-  accent-color: var(--risk-medium);
-  margin-top: 3px;
+.forma-app .late-consent [data-slot="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
-.forma-app .settings-modal {
-  padding-top: 41px;
+.forma-app .settings-details {
+  display: grid;
+  gap: 12px;
+  font-size: 13px;
 }
-.forma-app .settings-modal dl {
-  margin: 24px 0;
-}
-.forma-app .settings-modal dl > div {
+.forma-app .settings-details > div {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-  padding: 13px 0;
-  font-size: 12px;
-  color: var(--muted-foreground);
-  gap: 15px;
+  gap: 8px;
 }
-.forma-app .settings-modal dd {
-  margin: 0;
-  text-align: right;
+.forma-app .settings-details dt {
   color: var(--muted-foreground);
-}
-.forma-app .settings-modal .button {
-  width: 100%;
-  margin-top: 10px;
 }
 .forma-app .toast {
   position: fixed;
-  bottom: 25px;
-  left: calc(50% + 109px);
+  bottom: 20px;
+  left: 50%;
   transform: translateX(-50%);
-  z-index: 200;
+  z-index: 50;
   display: flex;
   align-items: center;
   gap: 12px;
-  max-width: calc(100vw - 40px);
-  background: var(--primary);
-  color: var(--muted-foreground);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 12px 16px;
+  background: var(--popover);
+  color: var(--popover-foreground);
   border: 1px solid var(--border);
-  box-shadow: 0 7px 35px color-mix(in oklch, var(--foreground) 17%, transparent);
-  border-radius: var(--radius-2xl);
-  padding: 15px 17px;
-  font-size: 12px;
-  animation: forma-toastIn 0.25s ease;
+  border-radius: var(--radius-lg);
+  font-size: 13px;
 }
 .forma-app .toast > svg {
-  color: var(--muted-foreground);
   flex-shrink: 0;
 }
-.forma-app .toast > button {
-  color: var(--muted-foreground);
-  padding: 3px;
-}
-.forma-app .drawer-backdrop {
-  justify-content: flex-end;
-  padding: 0;
-  backdrop-filter: blur(2px);
-}
-.forma-app .assistant-drawer {
-  width: 440px;
-  height: 100%;
-  background: var(--card);
-  box-shadow: -10px 0 60px
-    color-mix(in oklch, var(--foreground) 12%, transparent);
-  display: flex;
-  flex-direction: column;
-  animation: var(--animate-dock-in);
-}
-.forma-app .drawer-header {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 24px 23px;
-  border-bottom: 1px solid var(--border);
-}
-.forma-app .assistant-symbol {
-  display: grid;
-  place-items: center;
-  background: var(--muted);
-  border: 1px solid var(--border);
-  color: var(--muted-foreground);
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-2xl);
-}
-.forma-app .drawer-header > div:nth-child(2) {
-  flex: 1;
-}
-.forma-app .drawer-header h2 {
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.4px;
-  color: var(--foreground);
-}
-.forma-app .drawer-header p {
-  font-size: 11px;
-  color: var(--muted-foreground);
-  margin-top: 5px;
-}
 .forma-app .assistant-order {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 13px 24px;
-  background: var(--muted);
+  padding: 16px 24px;
   border-bottom: 1px solid var(--border);
-  color: var(--muted-foreground);
-  font-size: 11px;
-}
-.forma-app .assistant-order strong {
-  font-weight: 600;
+  font-size: 12px;
   color: var(--muted-foreground);
 }
 .forma-app .chat-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 30px 24px;
-}
-.forma-app .chat-welcome {
-  padding-top: 23px;
-}
-.forma-app .large-spark {
-  display: grid;
-  place-items: center;
-  background: radial-gradient(circle, var(--muted), var(--muted));
-  border-radius: var(--radius-2xl);
-  width: 62px;
-  height: 62px;
-  color: var(--muted-foreground);
-  margin-bottom: 22px;
+  padding: 24px;
 }
 .forma-app .chat-welcome h3 {
-  font-family: inherit;
-  font-size: 28px;
-  line-height: 1.4;
-  letter-spacing: -1px;
+  font-size: 18px;
   font-weight: 500;
-  color: var(--foreground);
 }
-.forma-app .chat-welcome p {
-  font-size: 12px;
-  line-height: 1.9;
+.forma-app .chat-welcome > p {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.6;
   color: var(--muted-foreground);
-  margin-top: 17px;
 }
 .forma-app .suggested-prompts {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 30px;
+  display: grid;
+  gap: 8px;
+  margin-top: 24px;
 }
 .forma-app .suggested-prompts button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
+  height: auto;
+  min-height: 44px;
+  padding: 12px;
+  white-space: normal;
   text-align: left;
-  border: 1px solid var(--border);
-  background: var(--card);
-  border-radius: var(--radius-2xl);
-  padding: 15px;
+  justify-content: space-between;
   font-size: 12px;
-  color: var(--muted-foreground);
-  line-height: 1.6;
-}
-.forma-app .suggested-prompts button:hover {
-  border-color: var(--border);
-  background: var(--muted);
 }
 .forma-app .chat-message {
-  margin-bottom: 24px;
-  display: flex;
-  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 1.7;
 }
 .forma-app .chat-message p {
   white-space: pre-wrap;
-  font-size: 12px;
-  line-height: 1.8;
-  color: var(--muted-foreground);
 }
 .forma-app .chat-message.user {
+  padding: 12px 16px;
   background: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 10px 10px 0 10px;
-  padding: 12px 15px;
-  margin-left: 32px;
+  border-radius: var(--radius-lg);
 }
-.forma-app .chat-message.user p {
-  color: var(--foreground);
-  font-size: 12px;
-}
-.forma-app .chat-avatar {
-  flex-shrink: 0;
-  width: 25px;
-  height: 25px;
-  display: grid;
-  place-items: center;
-  background: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--muted-foreground);
-  margin-top: 2px;
+.forma-app .chat-message button {
+  margin-top: 12px;
 }
 .forma-app .chat-message small {
   display: block;
+  color: var(--muted-foreground);
+  margin-top: 8px;
   font-size: 11px;
-  color: var(--muted-foreground);
-  margin-top: 10px;
-}
-.forma-app .chat-plan-button {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid var(--border);
-  background: var(--muted);
-  color: var(--muted-foreground);
-  padding: 10px;
-  border-radius: var(--radius-md);
-  font-size: 12px;
-  margin-top: 13px;
 }
 .forma-app .assistant-thinking {
   display: flex;
@@ -2224,2166 +1113,199 @@
   color: var(--muted-foreground);
 }
 .forma-app .chat-error {
+  color: var(--destructive);
   font-size: 12px;
-  color: var(--risk-medium);
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  border: 1px solid color-mix(in oklch, var(--risk-medium) 25%, transparent);
-  border-radius: var(--radius-md);
-  line-height: 1.7;
-  padding: 13px;
-  margin-top: 15px;
+  line-height: 1.6;
 }
 .forma-app .chat-form {
+  padding: 16px 24px;
   border-top: 1px solid var(--border);
-  padding: 18px 22px 14px;
-  background: var(--card);
 }
 .forma-app .chat-form > div {
   display: flex;
   align-items: center;
-  gap: 5px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  border-radius: var(--radius-2xl);
-  padding: 6px 7px 6px 13px;
-}
-.forma-app .chat-form input {
-  border: 0;
-  width: 100%;
-  min-width: 0;
-  padding: 6px 0;
-  background: none;
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-.forma-app .chat-form input::placeholder {
-  color: var(--muted-foreground);
-}
-.forma-app .chat-form button {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  width: 31px;
-  height: 31px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-md);
-  flex-shrink: 0;
-}
-.forma-app .chat-form button:disabled {
-  background: var(--muted);
-  color: var(--muted-foreground);
+  gap: 8px;
 }
 .forma-app .chat-form > p {
-  font-size: 11px;
   color: var(--muted-foreground);
-  text-align: center;
+  font-size: 11px;
   margin-top: 10px;
 }
-.forma-app .spin {
-  animation: forma-spin 1s linear infinite;
-}
-@keyframes forma-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes forma-fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes forma-slideIn {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-@keyframes forma-toastIn {
-  from {
-    opacity: 0;
-    bottom: 15px;
-  }
-  to {
-    opacity: 1;
-    bottom: 25px;
-  }
-}
-
-@media (min-width: 1600px) {
+@media (max-width: 1200px) {
   .forma-app .planning-grid {
-    grid-template-columns: minmax(0, 1fr) 340px;
-  }
-  .forma-app .network-map {
-    height: 440px;
+    grid-template-columns: minmax(0, 1fr);
   }
   .forma-app .plan-options {
-    gap: 11px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .forma-app .plan-option {
-    padding: 14px;
+  .forma-app .plan-option-top {
+    flex-wrap: wrap;
   }
   .forma-app .plan-option-values {
-    font-size: 14px;
-  }
-  .forma-app .plan-option-top strong {
-    font-size: 12px;
-  }
-  .forma-app .plan-panel {
-    padding: 24px;
-  }
-  .forma-app .plan-confidence {
-    margin-top: 5px;
-  }
-  .forma-app .metric-card {
-    padding: 20px 24px;
-  }
-  .forma-app .metric-value {
-    font-size: 34px;
-  }
-  .forma-app .plan-panel > h2 {
-    font-size: 20px;
-  }
-  .forma-app .plan-options {
-    margin: 25px 0;
+    flex-wrap: wrap;
   }
   .forma-app .recommended-label {
-    font-size: 11px;
+    margin-left: 0;
   }
 }
-@media (max-width: 1200px) {
-  .forma-app .sidebar {
-    width: 190px;
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-  .forma-app .main-shell {
-    margin-left: 190px;
-    width: calc(100% - 190px);
-  }
+@media (max-width: 760px) {
   .forma-app .workspace-content {
-    padding: 25px 22px 0;
+    padding: 16px;
+    gap: 20px;
   }
   .forma-app .topbar {
-    padding: 0 22px;
+    padding: 8px 16px;
+    gap: 8px;
   }
-  .forma-app .workspace-picker {
-    font-size: 11px;
+  .forma-app .planning-view-nav button,
+  .forma-app .parts-tabs button,
+  .forma-app .table-tabs button {
+    transition: none;
   }
-  .forma-app .workspace-picker small {
-    font-size: 11px;
+  .forma-app .planning-view-nav {
+    width: 100%;
   }
-  .forma-app .sidebar nav button {
+  .forma-app .planning-view-nav button {
     font-size: 12px;
-    padding-left: 12px;
+    padding-inline: 10px;
   }
-  .forma-app .brand {
-    font-size: 32px;
+  .forma-app .planning-view-nav button > svg {
+    display: none;
   }
-  .forma-app .planning-grid {
-    grid-template-columns: minmax(0, 1fr) 280px;
-    gap: 16px;
+  .forma-app .topbar-actions {
+    width: 100%;
   }
-  .forma-app .metric-grid {
+  .forma-app .search-field {
+    flex: 1;
+    width: auto;
+  }
+  .forma-app .page-heading {
+    flex-wrap: wrap;
     gap: 12px;
   }
+  .forma-app .page-heading h1 {
+    font-size: 24px;
+  }
+  .forma-app .action-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .forma-app .order-action {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 8px;
+  }
+  .forma-app .order-action + .order-action {
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .forma-app .action-order,
+  .forma-app .order-action h3,
+  .forma-app .order-action p {
+    grid-column: 1;
+  }
+  .forma-app .order-action button {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    width: 100px;
+    white-space: normal;
+    height: auto;
+    padding: 10px;
+    font-size: 12px;
+  }
+  .forma-app .order-action button > svg {
+    display: none;
+  }
+  .forma-app .action-order > span {
+    display: none;
+  }
+  .forma-app .order-action p {
+    font-size: 12px;
+  }
+  .forma-app .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .forma-app .metric-card {
-    padding: 15px 13px;
+    padding: 12px;
   }
   .forma-app .metric-value {
     font-size: 26px;
   }
-  .forma-app .metric-value .attention-pill {
-    font-size: 6.5px;
-    padding: 4px 5px;
-  }
   .forma-app .metric-foot {
     font-size: 11px;
   }
-  .forma-app .card-header {
-    padding: 17px 16px;
+  .forma-app .scenario-field {
+    width: calc(50% - 8px);
   }
-  .forma-app .disruption-button {
-    font-size: 11px !important;
-    gap: 5px;
+  .forma-app .scenario-deadline {
+    width: 100%;
   }
+  .forma-app .plan-options,
+  .forma-app .factory-grid,
   .forma-app .parts-flow {
-    grid-template-columns: 1fr 1fr;
-    padding: 18px;
-    gap: 18px;
-  }
-  .forma-app .part-cell:nth-child(2) {
-    border-right: 0;
-  }
-  .forma-app .assembly-cell {
-    padding-left: 0;
-  }
-  .forma-app .map-footer > span:nth-child(2) {
-    display: none;
-  }
-  .forma-app .page-heading h1 {
-    font-size: 25px;
-  }
-  .forma-app .metric-sparkline {
-    display: none;
-  }
-  .forma-app .toast {
-    left: calc(50% + 95px);
-  }
-  .forma-app th,
-  .forma-app td {
-    padding-left: 15px;
-    padding-right: 15px;
-  }
-}
-@media (max-width: 1000px) {
-  .forma-app .sidebar {
-    width: 72px;
-    padding: 28px 10px 0;
-  }
-  .forma-app .brand {
-    padding: 0;
-    justify-content: center;
-  }
-  .forma-app .brand > span:last-child,
-  .forma-app .workspace-picker,
-  .forma-app .nav-label,
-  .forma-app .sidebar nav button span,
-  .forma-app .sidebar-bottom .copilot-promo,
-  .forma-app .settings-nav,
-  .forma-app .profile > div,
-  .forma-app .profile > .online-indicator {
-    display: none;
-  }
-  .forma-app .brand-mark {
-    width: 25px;
-    margin: 0;
-  }
-  .forma-app .sidebar nav {
-    margin-top: 44px;
-    gap: 13px;
-  }
-  .forma-app .sidebar nav button {
-    font-size: 0;
-    justify-content: center;
-    padding: 0;
-    height: 42px;
-  }
-  .forma-app .sidebar nav button svg {
-    width: 20px;
-    height: 20px;
-  }
-  .forma-app .sidebar nav .activity-dot {
-    display: none;
-  }
-  .forma-app .profile {
-    justify-content: center;
-    border-top: 0;
-    padding-bottom: 24px;
-  }
-  .forma-app .sidebar-bottom {
-    padding-top: 0;
-  }
-  .forma-app .main-shell {
-    margin-left: 72px;
-    width: calc(100% - 72px);
-  }
-  .forma-app .metric-card {
-    min-height: 118px;
-  }
-  .forma-app .metric-label {
-    font-size: 12px;
-  }
-  .forma-app .metric-value .metric-change {
-    font-size: 11px;
-  }
-  .forma-app .heading-actions .button {
-    font-size: 12px;
-    padding: 9px 11px;
-  }
-  .forma-app .page-footer > span:last-child {
-    max-width: 310px;
-    text-align: right;
-    line-height: 1.6;
-  }
-  .forma-app .toast {
-    left: calc(50% + 36px);
-  }
-}
-@media (max-width: 780px) {
-  .forma-app .topbar {
-    height: 58px;
-    padding: 0 18px;
-  }
-  .forma-app .search-field input {
-    width: 110px;
-  }
-  .forma-app .search-field kbd,
-  .forma-app .demo-badge {
-    display: none;
-  }
-  .forma-app .topbar-actions {
-    gap: 8px;
-  }
-  .forma-app .breadcrumb {
-    font-size: 12px;
-    gap: 7px;
-  }
-  .forma-app .workspace-content {
-    padding: 23px 18px 0;
-  }
-  .forma-app .page-heading {
-    align-items: flex-start;
-    margin-bottom: 22px;
-  }
-  .forma-app .page-heading h1 {
-    font-size: 24px;
-    max-width: 290px;
-  }
-  .forma-app .page-heading p {
-    font-size: 12px;
-    line-height: 1.6;
-  }
-  .forma-app .heading-actions {
-    flex-direction: column;
-    gap: 6px;
-    padding-top: 12px;
-  }
-  .forma-app .heading-actions .button {
-    padding: 7px 9px;
-    font-size: 11px;
-  }
-  .forma-app .page-heading .eyebrow {
-    font-size: 11px;
-  }
-  .forma-app .metric-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-  .forma-app .metric-card {
-    min-height: 120px;
-    padding: 16px;
-  }
-  .forma-app .metric-label {
-    font-size: 12px;
-  }
-  .forma-app .metric-value {
-    font-size: 29px;
-  }
-  .forma-app .metric-value .metric-change {
-    font-size: 11px;
-  }
-  .forma-app .metric-foot {
-    font-size: 11px;
-  }
-  .forma-app .metric-value .attention-pill {
-    font-size: 11px;
-  }
-  .forma-app .planning-grid {
     grid-template-columns: 1fr;
   }
-  .forma-app .network-map {
-    height: 390px;
-  }
-  .forma-app .plan-panel {
-    padding: 22px;
-  }
-  .forma-app .plan-options {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    margin: 18px 0;
-    gap: 9px;
-  }
-  .forma-app .plan-option {
-    padding: 12px 9px;
-  }
-  .forma-app .plan-option-top {
-    flex-wrap: wrap;
-    gap: 5px;
-    min-height: 40px;
-    align-content: flex-start;
+  .forma-app .plan-option-top,
+  .forma-app .plan-option-values {
+    flex-wrap: nowrap;
   }
   .forma-app .recommended-label {
-    margin-left: 17px;
-    display: block;
-    font-size: 11px;
-  }
-  .forma-app .plan-option-top strong {
-    font-size: 12px;
-  }
-  .forma-app .plan-option-values {
-    flex-wrap: wrap;
-    gap: 7px;
-    padding-left: 0;
-    font-size: 13px;
-  }
-  .forma-app .plan-option-values small {
-    width: 100%;
-    margin-top: 2px;
-    font-size: 11px;
-  }
-  .forma-app .plan-confidence {
-    margin-top: 3px;
-    font-size: 12px;
-  }
-  .forma-app .plan-delivery {
-    font-size: 12px;
-  }
-  .forma-app .plan-panel > h2 {
-    font-size: 20px;
-  }
-  .forma-app .order-meta {
-    font-size: 12px;
-  }
-  .forma-app .plan-footnote {
-    font-size: 11px;
-  }
-  .forma-app .assign-button {
-    padding: 13px;
-    font-size: 12px;
+    margin-left: auto;
   }
   .forma-app .risk-banner {
-    padding: 12px;
-    gap: 10px;
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
   .forma-app .risk-banner > .status-badge {
-    display: none;
+    margin-left: 32px;
   }
-  .forma-app .risk-banner strong {
-    font-size: 12px;
+  .forma-app .planning-map-frame {
+    height: 360px;
   }
-  .forma-app .risk-banner > div > span {
-    font-size: 11px;
-    line-height: 1.6;
+  .forma-app .parts-card-note {
+    width: 100%;
+    margin-left: 12px;
   }
-  .forma-app .table-scroll {
-    overflow-x: auto;
+  .forma-app .timeline-row {
+    grid-template-columns: 1fr 42px;
+    gap: 8px;
   }
-  .forma-app .table-scroll table {
-    min-width: 620px;
+  .forma-app .timeline-row > span {
+    grid-column: 1 / -1;
   }
-  .forma-app .table-tabs {
-    gap: 17px;
-  }
-  .forma-app .table-tabs > button {
-    font-size: 11px;
+  .forma-app .timeline-scale {
+    padding-left: 0;
   }
   .forma-app .table-sort {
     display: none;
   }
-  .forma-app .card-header .button {
-    font-size: 11px;
-    padding: 4px;
-  }
-  .forma-app .factory-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .forma-app .timeline-note > span {
-    display: none;
-  }
-  .forma-app .timeline-row > span {
-    width: 110px;
-    font-size: 11px;
-  }
-  .forma-app .timeline-scale {
-    margin-left: 125px;
-  }
-  .forma-app .parts-tabs {
-    gap: 20px;
-  }
-  .forma-app .parts-tabs > button {
-    font-size: 11px;
-  }
-  .forma-app .parts-tabs > button span {
-    display: none;
-  }
-  .forma-app .page-footer > span:first-child > span:last-child {
-    display: none;
-  }
-  .forma-app .page-footer > span:last-child {
-    max-width: 230px;
-    font-size: 11px;
-  }
-  .forma-app .map-caption {
-    font-size: 11px;
-  }
-  .forma-app .map-caption-count {
-    font-size: 11px;
-  }
-}
-@media (max-width: 520px) {
-  .forma-app .sidebar {
-    width: 56px;
-    padding-left: 7px;
-    padding-right: 7px;
-  }
-  .forma-app .main-shell {
-    margin-left: 56px;
-    width: calc(100% - 56px);
-  }
-  .forma-app .brand-mark {
-    transform: rotate(-25deg) scale(0.85);
-  }
-  .forma-app .sidebar nav {
-    margin-top: 35px;
-  }
-  .forma-app .sidebar nav button {
-    height: 38px;
-  }
-  .forma-app .sidebar nav button svg {
-    width: 18px;
-    height: 18px;
-  }
-  .forma-app .profile {
-    padding-bottom: 17px;
-  }
-  .forma-app .avatar {
-    width: 29px;
-    height: 29px;
-    font-size: 11px;
-  }
-  .forma-app .topbar {
-    padding: 0 13px;
-  }
-  .forma-app .breadcrumb {
-    font-size: 11px;
-  }
-  .forma-app .search-field input {
-    width: 84px;
-    font-size: 11px;
-  }
-  .forma-app .search-field {
-    gap: 4px;
-  }
-  .forma-app .search-field > svg {
-    width: 12px;
-  }
-  .forma-app .notification-button {
-    padding: 4px;
-  }
-  .forma-app .notification-button svg {
-    width: 16px;
-  }
-  .forma-app .notifications-panel {
-    width: 270px;
-    right: -5px;
-  }
-  .forma-app .topbar-actions {
-    gap: 4px;
-  }
-  .forma-app .workspace-content {
-    padding: 23px 13px 0;
-  }
-  .forma-app .page-heading {
-    display: block;
-    position: relative;
-    margin-bottom: 23px;
-  }
-  .forma-app .page-heading h1 {
-    font-size: 23px;
-    max-width: 100%;
-    letter-spacing: -0.9px;
-  }
-  .forma-app .page-heading p {
-    font-size: 12px;
-  }
-  .forma-app .heading-actions {
-    flex-direction: row;
-    margin-top: 12px;
-    padding: 0;
-  }
-  .forma-app .heading-actions .button {
-    font-size: 11px;
-    padding: 8px 10px;
-  }
-  .forma-app .metric-grid {
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  .forma-app .metric-card {
-    padding: 13px 11px;
-    min-height: 111px;
-    border-radius: var(--radius-md);
-  }
-  .forma-app .metric-label {
-    font-size: 11px;
-  }
-  .forma-app .metric-label svg {
-    width: 14px;
-  }
-  .forma-app .metric-value {
-    font-size: 25px;
-    gap: 4px;
-    margin-top: 9px;
-  }
-  .forma-app .metric-value small {
-    font-size: 12px;
-  }
-  .forma-app .metric-value .metric-change {
-    font-size: 11px;
-    margin-left: 0;
-  }
-  .forma-app .metric-value .metric-change svg {
-    width: 10px;
-  }
-  .forma-app .metric-foot {
-    font-size: 11px;
-    margin-top: 7px;
-    line-height: 1.5;
-    white-space: normal;
-    min-height: 12px;
-  }
-  .forma-app .metric-value .attention-pill {
-    font-size: 11px;
-    line-height: 1.4;
-    max-width: 45px;
-    text-align: center;
-    padding: 3px 5px;
-  }
-  .forma-app .mini-ring {
-    width: 30px;
-    height: 30px;
-    top: 3px;
-    right: 0;
-  }
-  .forma-app .mini-ring:after {
-    inset: 4px;
-  }
-  .forma-app .risk-banner {
-    margin-bottom: 16px;
-    padding: 11px 9px;
-    gap: 8px;
-  }
-  .forma-app .risk-icon {
-    width: 29px;
-    height: 29px;
-  }
-  .forma-app .risk-icon svg {
-    width: 16px;
-  }
-  .forma-app .risk-banner strong {
-    font-size: 12px;
-  }
-  .forma-app .risk-banner > div > span {
-    font-size: 11px;
-  }
-  .forma-app .card-header {
-    padding: 15px 12px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .forma-app .card-header h2 {
-    font-size: 12px;
-  }
-  .forma-app .card-header p {
-    font-size: 11px;
-  }
-  .forma-app .card-header .disruption-button {
-    margin-left: auto;
-    font-size: 11px !important;
-    padding: 6px !important;
-  }
-  .forma-app .disruption-button svg {
-    width: 12px;
-  }
-  .forma-app .network-map {
-    height: 320px;
-  }
-  .forma-app .map-svg {
-    width: 130%;
-    max-width: none;
-    margin-left: -15%;
-  }
-  .forma-app .map-caption {
-    left: 10px;
-    top: 10px;
-    font-size: 11px;
-    padding: 6px 7px;
-  }
-  .forma-app .map-caption-count {
-    display: none;
-  }
-  .forma-app .map-summary {
-    bottom: 54px;
-    left: 10px;
-    padding: 8px;
-    gap: 8px;
-  }
-  .forma-app .map-summary strong {
-    font-size: 11px;
-  }
-  .forma-app .map-summary span {
-    font-size: 11px;
-  }
-  .forma-app .map-summary > svg {
-    width: 14px;
-  }
-  .forma-app .map-legend {
-    left: 10px;
-    font-size: 11px;
-    gap: 8px;
-  }
-  .forma-app .map-footer {
-    padding: 12px;
-    font-size: 11px;
-  }
-  .forma-app .map-footer button {
-    font-size: 11px;
-  }
-  .forma-app .planning-grid {
-    gap: 14px;
-    margin-bottom: 15px;
-  }
-  .forma-app .plan-panel {
-    padding: 18px 15px;
-  }
-  .forma-app .plan-panel > h2 {
-    font-size: 19px;
-  }
-  .forma-app .order-meta {
-    font-size: 11px;
-  }
-  .forma-app .plan-option {
-    padding: 10px 7px;
-  }
-  .forma-app .plan-option-top strong {
-    font-size: 11px;
-  }
-  .forma-app .radio-mark {
-    width: 10px;
-    height: 10px;
-  }
-  .forma-app .radio-mark > span {
-    width: 4px;
-    height: 4px;
-  }
-  .forma-app .recommended-label {
-    font-size: 11px;
-    margin-left: 0;
-    padding: 3px 4px;
-  }
-  .forma-app .plan-option-values {
-    font-size: 12px;
-    gap: 5px;
-  }
-  .forma-app .plan-option-values small {
-    font-size: 11px;
-  }
-  .forma-app .plan-options {
-    gap: 6px;
-  }
-  .forma-app .plan-confidence {
-    font-size: 11px;
-  }
-  .forma-app .parts-tabs {
-    padding: 0 13px;
-    gap: 17px;
-  }
-  .forma-app .parts-tabs > button {
-    font-size: 11px;
-  }
-  .forma-app .parts-card-note {
-    font-size: 11px;
-    gap: 3px;
-  }
-  .forma-app .parts-card-note svg {
-    width: 10px;
-  }
-  .forma-app .parts-flow {
-    padding: 15px 13px;
-    gap: 16px 10px;
-  }
-  .forma-app .part-cell {
-    gap: 7px;
-  }
-  .forma-app .part-icon {
-    width: 26px;
-    height: 28px;
-    border-radius: var(--radius-md);
-  }
-  .forma-app .part-icon svg {
-    width: 16px;
-  }
-  .forma-app .part-cell strong,
-  .forma-app .assembly-cell strong {
-    font-size: 11px;
-    margin-bottom: 4px;
-  }
-  .forma-app .part-cell span:not(.tiny-dot),
-  .forma-app .assembly-cell span:not(.assembly-icon) {
-    font-size: 11px;
-  }
-  .forma-app .part-cell small {
-    font-size: 11px;
-    gap: 3px;
-  }
-  .forma-app .assembly-icon {
-    width: 26px;
-    height: 28px;
-  }
-  .forma-app .assembly-cell {
-    gap: 7px;
-  }
-  .forma-app .parts-card {
-    margin-bottom: 19px;
-  }
-  .forma-app .table-toolbar {
-    padding: 0 12px;
-  }
-  .forma-app .table-tabs {
-    gap: 14px;
-    overflow: auto;
-    white-space: nowrap;
-  }
-  .forma-app .table-tabs > button {
-    font-size: 11px;
-  }
-  .forma-app .table-tabs span {
-    font-size: 11px;
-  }
-  .forma-app .table-footer {
-    padding: 12px;
-    font-size: 11px;
-  }
-  .forma-app .table-footer > div {
-    gap: 7px;
-  }
-  .forma-app .table-footer button {
-    width: 22px;
-    height: 22px;
-  }
-  .forma-app .table-scroll table {
-    min-width: 550px;
-  }
-  .forma-app .orders-card > .card-header {
-    align-items: center;
-    flex-wrap: nowrap;
-  }
-  .forma-app .orders-card > .card-header .button {
-    font-size: 11px;
-    white-space: normal;
-    max-width: 100px;
-    line-height: 1.4;
-  }
-  .forma-app .orders-card > .card-header .button svg {
-    width: 12px;
-  }
-  .forma-app .factory-grid {
-    grid-template-columns: 1fr;
-  }
-  .forma-app .page-footer {
-    padding-bottom: 20px;
-    gap: 15px;
-  }
-  .forma-app .page-footer > span:last-child {
-    font-size: 11px;
-    max-width: 210px;
-  }
-  .forma-app .page-footer > span:first-child {
-    font-size: 12px;
-  }
-  .forma-app .timeline {
-    padding: 15px 12px;
-  }
-  .forma-app .timeline-note {
-    font-size: 11px;
-    align-items: flex-start;
-    line-height: 1.6;
-  }
-  .forma-app .timeline-note svg {
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-  .forma-app .timeline-row {
-    gap: 7px;
-  }
-  .forma-app .timeline-row > span {
-    width: 80px;
-    font-size: 11px;
-  }
-  .forma-app .timeline-row > strong {
-    width: 23px;
-    font-size: 11px;
-  }
-  .forma-app .timeline-track {
-    height: 21px;
-    font-size: 11px;
-  }
-  .forma-app .timeline-scale {
-    margin-left: 87px;
-    margin-right: 30px;
-    font-size: 11px;
-  }
-  .forma-app .modal-backdrop {
-    padding: 16px;
-  }
-  .forma-app .confirm-modal,
-  .forma-app .settings-modal {
-    padding: 29px 23px;
-    border-radius: var(--radius-2xl);
-  }
-  .forma-app .confirm-modal h2,
-  .forma-app .settings-modal h2 {
-    font-size: 23px;
-  }
-  .forma-app .confirm-route {
-    gap: 5px;
-    font-size: 11px;
-  }
-  .forma-app .confirm-modal > p,
-  .forma-app .settings-modal > p {
-    font-size: 12px;
-  }
-  .forma-app .cost-breakdown > div {
-    font-size: 12px;
-  }
-  .forma-app .toast {
-    left: calc(50% + 28px);
-    max-width: calc(100vw - 76px);
-    width: max-content;
-    font-size: 11px;
-    gap: 8px;
-    padding: 12px;
-    bottom: 16px;
-  }
-  .forma-app .toast > svg {
-    width: 17px;
-  }
-  .forma-app .drawer-backdrop {
-    padding: 0;
-  }
-  .forma-app .assistant-drawer {
-    width: 100%;
-  }
-  .forma-app .drawer-header {
-    padding: 20px;
-  }
-  .forma-app .drawer-header h2 {
-    font-size: 16px;
-  }
-  .forma-app .chat-body {
-    padding: 25px 22px;
-  }
-  .forma-app .activity-item {
-    padding: 17px;
-    gap: 10px;
-  }
-  .forma-app .activity-item strong {
-    font-size: 12px;
-  }
-  .forma-app .activity-item p {
-    font-size: 11px;
-  }
-  .forma-app .activity-item time {
-    font-size: 11px;
-  }
-  .forma-app .tour-banner {
-    font-size: 11px;
-    line-height: 1.6;
-    align-items: flex-start;
-    padding: 12px;
-    gap: 9px;
-  }
-  .forma-app .tour-banner > svg {
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .forma-app .facility-popover {
-    top: 48px;
-    right: 12px;
-    width: 210px;
-  }
-}
-/* Keep the subdued palette readable on a shared screen. */
-.forma-app .metric-foot {
-  color: var(--muted-foreground);
-}
-.forma-app .metric-label {
-  color: var(--muted-foreground);
-}
-.forma-app .metric-value small {
-  color: var(--muted-foreground);
-}
-.forma-app .card-header p,
-.forma-app .page-heading p {
-  color: var(--muted-foreground);
-}
-.forma-app .country-label {
-  fill: var(--muted-foreground);
-}
-.forma-app .city-label {
-  fill: var(--muted-foreground);
-}
-.forma-app .plan-option-top strong {
-  font-size: 12px;
-  color: var(--foreground);
-}
-.forma-app .plan-option-values {
-  font-size: 14px;
-  color: var(--foreground);
-}
-.forma-app .plan-option-values small {
-  font-size: 11px;
-}
-.forma-app .plan-confidence {
-  font-size: 12px;
-  color: var(--foreground);
-}
-.forma-app .plan-delivery {
-  font-size: 11px;
-  color: var(--foreground);
-}
-.forma-app .plan-footnote {
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-.forma-app .plan-delivery strong {
-  color: var(--foreground);
-}
-.forma-app .order-meta {
-  color: var(--muted-foreground);
-}
-.forma-app .parts-tabs > button {
-  color: var(--foreground);
-}
-.forma-app .parts-card-note {
-  color: var(--muted-foreground);
-}
-.forma-app .part-cell strong,
-.forma-app .assembly-cell strong {
-  color: var(--foreground);
-}
-.forma-app .part-cell span:not(.tiny-dot),
-.forma-app .assembly-cell span:not(.assembly-icon) {
-  color: var(--muted-foreground);
-}
-.forma-app .part-cell small {
-  color: var(--muted-foreground);
-}
-.forma-app .table-product,
-.forma-app td {
-  color: var(--foreground);
-}
-.forma-app td small {
-  color: var(--muted-foreground);
-}
-.forma-app .table-tabs > button {
-  color: var(--muted-foreground);
-}
-.forma-app th {
-  color: var(--muted-foreground);
-}
-.forma-app .map-caption,
-.forma-app .map-legend {
-  color: var(--muted-foreground);
-}
-.forma-app .map-summary span {
-  color: var(--muted-foreground);
-}
-.forma-app .map-footer {
-  color: var(--muted-foreground);
-}
-.forma-app .status-badge.action {
-  color: var(--risk-medium);
-}
-.forma-app .status-badge.production {
-  color: var(--risk-low);
-}
-.forma-app .status-badge.transit {
-  color: var(--chart-3);
-}
-.forma-app .status-badge.planned {
-  color: var(--risk-low);
-}
-.forma-app .recommended-label {
-  color: var(--muted-foreground);
-}
-.forma-app .on-time {
-  color: var(--risk-low);
-}
-.forma-app .late {
-  color: var(--risk-medium) !important;
-}
-.forma-app .chat-welcome p,
-.forma-app .chat-message p {
-  color: var(--muted-foreground);
-}
-.forma-app .chat-welcome h3 {
-  color: var(--foreground);
-}
-.forma-app .suggested-prompts button {
-  color: var(--foreground);
-}
-.forma-app .drawer-header p {
-  color: var(--muted-foreground);
-}
-.forma-app .facility-popover p {
-  color: var(--foreground);
-}
-.forma-app .compatibility-note {
-  color: var(--risk-low);
-}
-.forma-app .tag.neutral {
-  color: var(--foreground);
-}
-.forma-app .facility-stats {
-  color: var(--muted-foreground);
-}
-.forma-app .plan-option.infeasible {
-  opacity: 0.65;
-}
-@media (max-width: 520px) {
-  .forma-app .plan-option-top strong {
-    font-size: 11px;
-  }
-  .forma-app .plan-option-values {
-    font-size: 12px;
-  }
-  .forma-app .plan-option-values small {
-    font-size: 11px;
-  }
-  .forma-app .plan-confidence {
-    font-size: 11px;
-  }
-  .forma-app .plan-delivery {
-    font-size: 11px;
-  }
-  .forma-app .plan-footnote {
-    font-size: 11px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .forma-app *,
-  .forma-app *:before,
-  .forma-app *:after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
+  .forma-app {
+    scroll-behavior: auto;
+  }
+  .forma-app[data-slot="dialog-content"],
+  .forma-app[data-slot="sheet-content"],
+  .forma-app [data-slot="button"],
+  .forma-app [data-slot="input"],
+  .forma-app .planning-map-popup {
+    animation: none;
+    transition-property: opacity, color, background-color;
+    transition-duration: 100ms;
+  }
+  .forma-app [data-slot="button"]:active {
+    translate: 0 0;
+  }
+  .forma-app[data-slot="sheet-content"][data-starting-style],
+  .forma-app[data-slot="sheet-content"][data-ending-style] {
+    translate: 0 0;
+  }
+}
+@media (pointer: coarse) {
+  .forma-app [data-slot="button"],
+  .forma-app .leaflet-popup-close-button {
+    min-width: 44px;
+    min-height: 44px;
   }
-}
-
-.forma-app .map-node {
-  pointer-events: bounding-box;
-}
-
-.forma-app .scenario-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  margin-bottom: 20px;
-  padding: 18px 20px;
-}
-.forma-app .scenario-heading {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.forma-app .scenario-icon {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--muted-foreground);
-  background: var(--muted);
-}
-.forma-app .scenario-heading h2 {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--foreground);
-  letter-spacing: -0.2px;
-}
-.forma-app .scenario-heading p {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  margin-top: 5px;
-}
-.forma-app .scenario-heading strong {
-  font-weight: 600;
-}
-.forma-app .scenario-badge {
-  margin-left: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 5px 7px;
-  font-size: 11px;
-  white-space: nowrap;
-  color: var(--foreground);
-  background: var(--muted);
-}
-.forma-app .scenario-card form {
-  display: flex;
-  gap: 14px;
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-.forma-app .scenario-field {
-  width: 145px;
-  display: block;
-  color: var(--foreground);
-  font-size: 12px;
-}
-.forma-app .scenario-field > span {
-  display: block;
-  margin-bottom: 7px;
-}
-.forma-app .scenario-field > div {
-  display: flex;
-  align-items: center;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--card);
-  padding: 8px 10px;
-  gap: 8px;
-}
-.forma-app .scenario-field input {
-  width: 100%;
-  min-width: 0;
-  border: 0;
-  background: transparent;
-  color: var(--foreground);
-  font-size: 14px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  padding: 0;
-}
-.forma-app .scenario-field input[aria-invalid="true"] {
-  color: var(--foreground);
-}
-.forma-app .scenario-field > div > span {
-  font-size: 12px;
-  color: var(--foreground);
-}
-.forma-app .scenario-deadline {
-  flex: 1;
-  min-width: 190px;
-  padding: 0 3px 4px;
-}
-.forma-app .scenario-deadline > span {
-  display: block;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  margin-bottom: 7px;
-}
-.forma-app .scenario-deadline > strong {
-  display: block;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted-foreground);
-}
-.forma-app .scenario-card form > .button {
-  height: 36px;
-  padding: 8px 12px;
-  font-size: 12px;
-}
-.forma-app .scenario-restore {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--foreground);
-  font-size: 11px;
-  height: 36px;
-  padding: 0 4px;
-}
-.forma-app .scenario-restore:hover {
-  text-decoration: underline;
-}
-.forma-app .scenario-help {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  line-height: 1.6;
-  margin-top: 13px;
-}
-.forma-app .scenario-help > span:last-child {
-  white-space: nowrap;
-}
-.forma-app .scenario-error {
-  color: var(--risk-medium);
-}
-.forma-app .route-availability {
-  display: flex;
-  align-items: flex-start;
-  gap: 7px;
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  border: 1px solid color-mix(in oklch, var(--risk-medium) 25%, transparent);
-  padding: 10px;
-  border-radius: var(--radius-md);
-  color: var(--risk-medium);
-  font-size: 11px;
-  line-height: 1.6;
-  margin-bottom: 16px;
-}
-.forma-app .route-availability > svg {
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.forma-app .risk-banner > div:nth-child(2) {
-  min-width: 0;
-}
-.forma-app .risk-banner > div > span {
-  line-height: 1.6;
-}
-@media (max-width: 1000px) {
-  .forma-app .scenario-deadline {
-    order: 4;
-    flex: initial;
-    width: 100%;
-    padding: 0;
-  }
-  .forma-app .scenario-deadline > span {
-    display: inline;
-    margin-right: 8px;
-  }
-  .forma-app .scenario-deadline > strong {
-    display: inline;
-  }
-  .forma-app .scenario-field {
-    flex: 1;
-    min-width: 120px;
-  }
-  .forma-app .scenario-help {
-    display: block;
-  }
-  .forma-app .scenario-help > span:last-child {
-    display: block;
-    margin-top: 2px;
-  }
-  .forma-app .scenario-restore {
-    order: 5;
-  }
-}
-@media (max-width: 520px) {
-  .forma-app .scenario-card {
-    padding: 15px 13px;
-    margin-bottom: 16px;
-  }
-  .forma-app .scenario-heading {
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .forma-app .scenario-heading h2 {
-    font-size: 12px;
-  }
-  .forma-app .scenario-heading p {
-    font-size: 11px;
-  }
-  .forma-app .scenario-icon {
-    width: 29px;
-    height: 29px;
-  }
-  .forma-app .scenario-icon > svg {
-    width: 16px;
-  }
-  .forma-app .scenario-badge {
-    font-size: 11px;
-    padding: 4px 6px;
-    margin-left: 37px;
-    margin-top: -3px;
-  }
-  .forma-app .scenario-card form {
-    gap: 12px 10px;
-  }
-  .forma-app .scenario-field {
-    min-width: 100px;
-    font-size: 11px;
-  }
-  .forma-app .scenario-field input {
-    font-size: 13px;
-  }
-  .forma-app .scenario-field > div > span {
-    font-size: 11px;
-  }
-  .forma-app .scenario-card form > .button {
-    width: 100%;
-    order: 5;
-  }
-  .forma-app .scenario-deadline > span {
-    display: block;
-    font-size: 11px;
-  }
-  .forma-app .scenario-deadline > strong {
-    display: block;
-    font-size: 12px;
-  }
-  .forma-app .scenario-restore {
-    order: 6;
-    height: 25px;
-  }
-  .forma-app .scenario-help {
-    font-size: 11px;
-  }
-  .forma-app .route-availability {
-    font-size: 11px;
-  }
-}
-
-.forma-app .needs-action {
-  margin-bottom: 22px;
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  border: 1px solid color-mix(in oklch, var(--risk-medium) 25%, transparent);
-  border-radius: var(--radius-2xl);
-  padding: 18px 20px;
-}
-.forma-app .action-heading {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-.forma-app .action-heading-icon {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border: 1px solid color-mix(in oklch, var(--risk-medium) 25%, transparent);
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  border-radius: var(--radius-md);
-  color: var(--risk-medium);
-  flex-shrink: 0;
-}
-.forma-app .action-heading h2 {
-  font-size: 14px;
-  color: var(--risk-medium);
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.forma-app .action-heading h2 > span {
-  font-size: 12px;
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  border-radius: var(--radius-md);
-  padding: 3px 6px;
-  color: var(--risk-medium);
-}
-.forma-app .action-heading p {
-  font-size: 12px;
-  color: var(--risk-medium);
-  margin-top: 5px;
-  line-height: 1.6;
-}
-.forma-app .action-live-label {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-.forma-app .action-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-.forma-app .order-action {
-  background: color-mix(in oklch, var(--risk-medium) 8%, transparent);
-  border: 1px solid color-mix(in oklch, var(--risk-medium) 25%, transparent);
-  border-radius: var(--radius-md);
-  padding: 13px 14px;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.forma-app .action-order {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 11px;
-}
-.forma-app .action-order strong {
-  font-size: 12px;
-  letter-spacing: 0.3px;
-  color: var(--risk-medium);
-}
-.forma-app .action-order > span {
-  font-size: 11px;
-  color: var(--risk-medium);
-}
-.forma-app .order-action h3 {
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: var(--risk-medium);
-}
-.forma-app .order-action p {
-  font-size: 12px;
-  line-height: 1.7;
-  color: var(--risk-medium);
-  margin-top: 5px;
-  margin-bottom: 13px;
-}
-.forma-app .order-action button {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding-top: 10px;
-  border-top: 1px solid color-mix(in oklch, var(--risk-medium) 25%, transparent);
-  font-size: 12px;
-  color: var(--risk-medium);
-  font-weight: 600;
-  margin-top: auto;
-  text-align: left;
-  min-height: 30px;
-}
-.forma-app .order-action button:hover {
-  color: var(--risk-medium);
-}
-.forma-app .action-expand {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  color: var(--risk-medium);
-  margin: 14px auto 0;
-}
-.forma-app .needs-action.all-clear {
-  background: color-mix(in oklch, var(--risk-low) 8%, transparent);
-  border-color: color-mix(in oklch, var(--risk-low) 25%, transparent);
-}
-.forma-app .all-clear .action-heading {
-  margin-bottom: 0;
-}
-.forma-app .all-clear .action-heading-icon {
-  background: color-mix(in oklch, var(--risk-low) 8%, transparent);
-  color: var(--risk-low);
-  border-color: color-mix(in oklch, var(--risk-low) 25%, transparent);
-}
-.forma-app .all-clear .action-heading h2 {
-  color: var(--risk-low);
-}
-.forma-app .all-clear .action-heading p {
-  color: var(--risk-low);
-}
-.forma-app .scenario-anchor,
-.forma-app .planning-grid {
-  scroll-margin-top: 18px;
-}
-.forma-app .scenario-anchor:focus,
-.forma-app .planning-grid:focus {
-  outline: none;
-}
-@media (max-width: 1000px) {
-  .forma-app .action-live-label {
-    display: none;
-  }
-  .forma-app .order-action {
-    padding: 12px;
-  }
-  .forma-app .action-order {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .forma-app .order-action h3 {
-    font-size: 12px;
-  }
-  .forma-app .order-action p {
-    font-size: 11px;
-  }
-}
-@media (max-width: 780px) {
-  .forma-app .needs-action {
-    padding: 15px;
-  }
-  .forma-app .action-grid {
-    grid-template-columns: 1fr;
-  }
-  .forma-app .action-order {
-    flex-direction: row;
-    align-items: center;
-  }
-  .forma-app .order-action {
-    padding: 13px 14px;
-  }
-  .forma-app .order-action h3 {
-    font-size: 12px;
-  }
-  .forma-app .order-action p {
-    font-size: 12px;
-    margin-bottom: 8px;
-  }
-  .forma-app .order-action button {
-    font-size: 12px;
-    min-height: 35px;
-  }
-  .forma-app .action-heading h2 {
-    font-size: 13px;
-  }
-  .forma-app .action-heading p {
-    font-size: 12px;
-  }
-  .forma-app .action-heading {
-    align-items: flex-start;
-  }
-  .forma-app .action-heading-icon {
-    margin-top: 2px;
-  }
-}
-@media (max-width: 520px) {
-  .forma-app .needs-action {
-    padding: 13px 12px;
-    margin-bottom: 16px;
-  }
-  .forma-app .action-heading {
-    gap: 8px;
-  }
-  .forma-app .action-heading-icon {
-    width: 29px;
-    height: 29px;
-  }
-  .forma-app .action-heading h2 {
-    font-size: 13px;
-  }
-  .forma-app .action-heading p {
-    font-size: 11px;
-  }
-  .forma-app .action-grid {
-    gap: 9px;
-  }
-  .forma-app .action-order > span {
-    font-size: 11px;
-  }
-  .forma-app .order-action button {
-    min-height: 38px;
-  }
-  .forma-app .order-action p {
-    line-height: 1.6;
-  }
-}
-
-/* The shared supplier shell owns global navigation and the page viewport. */
-.forma-app {
-  font-family: inherit;
-  min-width: 0;
-  line-height: 1.5;
-}
-.forma-app .app-shell {
-  min-height: calc(100dvh - 80px);
-}
-.forma-app .main-shell {
-  margin-left: 0;
-  width: 100%;
-}
-.forma-app .topbar {
-  height: auto;
-  min-height: 64px;
-  padding: 12px 32px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.forma-app .planning-view-nav {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-.forma-app .planning-view-nav button {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 38px;
-  padding: 8px 11px;
-  border-radius: var(--radius-md);
-  color: var(--foreground);
-  font-size: 12px;
-  white-space: nowrap;
-}
-.forma-app .planning-view-nav button:hover {
-  background: var(--muted);
-}
-.forma-app .planning-view-nav button.active {
-  background: var(--muted);
-  color: var(--foreground);
-  font-weight: 600;
-}
-.forma-app .planning-view-nav button > span {
-  font-size: 11px;
-  background: var(--muted);
-  padding: 1px 5px;
-  border-radius: 4px;
-}
-.forma-app .topbar-actions {
-  margin-left: auto;
-}
-.forma-app .toast {
-  left: 50%;
-}
-@media (max-width: 780px) {
-  .forma-app .topbar {
-    padding: 12px 18px;
-  }
-  .forma-app .planning-view-nav {
-    width: 100%;
-  }
-  .forma-app .topbar-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-  .forma-app .search-field {
-    margin-right: auto;
-  }
-  .forma-app .search-field input {
-    width: 150px;
-  }
-}
-@media (max-width: 520px) {
-  .forma-app .topbar {
-    padding: 10px 13px;
-  }
-  .forma-app .planning-view-nav {
-    gap: 3px;
-  }
-  .forma-app .planning-view-nav button {
-    font-size: 12px;
-    padding: 7px 8px;
-  }
-  .forma-app .planning-view-nav button svg {
-    width: 14px;
-  }
-  .forma-app .toast {
-    max-width: calc(100vw - 32px);
-  }
-}
-/* Shared template surfaces and motion; the existing workflow layout stays intact. */
-.forma-app {
-  font-family: inherit;
-  background: var(--background);
-  color: var(--foreground);
-  font-weight: 400;
-  font-size: 14px;
-}
-.forma-app .topbar {
-  background: var(--background);
-}
-.forma-app .workspace-content {
-  animation: var(--animate-detail-in);
-}
-.forma-app .page-heading h1 {
-  font-size: 30px;
-  font-weight: 600;
-  letter-spacing: -0.8px;
-  color: var(--foreground);
-}
-.forma-app .page-heading p {
-  font-size: 14px;
-  color: var(--muted-foreground);
-}
-.forma-app h2,
-.forma-app h3 {
-  color: var(--foreground);
-}
-.forma-app .button {
-  border-radius: var(--radius-4xl);
-  font-size: 13px;
-}
-.forma-app .button.primary {
-  color: var(--primary-foreground);
-}
-.forma-app .button.compact {
-  padding: 0 14px;
-}
-.forma-app .button.ghost {
-  font-size: 12px;
-}
-.forma-app .planning-view-nav button {
-  border-radius: var(--radius-4xl);
-  color: var(--muted-foreground);
-  transition:
-    background 180ms,
-    color 180ms;
-}
-.forma-app .planning-view-nav button.active {
-  background: var(--secondary);
-  color: var(--secondary-foreground);
-}
-.forma-app .planning-view-nav button:hover {
-  background: var(--muted);
-  color: var(--foreground);
-}
-.forma-app .planning-view-nav button > span {
-  background: var(--background);
-  color: var(--muted-foreground);
-}
-.forma-app .metric-card {
-  border: 0;
-  box-shadow: 0 0 0 1px color-mix(in oklch, var(--foreground) 10%, transparent);
-  border-radius: var(--radius-2xl);
-  background: var(--card);
-  color: var(--card-foreground);
-  transition:
-    background 180ms,
-    box-shadow 180ms;
-  animation: var(--animate-detail-in);
-}
-.forma-app .metric-card:hover {
-  background: var(--muted);
-}
-.forma-app .metric-label {
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-.forma-app .metric-foot {
-  font-size: 11px;
-  white-space: normal;
-  line-height: 1.5;
-  color: var(--muted-foreground);
-}
-.forma-app .metric-value {
-  font-size: 30px;
-  font-weight: 500;
-  color: var(--foreground);
-}
-.forma-app .attention-card .metric-value,
-.forma-app .attention-card .metric-label > svg {
-  color: var(--risk-medium);
-}
-.forma-app .network-card,
-.forma-app .plan-panel,
-.forma-app .parts-card,
-.forma-app .orders-card,
-.forma-app .factory-card {
-  border: 0;
-  background: var(--card);
-  color: var(--card-foreground);
-  gap: 0;
-}
-.forma-app .network-card,
-.forma-app .parts-card,
-.forma-app .orders-card {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-.forma-app .card-header h2 {
-  font-size: 16px;
-  font-weight: 500;
-}
-.forma-app .plan-option {
-  border-radius: var(--radius-xl);
-  background: var(--card);
-  border: 1px solid var(--border);
-  transition:
-    background 180ms,
-    border-color 180ms;
-}
-.forma-app .plan-option:hover {
-  background: var(--muted);
-}
-.forma-app .plan-option.selected {
-  border-color: var(--foreground);
-  background: var(--muted);
-}
-.forma-app .radio-mark {
-  border-color: var(--muted-foreground);
-}
-.forma-app .selected .radio-mark {
-  border-color: var(--foreground);
-}
-.forma-app .radio-mark > span {
-  background: var(--foreground);
-}
-.forma-app .recommended-label {
-  background: var(--secondary);
-  color: var(--secondary-foreground);
-  border-radius: var(--radius-sm);
-  font-size: 10px;
-}
-.forma-app .plan-option-top strong {
-  color: var(--foreground);
-  font-size: 12px;
-}
-.forma-app .plan-option-values {
-  color: var(--foreground);
-  font-size: 16px;
-}
-.forma-app .plan-option-values small {
-  font-size: 11px;
-}
-.forma-app .plan-option.infeasible {
-  opacity: 0.65;
-}
-.forma-app .order-action {
-  background: var(--card);
-  border-color: var(--border);
-  border-radius: var(--radius-xl);
-  animation: var(--animate-row-in);
-}
-.forma-app .order-action h3 {
-  color: var(--foreground);
-  font-size: 14px;
-}
-.forma-app .order-action p,
-.forma-app .action-heading p {
-  color: var(--muted-foreground);
-  font-size: 12px;
-}
-.forma-app .order-action button {
-  margin-top: auto;
-  width: 100%;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  color: var(--foreground);
-  font-size: 12px;
-  height: auto;
-  white-space: normal;
-  text-align: left;
-}
-.forma-app .needs-action {
-  background: color-mix(in oklch, var(--risk-medium) 5%, var(--background));
-  border-color: color-mix(in oklch, var(--risk-medium) 22%, transparent);
-}
-.forma-app .needs-action.all-clear {
-  background: color-mix(in oklch, var(--risk-low) 5%, var(--background));
-  border-color: color-mix(in oklch, var(--risk-low) 22%, transparent);
-}
-.forma-app .scenario-card {
-  background: var(--card);
-  border-color: var(--border);
-  border-radius: var(--radius-2xl);
-}
-.forma-app .scenario-heading h2 {
-  font-size: 16px;
-  font-weight: 500;
-}
-.forma-app .scenario-field input {
-  font-size: 14px;
-  background: transparent;
-  color: var(--foreground);
-}
-.forma-app .scenario-field > div {
-  background: var(--input);
-  border-color: var(--border);
-  border-radius: var(--radius-lg);
-}
-.forma-app .table-tabs > button {
-  font-size: 12px;
-}
-.forma-app th {
-  font-size: 11px;
-  color: var(--muted-foreground);
-}
-.forma-app td {
-  font-size: 12px;
-  color: var(--foreground);
-}
-.forma-app tbody tr {
-  transition: background 160ms;
-  animation: var(--animate-row-in);
-}
-.forma-app tbody tr:hover {
-  background: var(--muted);
-}
-.forma-app tbody tr.selected {
-  background: var(--muted);
-}
-.forma-app .confirm-modal,
-.forma-app .settings-modal,
-.forma-app .facility-popover,
-.forma-app .notifications-panel {
-  background: var(--popover);
-  color: var(--popover-foreground);
-  border-color: var(--border);
-  border-radius: var(--radius-2xl);
-  animation: var(--animate-overlay-in);
-}
-.forma-app .confirm-modal h2,
-.forma-app .settings-modal h2 {
-  color: var(--foreground);
-}
-.forma-app .modal-backdrop,
-.forma-app .drawer-backdrop {
-  background: color-mix(in oklch, var(--foreground) 20%, transparent);
-}
-.forma-app .assistant-drawer {
-  background: var(--card);
-  color: var(--card-foreground);
-  border-left: 1px solid var(--border);
-}
-.forma-app .assistant-symbol,
-.forma-app .large-spark,
-.forma-app .chat-avatar {
-  background: var(--secondary);
-  color: var(--secondary-foreground);
-}
-.forma-app .chat-message.user p {
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-.forma-app .chat-form button {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-radius: var(--radius-4xl);
-}
-.forma-app .chat-plan-button {
-  background: var(--secondary);
-  color: var(--secondary-foreground);
-  border-radius: var(--radius-4xl);
-}
-.forma-app .toast {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border-color: var(--border);
-  border-radius: var(--radius-2xl);
-}
-.forma-app .map-summary,
-.forma-app .map-caption,
-.forma-app .map-controls {
-  background: var(--card);
-  color: var(--foreground);
-  border-color: var(--border);
-}
-.forma-app .country-label {
-  fill: var(--muted-foreground);
-}
-.forma-app .city-label,
-.forma-app .destination-label {
-  fill: var(--foreground);
-}
-.forma-app .network-map {
-  background: var(--muted);
-}
-.forma-app .route-path {
-  transition: stroke 180ms;
-  animation: var(--animate-row-in);
-}
-.forma-app .legend-line,
-.forma-app .legend-dot,
-.forma-app .legend-diamond {
-  background: var(--chart-3);
-  border-color: var(--chart-3);
-}
-.forma-app .legend-dot.supplier {
-  background: var(--risk-medium);
-}
-@media (max-width: 780px) {
-  .forma-app .planning-grid {
-    grid-template-columns: 1fr;
-  }
-  .forma-app .plan-options {
-    display: flex;
-    flex-direction: column;
-  }
-  .forma-app .plan-option-values {
-    flex-wrap: nowrap;
-  }
-  .forma-app .plan-option-values small {
-    width: auto;
-    margin-left: auto;
-  }
-  .forma-app .workspace-content {
-    padding: 24px 16px 0;
-  }
-  .forma-app .plan-option-top strong {
-    font-size: 13px;
-  }
-  .forma-app .plan-option {
-    padding: 14px;
-  }
-  .forma-app .plan-confidence,
-  .forma-app .plan-delivery {
-    font-size: 12px;
-  }
-  .forma-app .plan-footnote {
-    font-size: 11px;
-  }
-  .forma-app .order-meta {
-    font-size: 12px;
-  }
-  .forma-app .part-cell strong,
-  .forma-app .assembly-cell strong {
-    font-size: 11px;
-  }
-  .forma-app .part-cell span:not(.tiny-dot),
-  .forma-app .assembly-cell span:not(.assembly-icon),
-  .forma-app .part-cell small {
-    font-size: 10px;
-  }
-  .forma-app .parts-flow {
-    grid-template-columns: 1fr 1fr;
-  }
-  .forma-app .table-scroll table {
-    min-width: 680px;
-  }
-  .forma-app .metric-value .attention-pill {
-    max-width: none;
-    font-size: 10px;
-  }
-  .forma-app .metric-value {
-    flex-wrap: wrap;
-    line-height: 1.3;
-  }
-  .forma-app .metric-value .metric-change {
-    font-size: 10px;
-  }
-  .forma-app .metric-value .metric-change svg {
-    display: none;
-  }
-  .forma-app .metric-card {
-    min-height: 150px;
-  }
-  .forma-app .metric-sparkline {
-    display: none;
-  }
-  .forma-app .metric-label > svg {
-    width: 16px;
-  }
-  .forma-app .plan-option-values .option-divider {
-    display: block;
-  }
-  .forma-app .page-heading h1 {
-    font-size: 26px;
-  }
-  .forma-app .page-heading p {
-    font-size: 13px;
-  }
-  .forma-app .card-header .disruption-button {
-    font-size: 11px !important;
-    padding: 8px 10px !important;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .forma-app *,
-  .forma-app *:before,
-  .forma-app *:after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-.forma-app .map-legend {
-  background: var(--card);
-  color: var(--foreground);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-.forma-app button:not([data-slot="button"]) {
-  cursor: pointer;
-}
-.forma-app button:disabled {
-  cursor: default;
-}
-
-/* Non-interactive map annotations must not intercept supplier selection. */
-.forma-app .map-legend,
-.forma-app .map-caption,
-.forma-app .map-summary,
-.forma-app .map-attribution {
-  pointer-events: none;
-}
-/* Small status labels keep the template's hue with enough contrast in both themes. */
-.forma-app .action-order > span,
-.forma-app .action-live-label {
-  color: color-mix(in oklch, var(--risk-medium) 80%, var(--foreground));
-}
-.forma-app .scenario-field > div {
-  background: color-mix(in oklch, var(--input) 30%, transparent);
 }
