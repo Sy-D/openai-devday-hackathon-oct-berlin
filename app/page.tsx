@@ -1,11 +1,20 @@
-import { SupplierDashboard } from "@/components/dashboard/supplier-dashboard"
-import { getSuppliers } from "@/lib/supplier-data"
+import type { Metadata } from "next"
+import { redirect } from "next/navigation"
+import DsxDashboard from "@/components/dsx/dsx-dashboard"
 
-// Researched suppliers land in deep-research-agent/output/suppliers.csv at
-// request time — render per request instead of prerendering at build.
-export const dynamic = "force-dynamic"
+export const metadata: Metadata = {
+  title: "POD delivery overview | FORMA",
+  description:
+    "Inspect every infrastructure component and recover disrupted supplier deliveries.",
+}
 
-export default async function Page() {
-  const suppliers = await getSuppliers()
-  return <SupplierDashboard suppliers={suppliers} />
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ panel?: string }>
+}) {
+  const { panel } = await searchParams
+  if (panel === "compare" || panel === "research" || panel === "memo")
+    redirect(`/suppliers?panel=${panel}`)
+  return <DsxDashboard />
 }

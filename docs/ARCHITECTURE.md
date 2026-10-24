@@ -1,6 +1,6 @@
 # Architecture
 
-The Next.js application serves the supplier dashboard at `/` and FORMA production planning at `/planning`. This document describes their separate data models, native API routes and optional AI providers. For the agent's internal pipeline (criteria
+The Next.js application serves the DSX POD overview at `/`, supplier intelligence at `/suppliers`, component recovery at `/planning?component=ID`, and manufacturing planning at `/planning`. Every workflow uses Simon’s frontend as its shared design template. See [the DSX overview](DSX_OVERVIEW.md) for 3D interaction and push alerts. This document describes their separate data models, native API routes and optional AI providers. For the agent's internal pipeline (criteria
 sub-agents, prompts, failure handling) see
 [deep-research-agent/OVERVIEW.md](../deep-research-agent/OVERVIEW.md); for its
 CLI options see [deep-research-agent/README.md](../deep-research-agent/README.md).

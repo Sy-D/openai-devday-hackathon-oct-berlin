@@ -5,7 +5,7 @@ test('supplier navigation preserves planning decisions without leaking planner s
   page.on('console', message => {
     if (message.type() === 'error' && /hydration|did not match|server rendered/i.test(message.text())) hydrationErrors.push(message.text());
   });
-  await page.goto('/');
+  await page.goto('/suppliers');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   const supplierAppearance = () => page.locator('[data-slot="sidebar-inset"]').evaluate(element => {
@@ -24,8 +24,8 @@ test('supplier navigation preserves planning decisions without leaking planner s
   await page.getByRole('button', { name: 'Confirm production plan', exact: true }).click();
   await expect(page.getByText('FM-2048 is back on track')).toBeVisible();
 
-  await page.getByRole('link', { name: 'Overview', exact: true }).click();
-  await expect(page).toHaveURL('/');
+  await page.getByRole('link', { name: 'Suppliers', exact: true }).click();
+  await expect(page).toHaveURL('/suppliers');
   await expect(page.locator('.forma-app')).toHaveCount(0);
   expect(await supplierAppearance()).toEqual(before);
 
@@ -48,8 +48,8 @@ test('mobile planning uses the shared navigation and keeps required actions firs
   expect(actions!.y).toBeLessThan(metrics!.y);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.getByRole('button', { name: 'Toggle Sidebar', exact: true }).click();
-  await page.getByRole('link', { name: 'Overview', exact: true }).click();
-  await expect(page).toHaveURL('/');
+  await page.getByRole('link', { name: 'Suppliers', exact: true }).click();
+  await expect(page).toHaveURL('/suppliers');
   await page.getByRole('button', { name: 'Toggle Sidebar', exact: true }).click();
   await page.getByRole('link', { name: 'Production planning', exact: true }).click();
   await expect(page).toHaveURL(/\/planning$/);

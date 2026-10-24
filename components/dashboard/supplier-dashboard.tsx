@@ -329,7 +329,7 @@ export function SupplierDashboard({
     setNotice("Your shortlist memo has been downloaded.")
   }
 
-  // Deep links like /?panel=compare used by the sidebar on other pages.
+  // Deep links like /suppliers?panel=compare used by the sidebar on other pages.
   useEffect(() => {
     const target = searchParams.get("panel")
     if (!target) return
@@ -337,7 +337,7 @@ export function SupplierDashboard({
       if (target === "compare") setPanel({ kind: "compare" })
       else if (target === "research") setPanel({ kind: "research" })
       else if (target === "memo") exportMemo()
-      router.replace("/", { scroll: false })
+      router.replace("/suppliers", { scroll: false })
     }, 0)
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -345,7 +345,7 @@ export function SupplierDashboard({
 
   return (
     <AppShell
-      breadcrumb={["Workspace", "Overview"]}
+      breadcrumb={["Workspace", "Suppliers"]}
       compareCount={selected.length}
       overlay={
         <>

@@ -45,7 +45,7 @@ export default async function SupplierPage({
             size="sm"
             className="-ml-3 mb-2"
             nativeButton={false}
-            render={<Link href="/" />}
+            render={<Link href="/suppliers" />}
           >
           <ArrowLeft data-icon="inline-start" />
           Back to workspace

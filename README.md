@@ -1,39 +1,41 @@
 # FORMA: supplier risk and production planning
 
-A shared hackathon workspace with two connected views:
+A shared hackathon workspace for infrastructure delivery, supplier intelligence and recovery planning:
 
-- **Supplier risk dashboard at `/`**: the incoming Siemens Mobility dashboard explores 10,000 anonymized suppliers, their risk profiles, maps and comparison views. Optional Python agents research real companies on the public web and answer questions about the supplier dataset.
-- **Production planning at `/planning`**: FORMA shows which orders need action, compares three manufacturing routes, tests quantity and deadline changes, and records reviewed confirmations. Its factory network and orders are synthetic.
+- **POD overview at `/`**: inspect a DSX POD inspired 3D container, switch to wireframe or 2D, and select ten tracked subsystems. Red and amber markers identify disrupted deliveries.
+- **Component recovery at `/planning?component=compute-a`**: inspect the affected supplier shipment, compare transport alternatives, and explicitly confirm a recovery route. Incoming simulated incidents update availability and ETA without refreshing.
+- **Supplier intelligence at `/suppliers`**: Simon's existing dashboard, with 10,000 anonymized suppliers, maps, profiles, comparison and optional research agents.
+- **Manufacturing planning at `/planning`**: the original FORMA order and manufacturing demo remains available.
 
-Both views run in one Next.js application and share the navigation. Supplier risk data is not yet an input to the production planner; the two datasets remain separate.
+Simon’s frontend is the design template for every view: shared controls, theme colors, typography, rounded surfaces and animations. **Reset view** restores the full 3D model after switching modes or moving the camera. The new pod's supplier assignments, geometry, transport costs and incident scenarios are illustrative. They are not actual NVIDIA supplier reports, live flight/rail data or an official CAD model. The supplier directory and manufacturing demo keep their separate datasets.
 
 ```mermaid
 flowchart LR
-  Browser --> Dashboard[Supplier dashboard /]
-  Browser --> Planner[Production planning /planning]
-  Dashboard --> Data[DuckDB + supplier CSVs]
-  Dashboard --> Research[Native research and analyst routes]
-  Research --> Python[Python agents]
-  Python --> Suppliers[Nebius + Tavily]
-  Planner --> Engine[Deterministic route comparison]
-  Planner --> Assistant[Native /api/assistant]
-  Assistant --> OpenAI[Optional OpenAI Responses API]
+  Events[Simulated incident catalog] --> SSE[Server-sent event stream]
+  SSE --> State[Shared incident state]
+  State --> Routes[Assess transport routes]
+  Routes --> Model[3D pod overview]
+  Model --> Detail[Component recovery]
+  Detail --> Decision[Reviewed local confirmation]
+  Model --> Suppliers[Existing supplier dashboard]
 ```
+
+See [the overview and push workflow](docs/DSX_OVERVIEW.md) and [dataset assumptions](docs/DSX_DATA.md).
 
 ## Start locally
 
-Use **Node.js 22.12 or later** and npm. In an existing checkout of the integration branch:
+Use **Node.js 22.12 or later** and npm. In an existing checkout:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open **http://localhost:3000** for the supplier dashboard and **http://localhost:3000/planning** for production planning. Stop the server with Ctrl+C. No credentials or Python installation are needed to explore the bundled supplier data or run the planning demo. Map tiles and climate panels use public network services.
+Open **http://localhost:3000** for the pod overview, **http://localhost:3000/suppliers** for supplier intelligence and **http://localhost:3000/planning** for the manufacturing demo. Stop the server with Ctrl+C. No credentials or Python installation are needed to explore the bundled supplier data or run the planning demo. Map tiles and climate panels use public network services.
 
 `package-lock.json` is the canonical JavaScript lockfile. `npm ci` also applies the checked-in `metal-fx` patch. Use `npm run build` followed by `npm start` to run the production build on port 3000.
 
-Repository: [Sy-D/openai-devday-hackathon-oct-berlin](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin). The published integration is on `codex/forma-template-integration` in [PR #2](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/2); the earlier FORMA draft is preserved at `c89d43b` on `codex/forma-first-draft`. Both branches are available to teammates. See [the handoff](docs/HANDOFF.md) for verification and hosting status.
+Repository: [Sy-D/openai-devday-hackathon-oct-berlin](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin). The original frontend integration was merged into main in [PR #2](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/2); the earlier FORMA draft is preserved at `c89d43b` on `codex/forma-first-draft`. Both branches are available to teammates. See [the handoff](docs/HANDOFF.md) for verification and hosting status.
 
 ## Optional AI features
 
@@ -80,7 +82,7 @@ The Docker configuration packages Node.js and Python in one container:
 docker compose up --build
 ```
 
-It serves the same two pages on port 3000. Optional provider values come from the root `.env`; research results persist in the `agent-output` volume. The integrated Docker setup still needs a build and runtime check on a machine with Docker available.
+It serves the same application routes on port 3000. Optional provider values come from the root `.env`; research results persist in the `agent-output` volume. Docker CI verified the original integration build. Runtime provider configuration still needs its own check.
 
 ## Using the supplier dashboard
 

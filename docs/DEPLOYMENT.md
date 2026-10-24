@@ -8,7 +8,9 @@ Use the repository root, the Next.js framework preset, Node 22 or 24, install co
 
 | Feature | Without optional credentials |
 | --- | --- |
-| `/`, supplier profiles and comparisons | Supplied CSV dataset, read through native DuckDB. |
+| `/`, `/planning?component=ID` | Interactive DSX schematic, simulated route assessment and browser-local recovery confirmations. |
+| `/api/disruptions` | Simulated SSE playback with event cursors, 55-second connections and reconnects. Verify stream delivery on the deployed platform. |
+| `/suppliers`, supplier profiles and comparisons | Supplied CSV dataset, read through native DuckDB. |
 | `/planning` | Synthetic production scenarios, route calculations and browser-local confirmations. |
 | `/api/assistant`, `/api/health` | Production copilot's labelled demo fallback and configuration status. See `AI.md` for optional OpenAI configuration. |
 | Supplier analyst, research and name resolution | HTTP 503 with an explanation. The UI displays that explanation. |
@@ -22,12 +24,12 @@ Local research remains supported through `deep-research-agent/README.md`; withou
 
 Keep `@duckdb/node-api` in `serverExternalPackages` and install dependencies on Vercel's Linux build machine. Do not upload this Mac's `node_modules` as a production build. `outputFileTracingIncludes` explicitly includes the CSV and the installed DuckDB platform package for supplier routes, including the native addon's adjacent shared library. The local automatic trace included `duckdb.node` but omitted that shared library before this adjustment.
 
-Vercel supports the full Node API, but deployment file tracing and function size limits still apply. Verify the resulting Linux bundle and a cold request to `/`; a local Next build is insufficient evidence. [Node runtime](https://vercel.com/docs/functions/runtimes/node-js), [function limits](https://vercel.com/docs/functions/limitations), [Next output tracing](https://nextjs.org/docs/app/api-reference/config/next-config-js/output).
+Vercel supports the full Node API, but deployment file tracing and function size limits still apply. Verify the resulting Linux bundle and a cold request to `/suppliers`; a local Next build is insufficient evidence. [Node runtime](https://vercel.com/docs/functions/runtimes/node-js), [function limits](https://vercel.com/docs/functions/limitations), [Next output tracing](https://nextjs.org/docs/app/api-reference/config/next-config-js/output).
 
 ## Release check
 
 1. Build the reviewed commit with `npm ci` and `npm run build`, then run the repository checks.
-2. Deploy that commit and verify `/`, one supplier profile, `/compare` and `/planning` on the resulting URL.
+2. Deploy that commit and verify `/`, `/suppliers`, one supplier profile, `/compare`, `/planning` and `/planning?component=compute-a` on the resulting URL.
 3. Confirm the production copilot says demo mode without a key. POST valid requests to `/api/analyst`, `/api/research` and `/api/resolve`; each should return 503 with `code: research_unavailable`.
 4. Check the Vercel build/runtime logs for missing native libraries and failed dataset reads. Record the commit, URL and results before calling the hosted app verified.
 
