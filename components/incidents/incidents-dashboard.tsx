@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import Link from "next/link"
 import {
   ArrowUpRight,
   CircleAlert,
@@ -178,7 +179,7 @@ function SourceCard({ source }: { source: LiveSourceStatus }) {
   )
 }
 
-export function IncidentsDashboard() {
+export function IncidentsDashboard({ componentId }: { componentId?: string }) {
   const { snapshot, connection, error, receivedAt, change } = useLiveIncidents()
   const [view, setView] = useState<"current" | "history">("current")
   const [filters, setFilters] = useState<Filters>(emptyFilters)
@@ -282,6 +283,14 @@ export function IncidentsDashboard() {
         id="main"
         className={`${styles.page} motion-safe:animate-detail-in`}
       >
+        {componentId && (
+          <Link
+            href={`/planning?component=${encodeURIComponent(componentId)}`}
+            className="mb-5 inline-flex text-xs underline underline-offset-4"
+          >
+            Return to this delivery plan
+          </Link>
+        )}
         <div className={styles.pageHeader}>
           <div>
             <p className={styles.eyebrow}>

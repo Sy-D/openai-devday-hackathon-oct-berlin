@@ -1,71 +1,54 @@
-# FORMA: three-minute demonstration
+# FORMA — two-minute demo
 
-## Open the production planner
+## Prepare before presenting
 
-Start Next with `npm run dev -- --hostname 127.0.0.1`, then open **http://127.0.0.1:3000/planning** or choose **Production planning** in the shared sidebar. The supplier-risk dashboard lives at `/`. Both routes share `AppShell`; the production demo still uses its own synthetic orders and factories.
+Open `/` and `/planning?component=optics`. Use the NVIDIA MMA4Z00-NS400 offer from DELTA. Check its displayed observation time and seller page; refresh incident reports and calculate routes before walking on stage. The warehouse location is known at city precision, and NTT Berlin 1 is an example destination, not a customer order. Use **Use planning timing** for an editable six-hour planning target and handling allowance, or enter your own inputs.
 
-The production copilot uses `/api/assistant` and `/api/health` on the same Next server. No separate port 8789 API is needed. Live OpenAI responses require optional server-side configuration and a successful real response; otherwise present the explicitly labelled demo fallback.
+Keep the original route and at least one alternative loaded. Current provider reports change; read the values visible in the app. Never promise a particular new alert during the two minutes. Product/transport assumptions remain available in **Basis and evidence** and the cost/timing disclosure. No purchase or carrier booking occurs.
 
-## Promise
+## Exact recording clicks
 
-"FORMA helps a planner recover an urgent order by choosing where its parts are made, where they come together, and how the complete product reaches the customer."
+1. Open `/` in dark mode at a desktop width. Select the red **Optical interconnects** marker, then **Plan this delivery**. Colors describe review work: red needs review, amber needs a plan, green has a reviewed decision.
+2. Keep the DELTA **NVIDIA MMA4Z00-NS400** offer selected. The published price is shown with its source. The default dispatch is Glinde and the example destination is NTT Berlin 1; no coordinates need to be entered.
+3. Under **Define the journey**, click **Use planning timing**, then **Calculate road routes**. To demonstrate another address later, type it into **Find a city, address or facility**, click **Search**, then select the result.
+4. Click **Fit all routes**. Wait until the basemap has loaded before starting the recording. Read one current A24 report beneath the map; do not promise a particular report or delay value.
+5. Click **Avoid reported area** on that report. Scroll to **04 / DECISION** and show the before/after comparison. If the alternative still overlaps the reported road section, the app retains its reported delay.
+6. Choose **Original road route** if it remains faster and cheaper, or the better alternative if current results support it. Click **Save route decision**.
+7. Click **Back to this part**. The component marker is green after review. Relevant changed evidence or inputs bring the decision back for review. This saves a planning record; it does not buy a part or book a carrier.
 
-## Story
+**Recording setup:** rehearse and load the map/route once, then return to the model. Keep the same browser so calculated routes are retained. Record at 1440px or wider; use one presenter, no developer tools and no setup during the two minutes. Do not clear incidents. The script below is about 240 spoken words.
 
-An urgent order needs twelve robotic gripper kits in Berlin and is forecast to arrive late. Each kit combines two printed component types with a purchased actuator. The fastest individual printer is not necessarily the fastest complete delivery, because assembly must wait for every component.
+## Stage script
 
-## Demonstration sequence
-
-| Time | Action | What the audience should understand |
+| Time | Action | Say |
 | --- | --- | --- |
-| 0:00–0:25 | On `/planning`, show Needs action at the top; click Compare routes for FM-2048. | The planner sees order volume and delivery risk, then has a concrete next action. |
-| 0:25–0:55 | Open the urgent order and inspect its components and factory capabilities. | A polymer printer cannot manufacture the metal part, and the purchased actuator still belongs in the schedule. |
-| 0:55–1:35 | Compare cost, balanced and fast alternatives on the map. | The route includes production, transport to assembly, assembly and final delivery. Cost and deadline buffer update together. |
-| 1:35–2:10 | Ask the assistant: "Which plan meets the deadline at the lowest cost, and why?" | The assistant explains the existing feasible options from the same data used by the interface. Its suggestion does not assign a plan. |
-| 2:10–2:40 | Select a suitable plan and confirm it. | An operational decision changes the order's plan and the dashboard's action state. |
-| 2:40–3:00 | Show the updated route and metrics. | The result is an explainable recovery action with a visible cost and delivery trade-off. |
+| 0:00–0:20 | Show the model, select **Optical interconnects**, click **Plan this delivery**. | “FORMA connects the physical parts of an AI data center to the decisions required to deliver them. This optical module links our compute racks to the network. Selecting it opens the product, sourcing and delivery workflow.” |
+| 0:20–0:40 | Show the DELTA exact-SKU offer, observed price and origin. | “Here is the exact NVIDIA part and a published seller offer. We carry its price and source into the plan. This example starts from the seller's warehouse city near Hamburg and goes to a Berlin data center.” |
+| 0:40–1:05 | Show the calculated road route and its current A24 report. | “The platform receives real incident reports automatically. It checks the road section and direction against this journey. We can inspect the original report and see which parts of the delivery decision it affects.” |
+| 1:05–1:35 | Choose **Avoid reported area** or select a preloaded alternative. Show the comparison. | “An alternative is calculated on the road network. We compare distance, travel time, reported delay, transport cost and emissions. Every number has a source or a planning input. This makes the cost of changing the plan visible before anybody books transport.” |
+| 1:35–2:00 | Choose the best route for the displayed objective and **Save route decision**. | “Today, the original route is still faster and cheaper than the full detour. We keep it and avoid an unnecessary change. The decision is saved with its evidence; relevant new reports or changed inputs bring it back for review. That is the loop: part, evidence, decision and measurable consequences.” |
 
-Use the values shown by the running application rather than memorising illustrative prices or hours from a sketch. The app's dataset and planning calculation are the authoritative demo values.
+Approximately 240 spoken words plus clicks. If the current evidence favors a detour, replace the final paragraph with the actual improvement shown on screen. Do not reuse yesterday's numbers.
 
-## Useful assistant prompts
+## Verified example, 24 October 2026 at 13:10 UTC
 
-- "Which plan meets the deadline at the lowest cost, and why?"
-- "Why can't we send every part to the nearest factory?"
-- "Which component controls the assembly start time?"
-- "What extra cost buys the biggest delivery buffer?"
+These are observations from that check, not guaranteed current results:
 
-When no OpenAI API key is configured, the interface must label the assistant's deterministic responses as demo mode. Do not describe those responses as a live model call.
+| Option | Road distance | Driving + relevant reported delay | Net transport estimate | Operating emissions estimate |
+| --- | ---: | ---: | ---: | ---: |
+| Original route | 267.43 km | 168.15 + 20 min | €371 | 46.17 kg CO₂e |
+| Short detour | 274.67 km | 187.04 + 20 min | €379 | 47.42 kg CO₂e |
+| Longer avoidance | 293.31 km | 225.70 + 0 min | €401 | 50.64 kg CO₂e |
 
-## What is real in this prototype
+The longer avoidance removed aligned queue exposure but added about 38 minutes, €30 and 4.47 kg estimated emissions. The short detour still overlapped the queue: merely avoiding its start marker was insufficient. These calculations use Valhalla road geometry/speeds, the largest overlapping current direction-aligned Autobahn delay, HanseSprint's published tariff and the UK 2026 diesel-car emissions benchmark. They are forecasts, not measured delivery outcomes.
 
-The interface, route comparisons, eligibility rules, schedule calculations, state changes and confirmation path are implemented product behaviour. The production inputs are synthetic. The supplier dashboard uses the supplied risk dataset, which is not automatically linked to the production routes. There are no real factory bookings or carrier reservations.
+## What earns its place
 
-## Drawing
+- **3D model:** selects the physical dependency and keeps the sourcing decision attached to it.
+- **Offer and evidence:** show the exact item, price basis, source and missing-data assumptions.
+- **Road map and report overlay:** explain why an incident is relevant to this journey.
+- **Action color and direct link:** point to the next review, calculation or decision.
+- **Comparison:** shows the price of time or reduced exposure, including when changing nothing is better.
+- **Saved decision and live updates:** preserve what was chosen and reopen it when relevant evidence changes.
 
-Use the [shared editable Excalidraw board](https://link.excalidraw.com/l/44SXhWFHIar/5fLHSSwDGK8). The files `outputs/forma-production-workflow.excalidraw` and `outputs/forma-production-workflow.png` preserve the original workflow snapshot; the shared board is maintained separately as the build evolves.
-
-The diagram shows parallel component jobs converging at assembly. Its central rule is:
-
-```text
-delivery ETA = latest component arrival + assembly duration + final transport
-```
-
-The prototype scales assembly duration with quantity. It does not independently schedule QA, finishing or assembly queues. The original drawing includes those conceptual stages; explain the implemented calculation above when describing the app. The scenario deadline is 60 hours. No live supplier data or engineering approval is implied.
-
-## Before presenting
-
-- Run the application, open `/planning` and exercise the entire confirmation path once. Verify navigation back to the supplier dashboard at `/`.
-- Reset to the at-risk scenario so the audience sees the before/after change.
-- Check whether the assistant is in live or demo mode.
-- Keep the local demo available if venue connectivity fails.
-- Use the research notes for problem framing; do not claim the prototype replaces an existing industrial platform.
-
-For the npm setup, work lanes and merged-template boundaries, use [team startup](TEAM_START.md). The browser suite runs Next on port 5174; the default manual demo uses port 3000. The earlier Vite rehearsal does not establish that the merged app is ready: check the final integration evidence in `docs/HANDOFF.md`. A passing automated rehearsal verifies the product path; the presenter still needs to practise the spoken three-minute story.
-
-## Optional what-if extension
-
-After confirming Balanced, apply **42 kits / 60 hours**. The previous confirmation is now infeasible because Dresden can make 80 fingers per batch but the order needs 84. Fastest uses Munich and delivers in 49 hours for €13,081. Its 21 hours of assembly follow the last component arrival at hour 26. Show the warning, then review and confirm Fastest.
-
-Try **49 kits** to show that all predefined routes exceed capacity. Confirm is disabled and the top action points to quantity adjustment. At **12 kits / 33 hours**, capacity is available but every route is late. A late plan needs explicit acknowledgement and never clears the warning.
-
-The deadline is a duration from the fixed demo clock, not a live countdown. Confirming all three original action orders produces the real empty action state. Reset before the next demo.
+Leave extra model modes, other components and broad incident filters for questions. No scripted alert injection or pause/reset-feed control is part of this demo.

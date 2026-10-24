@@ -1,55 +1,48 @@
-# FORMA: infrastructure and incident workspace
+# FORMA: infrastructure delivery decisions
 
-Explore infrastructure dependencies, inspect manufacturer evidence, follow real incident reports and rehearse recovery decisions.
+Select a physical part of a modular AI data center, inspect its product and seller evidence, calculate road alternatives and compare the consequences of live incidents.
 
-- **Overview at `/`**: an interactive container model with ten researched hardware references, source links and explicit manufacturing-origin limits. Neutral markers mean shipment status is not verified. Model geometry and product compatibility remain illustrative.
-- **Incidents at `/incidents`**: current GDACS and EONET hazard observations, Germany A2 road notices and Dutch NDW traffic reports. Historical IMF PortWatch records have a separate history view. Search and filter by source, event type, severity, status and country. Provider updates arrive automatically; users cannot clear or alter them.
-- **Recovery rehearsal at `/?mode=demo`**: the earlier component-delivery scenario remains available with explicitly fictional shipments, routes, prices and disruptions. Select a part and open `/planning?component=…` to compare alternatives. The action banner selects and reveals the suggested route; confirmation is separate.
-- **Manufacturing planner at `/planning`**: our original order, capacity, scenario and constrained planning-copilot workflow.
+- `/`: interactive hardware model, ten component references and a direct path into delivery planning.
+- `/planning?component=optics`: exact NVIDIA optical-module offers, editable origin/destination/timing, live road geometry, relevant reports, cost/time/emissions comparison and saved decisions.
+- `/incidents`: automatically updated reports from GDACS, NASA EONET, Autobahn A2/A24/A10 and NDW; PortWatch remains explicitly historical.
 
-Simon’s frontend supplies the shared design system. The workspace navigation uses the functionality built for FORMA. His original supplier-risk/research implementation is outside the demo and remains in the repository pending its separate removal PR; this change does not claim to remove it.
+**Two-minute walkthrough:** [demo script](docs/DEMO.md). **Current delivery checklist:** [remaining work](docs/CONNECTED_WORKSPACE_TODO.md).
 
-Real incidents are evidence to inspect, not proof of an affected delivery. The workspace has no confirmed purchase orders, dispatch sites, carrier routes or live inventory. Manufacturer factory footprints are not shipment origins. [Hardware evidence](docs/PART_PROVENANCE.md) and [source coverage](docs/LIVE_INCIDENT_SOURCES.md) explain these boundaries.
+## What the numbers mean
 
-```mermaid
-flowchart LR
-  Sources[Public incident providers] --> Cache[Bounded requests and source cache]
-  Cache --> SSE[Snapshot API and SSE updates]
-  SSE --> Incidents[Filter and inspect source reports]
-  Products[Manufacturer documentation] --> Model[Hardware reference overview]
-  Model --> Evidence[Product and origin evidence]
-  Fixtures[Explicit rehearsal fixtures] --> Routes[Compare recovery options]
-  Routes --> Review[User review and local confirmation]
-```
+Public seller prices, availability wording and source timestamps are preserved. Missing prices or dispatch information use planning inputs whose provenance is available in the evidence panel. Manufacturer links establish product identity; they do not validate estimated commercial terms or mixed-vendor compatibility.
 
-Public providers are fetched on their individual schedules. The server pushes snapshots to open browsers, which reconnect automatically. Last successful data stays visible with stale/unavailable labels during outages. Caches are per server process, not a durable event archive. No real incident is automatically assigned to a fictional transport leg.
+Valhalla supplies actual road geometry and modeled driving time. Current Autobahn delays are applied only to fresh direction-aligned road overlap; overlapping queues use the largest report, not a sum. Avoidance samples the full reported road section and the resulting route is checked again. A nearby report or ramp closure never establishes that an entire delivery is blocked.
 
-## Start locally
+Small-part transport uses HanseSprint's published tariff, including its bands, service multiplier, pickup-time surcharges and rounding. Its cost is an estimate pending carrier confirmation. Diesel-car emissions use the UK 2026 average-car factor. Large-part freight and emissions use explicit planning assumptions; car routing does not establish heavy-vehicle clearance. The comparison may recommend retaining the original route when alternatives are slower or costlier.
 
-Use **Node.js 22.12 or later** and npm. In an existing checkout:
+Decisions are saved in this browser, with original evidence retained. Changed inputs, route selection or relevant reports require review. There is no purchase, carrier booking, shared order database or guaranteed arrival promise. Incident records cannot be paused, reset or cleared by users. The previous scripted planners are no longer accessible, including through `?mode=demo`; legacy supplier routes redirect to planning, and scripted disruption/assistant endpoints return 410.
+
+## Run locally
+
+Use Node.js 22.12 or later:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open **http://localhost:3000** for the hardware overview, **http://localhost:3000/incidents** for source reports and **http://localhost:3000/?mode=demo** for the recovery rehearsal. Stop the server with Ctrl+C. The hardware catalog and rehearsals need no credentials; live reports need network access. The current public feeds need no API keys or Python installation.
+Open http://localhost:3000. Public incident, routing and place-search services need network access but no credentials. Place lookup uses an explicit search action through [Photon](https://github.com/komoot/photon#demo-server) with a bounded per-process cache and request spacing; PHOTON_SEARCH_URL can select a separately hosted service. For a production preview run `npm run build` followed by `npm start`.
 
-`package-lock.json` is the canonical JavaScript lockfile. `npm ci` also applies the checked-in `metal-fx` patch. Use `npm run build` followed by `npm start` to run the production build on port 3000.
+```sh
+npm test
+npm run lint
+npm run build
+PLAYWRIGHT_USE_PRODUCTION=1 npm run test:e2e
+```
 
-Repository: [Sy-D/openai-devday-hackathon-oct-berlin](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin). The original frontend integration was merged into main in [PR #2](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/2); the earlier FORMA draft is preserved at `c89d43b` on `codex/forma-first-draft`. Both branches are available to teammates. See [the handoff](docs/HANDOFF.md) for verification and hosting status.
+The JavaScript lockfile is canonical; `npm ci` applies the existing metal-fx patch. Browser fixtures are confined to tests and are never substituted for failed live providers. See [test coverage](tests/README.md).
 
-## Optional AI and legacy features
+## Runtime and source limits
 
-Keep credentials server-side in the ignored root `.env` file. If no `.env` exists, copy `.env.example` to `.env`, then fill in only the providers you intend to use. Do not overwrite an existing configuration or commit secrets. Restart the server after changing configuration.
+Provider requests are bounded and cached per process. Incident failures retain last-good reports with stale status; routing failures show an error or retain a baseline with an explicit avoidance warning. There is no durable event archive or cross-instance polling coordinator. Public routing and Photon search are fair-use demo services; a production deployment needs appropriate service arrangements. Attribution remains on the map.
 
-| Feature | Requirements |
-| --- | --- |
-| Planning copilot at `/planning` | `OPENAI_API_KEY`; optional `OPENAI_MODEL`. Without a key, it uses an explicitly labelled deterministic demo reply. |
-| Supplier dataset analyst | Python setup below, `data/suppliers.duckdb`, and `NEBIUS_API_KEY`. |
-| Research a real company | Python setup below, `NEBIUS_API_KEY` and `TAVILY_API_KEY`. |
-
-The two AI integrations have separate configuration. Setting an OpenAI key does not configure the supplier agents. Never prefix secrets with `NEXT_PUBLIC_` or `VITE_`. Planning API details and the one-request live check are in [docs/AI.md](docs/AI.md).
+Simon’s shared design is retained with selected control, spacing and touch-target improvements. His new branch was not merged wholesale, and none of its simulated backend behavior replaced this workflow. The separate removal of his legacy supplier implementation remains teammate-owned. The following material is historical setup for that retained code, not the current application path.
 
 ### Legacy supplier agent setup (separate removal pending)
 

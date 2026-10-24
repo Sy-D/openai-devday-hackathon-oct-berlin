@@ -1,3 +1,15 @@
+# Current handoff — connected procurement
+
+Use `/` → select Optical interconnects → **Plan this delivery** → calculate roads → inspect current incident evidence → compare alternatives → save the selected route. The latest code is on `codex/connected-procurement`; publication verification is tracked in [CONNECTED_WORKSPACE_TODO.md](CONNECTED_WORKSPACE_TODO.md).
+
+Verification: 112 unit/API tests, 22 production browser tests, build/TypeScript and lint pass (two legacy warnings). Actual address search, routing and saved-decision smoke passed. The map now uses themed OpenFreeMap tiles and named endpoints; delivery locations use city/address search with advanced coordinates hidden.
+
+Current source-backed offers are in `src/data/procurement-offers.ts`; missing-data planning inputs are isolated in `src/data/procurement-assumptions.ts`. The source and assumption basis is available in the interface. Live reports remain provider-controlled. [DEMO.md](DEMO.md) is the current two-minute presentation script.
+
+The old scripted planners, feed pause/reset and simulated assistant are retired from public routes. Old supplier pages redirect to planning. Vercel hosting is still deferred pending workspace authorization. No purchase or carrier booking has occurred.
+
+## Historical milestones (superseded behavior below)
+
 # Current handoff: live incidents and hardware references
 
 The live workspace defaults to `/`; the deterministic shipment rehearsal is now `/?mode=demo`. `/incidents` receives source-controlled updates, with filters, evidence links, freshness and explicit history. The default overview contains ten manufacturer-backed candidates and unknown shipment states, not fictional supplier assignments. See [source coverage](LIVE_INCIDENT_SOURCES.md) and [product provenance](PART_PROVENANCE.md).

@@ -1,35 +1,25 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import ComponentRecovery from "@/components/dsx/component-recovery"
-import { dsxParts } from "@/src/data/dsx"
-import { AppShell } from "@/components/dashboard/app-shell"
-import { ProductionPlanning } from "./production-planning"
-import "@/src/styles.css"
+import { ProcurementWorkbench } from "@/components/procurement/procurement-workbench"
+import { getPartReference } from "@/src/data/part-catalog"
 
 export const metadata: Metadata = {
-  title: "Production planning | FORMA",
+  title: "Delivery planning | FORMA",
   description:
-    "Review required actions, compare manufacturing routes and test production scenarios.",
+    "Choose a sourced product and compare real road routes against reported incidents.",
 }
-
 export default async function PlanningPage({
   searchParams,
 }: {
   searchParams: Promise<{ component?: string }>
 }) {
-  const { component } = await searchParams
-  if (component && !dsxParts.some((part) => part.id === component)) notFound()
-  if (component)
-    return (
-      <AppShell breadcrumb={["Workspace", "Component recovery"]}>
-        <ComponentRecovery key={component} componentId={component} />
-      </AppShell>
-    )
+  const { component = "optics" } = await searchParams
+  const part = getPartReference(component)
+  if (!part) notFound()
   return (
-    <AppShell breadcrumb={["Workspace", "Production planning"]}>
-      <div id="main" className="min-w-0 flex-1" tabIndex={-1}>
-        <ProductionPlanning />
-      </div>
-    </AppShell>
+    <ProcurementWorkbench
+      key={part.componentId}
+      componentId={part.componentId}
+    />
   )
 }

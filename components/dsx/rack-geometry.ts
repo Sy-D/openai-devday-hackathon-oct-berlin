@@ -6,6 +6,7 @@ export type RackPart = {
   id: string
   name: string
   status: "blocked" | "delayed" | "on-track" | "delivered" | "unknown"
+  statusLabel?: string
 }
 
 export const partAnchors = new Map<string, THREE.Vector3>([

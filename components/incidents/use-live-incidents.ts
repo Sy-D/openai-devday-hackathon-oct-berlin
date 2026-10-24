@@ -25,6 +25,7 @@ const listeners = new Set<() => void>()
 let stream: EventSource | null = null
 let controller: AbortController | null = null
 let closeTimer: ReturnType<typeof setTimeout> | undefined
+let freshnessTimer: ReturnType<typeof setInterval> | undefined
 
 function publish(next: LiveIncidentState) {
   state = next
@@ -58,6 +59,28 @@ function accept(next: IncidentSnapshot, fromStream: boolean) {
 
 function connect() {
   if (stream || !listeners.size) return
+  freshnessTimer ??= setInterval(() => {
+    if (!state.snapshot) return
+    const now = Date.now()
+    // A silent/disconnected stream must not retain a live freshness claim forever.
+    const sources = state.snapshot.sources.map((source) => {
+      if (source.state !== "live") return source
+      const age =
+        now - Date.parse(source.lastSuccessAt ?? state.snapshot!.generatedAt)
+      if (
+        Number.isFinite(age) &&
+        age <= Math.max(120_000, source.updateIntervalSeconds * 2000 + 30_000)
+      )
+        return source
+      return {
+        ...source,
+        state: "stale" as const,
+        message:
+          "No recent successful source update. Retaining the last received reports for review.",
+      }
+    })
+    publish({ ...state, snapshot: { ...state.snapshot, sources } })
+  }, 30_000)
   publish({
     ...state,
     connection: state.snapshot ? "reconnecting" : "connecting",
@@ -138,6 +161,8 @@ function subscribe(listener: () => void) {
       stream = null
       controller?.abort()
       controller = null
+      clearInterval(freshnessTimer)
+      freshnessTimer = undefined
     }, 0)
   }
 }

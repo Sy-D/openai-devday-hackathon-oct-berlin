@@ -200,7 +200,7 @@ function RackSchematic() {
         fontFamily="monospace"
         letterSpacing="3"
       >
-        DSX POD 01 / FRONT ELEVATION
+        AI DATA CENTER / FRONT VIEW
       </text>
       <text
         x="96"
@@ -683,9 +683,11 @@ export default function RackViewer({
       <div className={styles.modelLabel}>
         <span className={styles.crosshair}>+</span>
         <span>
-          POD 01
+          AI DATA CENTER
           <span>
-            {mode === "wireframe" ? "TECHNICAL VIEW" : "INTEGRATION VIEW"}
+            {mode === "wireframe"
+              ? "STRUCTURAL WIREFRAME"
+              : "MODULAR INFRASTRUCTURE"}
           </span>
         </span>
       </div>
@@ -716,17 +718,17 @@ export default function RackViewer({
               style={markerStyle}
               data-status={part.status}
               data-selected={selectedId === part.id}
-              aria-label={`Inspect ${part.name}: ${statusLabels[part.status]}`}
+              aria-label={`Inspect ${part.name}: ${part.statusLabel ?? statusLabels[part.status]}`}
               aria-pressed={selectedId === part.id}
               onClick={() => onSelect(part.id)}
-              title={`${part.name} · ${statusLabels[part.status]}`}
+              title={`${part.name} · ${part.statusLabel ?? statusLabels[part.status]}`}
             >
               <span className={styles.dot}>
                 {String(index + 1).padStart(2, "0")}
               </span>
               <span className={styles.tooltip}>
                 <strong>{part.name}</strong>
-                <span>{statusLabels[part.status]}</span>
+                <span>{part.statusLabel ?? statusLabels[part.status]}</span>
               </span>
             </button>
           )

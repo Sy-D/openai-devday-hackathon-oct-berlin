@@ -116,6 +116,57 @@ test("GDACS uses current episode alert, stable event identity and UTC provider d
   )
 })
 
+test("Autobahn corridor and ramp geometry remain distinct from a whole-road closure", () => {
+  const input = {
+    closure: [
+      {
+        identifier: "same-provider-id",
+        display_type: "CLOSURE_ENTRY_EXIT",
+        isBlocked: "false",
+        future: false,
+        title: "Ramp",
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [10.1, 53.1],
+            [10.2, 53.2],
+          ],
+        },
+      },
+    ],
+  }
+  const a24 = parseAutobahn(input, "closure", stamp, "A24").incidents[0]
+  const a10 = parseAutobahn(input, "closure", stamp, "A10").incidents[0]
+  assert.notEqual(a24.id, a10.id)
+  assert.equal(a24.roadImpact?.road, "A24")
+  assert.equal(a24.roadImpact?.scope, "ramp")
+  assert.equal(a24.roadImpact?.restriction, "closed")
+  assert.deepEqual(a24.geometry, input.closure[0].geometry)
+  assert.match(a10.url, /\/A10\//)
+})
+
+test("Autobahn reported delay is retained only from a bounded numeric provider field", () => {
+  const warning = {
+    identifier: "queue",
+    title: "Traffic",
+    delayTimeValue: "20",
+    description: ["- Reisezeitverlust: 20 Minuten (abnehmend)"],
+  }
+  const report = parseAutobahn({ warning: [warning] }, "warning", stamp, "A24")
+    .incidents[0]
+  assert.equal(report.reportedDelayMinutes, 20)
+  assert.match(report.description, /20 Minuten/)
+  assert.equal(
+    parseAutobahn(
+      { warning: [{ ...warning, delayTimeValue: "unknown" }] },
+      "warning",
+      stamp,
+      "A24"
+    ).incidents[0].reportedDelayMinutes,
+    undefined
+  )
+})
+
 test("EONET closed state is explicit and no country or polygon centroid is invented", () => {
   const [incident] = parseEonet(
     {
@@ -159,6 +210,14 @@ test("NDW parses namespaced records, latitude first geometry, source and provide
   assert.equal(incident.fetchedAt, stamp)
   assert.equal(incident.attribution, "NDW · RWS")
   assert.deepEqual(incident.coordinates, [5.1, 52.1])
+  assert.deepEqual(incident.geometry, {
+    type: "LineString",
+    coordinates: [
+      [5.1, 52.1],
+      [5.2, 52.2],
+    ],
+  })
+  assert.equal(incident.roadImpact?.scope, "lane")
   assert.match(
     incident.description,
     /does not necessarily mean a full road closure/

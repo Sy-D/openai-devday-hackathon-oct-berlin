@@ -5,6 +5,8 @@ import Link from "next/link"
 import { useRef, useState } from "react"
 import {
   ArrowRight,
+  AlertTriangle,
+  CheckCircle2,
   BookOpen,
   Cuboid,
   Layers3,
@@ -27,6 +29,7 @@ import {
   type PartComponentId,
 } from "@/src/data/part-catalog"
 import { PartProvenance } from "./part-provenance"
+import { useDeliveryOverview } from "@/components/procurement/use-delivery-overview"
 import type { AssemblyView, RackPart } from "./rack-geometry"
 import styles from "./dsx.module.css"
 import live from "./live-dsx.module.css"
@@ -54,11 +57,6 @@ const componentNames = {
   enclosure: "Container and roof",
 } satisfies Record<PartComponentId, string>
 const references = Object.values(partCatalog)
-const viewerParts: RackPart[] = references.map((part) => ({
-  id: part.componentId,
-  name: componentNames[part.componentId],
-  status: "unknown",
-}))
 
 export default function LiveDsxDashboard({
   initialComponent,
@@ -66,6 +64,48 @@ export default function LiveDsxDashboard({
   initialComponent?: string
 }) {
   const { snapshot } = useLiveIncidents()
+  const deliveryStates = useDeliveryOverview(snapshot)
+  const viewerParts: RackPart[] = references.map((part) => {
+    const delivery = deliveryStates.find(
+      (item) => item.componentId === part.componentId
+    )
+    const review =
+      delivery?.status === "changed" ||
+      delivery?.status === "exposed" ||
+      (delivery?.status === "unplanned" && part.componentId === "optics")
+    return {
+      id: part.componentId,
+      name: componentNames[part.componentId],
+      status:
+        delivery?.status === "reviewed"
+          ? "on-track"
+          : review
+            ? "blocked"
+            : "delayed",
+      statusLabel:
+        delivery?.status === "reviewed"
+          ? "Delivery reviewed"
+          : review
+            ? "Review delivery"
+            : "Plan delivery",
+    }
+  })
+  const needsReview = deliveryStates.filter(
+    (item) => item.status === "changed" || item.status === "exposed"
+  )
+  const plannedCount = deliveryStates.filter((item) => item.planned).length
+  const actionOrder = ["changed", "exposed", "ready", "unplanned", "reviewed"]
+  const actions = [...deliveryStates]
+    .sort(
+      (a, b) =>
+        actionOrder.indexOf(a.status) - actionOrder.indexOf(b.status) ||
+        Number(b.componentId === "optics") -
+          Number(a.componentId === "optics") ||
+        Number(b.componentId === "controls") -
+          Number(a.componentId === "controls")
+    )
+    .slice(0, 3)
+  const primaryComponent = needsReview[0]?.componentId ?? "optics"
   const [selectedId, setSelectedId] = useState<string | null>(
     getPartReference(initialComponent ?? "")?.componentId ?? null
   )
@@ -124,37 +164,88 @@ export default function LiveDsxDashboard({
             <div className={styles.eyebrow}>
               FORMA / INFRASTRUCTURE WORKSPACE
             </div>
-            <h1>One pod. Every dependency.</h1>
+            <h1>A modular AI data center.</h1>
             <p>
-              Explore the hardware. Follow reported incidents. Verify the
-              evidence before changing a delivery plan.
+              Server racks, networking, power and cooling in one assembly.
+              Select a component to inspect products, seller offers and delivery
+              routes.
             </p>
           </div>
           <div className={`${styles.heroActions} ${live.heroActions}`}>
             <Badge variant="outline">
               Live observations · researched hardware
             </Badge>
-            <Link href="/?mode=demo" className={live.subtleLink}>
-              Try the recovery rehearsal <ArrowRight size={13} />
+            <Link href="/planning?component=optics" className={live.subtleLink}>
+              Plan a delivery <ArrowRight size={13} />
             </Link>
           </div>
         </header>
-        <section className={live.nextAction} aria-label="Workspace next action">
-          <PackageSearch size={22} aria-hidden />
-          <div>
-            <h2>Verify the shipment behind each part</h2>
-            <p>
-              Product references are ready. Orders, dispatch locations and
-              carrier routes still need confirmation before incidents can be
-              tied to deliveries.
-            </p>
-          </div>
-          <Link
-            href="/incidents"
-            className={buttonVariants({ variant: "secondary", size: "sm" })}
+        <section className={live.actionArea} aria-label="Delivery actions">
+          <div
+            className={live.nextAction}
+            data-status={
+              needsReview.some((item) => item.status === "changed")
+                ? "changed"
+                : needsReview.length
+                  ? "exposed"
+                  : "ready"
+            }
           >
-            Review incidents <ArrowRight size={14} />
-          </Link>
+            {needsReview.length ? (
+              <AlertTriangle size={24} aria-hidden />
+            ) : (
+              <PackageSearch size={24} aria-hidden />
+            )}
+            <div>
+              <span className={live.actionEyebrow}>NEXT ACTION</span>
+              <h2>
+                {needsReview.length
+                  ? `${needsReview.length} delivery ${needsReview.length === 1 ? "decision needs" : "decisions need"} review`
+                  : plannedCount
+                    ? "Keep your delivery decisions moving"
+                    : "Start with optical interconnects"}
+              </h2>
+              <p>
+                {needsReview.length
+                  ? "Review changed evidence and nearby reports before committing to a route."
+                  : plannedCount
+                    ? "Compare the latest route evidence, then save the next decision."
+                    : "Published NVIDIA optics offers, a dispatch point and live road reports are ready to compare."}
+              </p>
+            </div>
+            <Link
+              href={`/planning?component=${primaryComponent}`}
+              className={buttonVariants({ size: "sm" })}
+            >
+              {needsReview.length ? "Review deliveries" : "Open delivery plan"}{" "}
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className={live.actionRail}>
+            {actions.map((item) => (
+              <Link
+                key={item.componentId}
+                href={`/planning?component=${item.componentId}`}
+                className={live.actionCard}
+                data-status={item.status}
+              >
+                <span className={live.actionIndicator}>
+                  {item.status === "reviewed" ? (
+                    <CheckCircle2 size={17} />
+                  ) : item.status === "changed" || item.status === "exposed" ? (
+                    <AlertTriangle size={17} />
+                  ) : (
+                    <ArrowRight size={17} />
+                  )}
+                </span>
+                <span>
+                  <strong>{componentNames[item.componentId]}</strong>
+                  <small>{item.label}</small>
+                </span>
+                <ArrowRight size={15} aria-hidden />
+              </Link>
+            ))}
+          </div>
         </section>
         <section className={styles.readiness} aria-label="Workspace evidence">
           <div>
@@ -193,9 +284,11 @@ export default function LiveDsxDashboard({
               <PackageSearch size={20} />
             </span>
             <div>
-              <small>SHIPMENT STATUS</small>
-              <strong>Not verified</strong>
-              <span>No order or carrier data connected</span>
+              <small>DELIVERY WORKSPACE</small>
+              <strong>
+                {plannedCount} <em>routes planned</em>
+              </strong>
+              <span>{needsReview.length} decisions need review</span>
             </div>
           </div>
         </section>
@@ -206,7 +299,8 @@ export default function LiveDsxDashboard({
           >
             <div className={styles.modelToolbar}>
               <span className={styles.modelTitle}>
-                <Cuboid size={15} /> POD 01 <small>/ REFERENCE MODEL</small>
+                <Cuboid size={15} /> AI data center pod{" "}
+                <small>/ HARDWARE MAP</small>
               </span>
               <div className={styles.modelActions}>
                 <div
@@ -280,10 +374,13 @@ export default function LiveDsxDashboard({
                   </Button>
                 ))}
               </div>
-              <span>
-                Illustrative geometry; product dimensions and compatibility are
-                unverified.
-              </span>
+              <details className={live.geometryNote}>
+                <summary>Model basis</summary>
+                <p>
+                  Illustrative geometry; product dimensions and compatibility
+                  are unverified.
+                </p>
+              </details>
             </div>
             <div
               className={styles.modelSearch}
@@ -317,7 +414,9 @@ export default function LiveDsxDashboard({
             </div>
             <div className={styles.modelFooter}>
               <span>Drag to orbit · scroll to zoom · right-drag to pan</span>
-              <span>Neutral markers = shipment not verified</span>
+              <span>
+                Red: review delivery · Amber: plan delivery · Green: reviewed
+              </span>
             </div>
           </section>
           <aside
@@ -344,25 +443,26 @@ export default function LiveDsxDashboard({
                   </Button>
                 </div>
                 <PartProvenance componentId={selected.componentId} compact />
-                <div className={live.evidenceNote}>
-                  <strong>Delivery impact not established</strong>
+                <details className={live.evidenceNote}>
+                  <summary>Origin and delivery evidence</summary>
                   <p>
                     A manufacturer&apos;s country footprint is not the origin of
                     this order. Confirm the dispatch site and route before
                     assigning any incident to this component.
                   </p>
-                  <Link href="/incidents">
+                  <Link href={`/incidents?component=${selected.componentId}`}>
                     Review source reports <ArrowRight size={13} />
                   </Link>
-                </div>
+                </details>
                 <Link
                   className={live.subtleLink}
                   href={`/planning?component=${selected.componentId}`}
                 >
-                  Rehearse a recovery decision <ArrowRight size={13} />
+                  Plan this delivery <ArrowRight size={13} />
                 </Link>
                 <p className={live.caption}>
-                  The rehearsal uses fictional shipments and prices.
+                  Compare sourced seller offers and real road routes; save a
+                  planning decision.
                 </p>
               </section>
             ) : (
@@ -395,25 +495,39 @@ export default function LiveDsxDashboard({
             <span>{filtered.length} components</span>
           </div>
           <div className={live.cards}>
-            {filtered.map((part) => (
-              <button
-                key={part.componentId}
-                type="button"
-                className={live.part}
-                aria-label={`Inspect ${componentNames[part.componentId]}`}
-                aria-pressed={selected?.componentId === part.componentId}
-                onClick={() => inspect(part.componentId)}
-              >
-                <span className={live.partCategory}>
-                  {componentNames[part.componentId]}
-                </span>
-                <strong>{part.productName}</strong>
-                <span>{part.manufacturer}</span>
-                <span className={live.partState}>
-                  Shipment not verified <ArrowRight size={13} />
-                </span>
-              </button>
-            ))}
+            {filtered.map((part) => {
+              const delivery = deliveryStates.find(
+                (item) => item.componentId === part.componentId
+              )
+              return (
+                <article
+                  key={part.componentId}
+                  className={live.part}
+                  data-status={delivery?.status}
+                >
+                  <button
+                    type="button"
+                    className={live.partInspect}
+                    aria-label={`Inspect ${componentNames[part.componentId]}`}
+                    aria-pressed={selected?.componentId === part.componentId}
+                    onClick={() => inspect(part.componentId)}
+                  >
+                    <span className={live.partCategory}>
+                      {componentNames[part.componentId]}
+                    </span>
+                    <strong>{part.productName}</strong>
+                    <span>{part.manufacturer}</span>
+                  </button>
+                  <Link
+                    href={`/planning?component=${part.componentId}`}
+                    className={live.partState}
+                  >
+                    {delivery?.label ?? "Plan delivery"}{" "}
+                    <ArrowRight size={13} />
+                  </Link>
+                </article>
+              )
+            })}
           </div>
           {!filtered.length && (
             <p className={live.caption}>
