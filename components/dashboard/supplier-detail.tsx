@@ -123,7 +123,7 @@ function SupplierDetailCard({
               variant={selected ? "outline" : "default"}
               onClick={onToggle}
             >
-              {selected ? "Remove from selection" : "Add to comparison"}
+              {selected ? "Deselect" : "Select"}
             </Button>
             <Button
               className="w-full"

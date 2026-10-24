@@ -1,6 +1,5 @@
 "use client"
 
-import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import {
   useDeferredValue,
@@ -17,12 +16,10 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
-  ArrowRight,
   ArrowUpRight,
   Check,
   ChevronLeft,
   ChevronRight,
-  GitCompareArrows,
   Sparkles,
   X,
 } from "lucide-react"
@@ -55,15 +52,10 @@ import {
 } from "@/components/ui/table"
 import { AppShell } from "./app-shell"
 import { RiskLandscape } from "@/components/dashboard/risk-landscape"
-import { euro, RiskBadge } from "@/components/dashboard/risk-badge"
-import {
-  ComparisonDialog,
-  ResearchDialog,
-} from "@/components/dashboard/workspace-panels"
+import { RiskBadge } from "@/components/dashboard/risk-badge"
 import { CommandSearch } from "./command-search"
 import { ChatDock } from "./chat-dock"
 import { Toaster } from "sonner"
-import { useResearchQueue } from "@/lib/use-research-queue"
 import {
   AnimatedNumber,
   deliveryFormat,
@@ -84,28 +76,13 @@ const featuredIds = ["SUPP_00731", "SUPP_00012", "SUPP_00450", "SUPP_00018"]
 const riskItems = ["All risk levels", "Low", "Medium", "High", "Critical"]
 type SortKey = "name" | "risk" | "level" | "delivery" | "exposure"
 type SortState = { key: SortKey; direction: "asc" | "desc" } | null
-type WorkspacePanel =
-  | { kind: "none" }
-  | { kind: "compare" }
-  | { kind: "profile"; supplier: Supplier }
-  | { kind: "research" }
-
 const pageSize = 8
 
 export function SupplierDashboard({
-  suppliers: dataset,
+  suppliers,
 }: {
   suppliers: Supplier[]
 }) {
-  const [researched, setResearched] = useState<Supplier[]>([])
-  const { jobs: researchJobs, enqueue: enqueueResearch } = useResearchQueue()
-  const suppliers = useMemo(() => {
-    // A freshly re-researched row replaces the stale persisted CSV row.
-    return [
-      ...researched,
-      ...dataset.filter((d) => !researched.some((r) => r.id === d.id)),
-    ]
-  }, [researched, dataset])
   const [search, setSearch] = useState("")
   const query = useDeferredValue(search.trim().toLowerCase())
   const [riskFilter, setRiskFilter] = useState("All risk levels")
@@ -126,19 +103,10 @@ export function SupplierDashboard({
   )
   const [page, setPage] = useState(0)
   const [selectedIds, setSelectedIds] = useState(() => new Set<string>())
-  const [panel, setPanel] = useState<WorkspacePanel>({ kind: "none" })
   const [notice, setNotice] = useState("")
   const [overlaySeed, setOverlaySeed] = useState<string | null>(null)
   const [chatSeed, setChatSeed] = useState<string | null>(null)
   const { resolvedTheme } = useTheme()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
-  useEffect(() => {
-    if (selectedIds.size === 0) return
-    router.prefetch(`/compare?ids=${[...selectedIds].join(",")}`)
-  }, [selectedIds, router])
-
   useEffect(() => {
     function onType(event: KeyboardEvent) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -156,14 +124,13 @@ export function SupplierDashboard({
         )
       )
         return
-      if (overlaySeed !== null || chatSeed !== null || panel.kind !== "none")
-        return
+      if (overlaySeed !== null || chatSeed !== null) return
       event.preventDefault()
       setOverlaySeed(event.key)
     }
     document.addEventListener("keydown", onType)
     return () => document.removeEventListener("keydown", onType)
-  }, [overlaySeed, chatSeed, panel.kind])
+  }, [overlaySeed, chatSeed])
 
   const filtered = useMemo(
     () =>
@@ -274,28 +241,17 @@ export function SupplierDashboard({
       const next = new Set(previous)
       let added = 0
       for (const id of ids) {
-        if (next.size >= 20) break
         if (!next.has(id)) {
           next.add(id)
           added += 1
         }
       }
-      setNotice(
-        next.size >= 20 && added < ids.length
-          ? `${added} of ${ids.length} suppliers added — the comparison cap is 20.`
-          : `${added} suppliers selected from the marked area.`
-      )
+      setNotice(`${added} suppliers selected from the marked area.`)
       return next
     })
   }
 
   function toggleSupplier(id: string, checked: boolean) {
-    if (checked && selectedIds.size >= 20) {
-      setNotice(
-        "You can compare up to 20 suppliers. Remove one to add another."
-      )
-      return
-    }
     setNotice("")
     setSelectedIds((previous) => {
       const next = new Set(previous)
@@ -305,58 +261,11 @@ export function SupplierDashboard({
     })
   }
 
-  function exportMemo() {
-    const contents = [
-      "# Supplier shortlist",
-      "",
-      "Source: supplier_risk_dataset.csv. Risk scores: 0 = no risk, 100 = maximum risk.",
-      "",
-      ...selected.map(
-        (s) =>
-          `## ${s.name} (${s.id})\nTotal risk: ${s.risk}/100 (${s.level}). Financial risk: ${s.financial}/100. Credit risk: ${s.credit}/100. Delivery: ${s.delivery.toFixed(2)}%. Purchase order exposure: ${euro.format(s.exposure)}.\n`
-      ),
-      "",
-      "This shortlist records evidence, not an award recommendation. Verify company identity, component suitability and the relevant due-diligence requirements. Total risk weights are not supplied.",
-    ]
-    const url = URL.createObjectURL(
-      new Blob([contents.join("\n")], { type: "text/markdown" })
-    )
-    const anchor = document.createElement("a")
-    anchor.href = url
-    anchor.download = "supplier-shortlist.md"
-    anchor.click()
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
-    setNotice("Your shortlist memo has been downloaded.")
-  }
-
-  // Deep links like /suppliers?panel=compare used by the sidebar on other pages.
-  useEffect(() => {
-    const target = searchParams.get("panel")
-    if (!target) return
-    const timer = setTimeout(() => {
-      if (target === "compare") setPanel({ kind: "compare" })
-      else if (target === "research") setPanel({ kind: "research" })
-      else if (target === "memo") exportMemo()
-      router.replace("/suppliers", { scroll: false })
-    }, 0)
-    return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
-
   return (
     <AppShell
       breadcrumb={["Workspace", "Suppliers"]}
-      compareCount={selected.length}
       overlay={
         <>
-          <ComparisonDialog
-            open={panel.kind === "compare" || panel.kind === "profile"}
-            mode={panel.kind === "profile" ? "profile" : "compare"}
-            onOpenChange={(open) => {
-              if (!open) setPanel({ kind: "none" })
-            }}
-            suppliers={panel.kind === "profile" ? [panel.supplier] : selected}
-          />
           <CommandSearch
             open={overlaySeed !== null}
             seed={overlaySeed ?? ""}
@@ -378,34 +287,6 @@ export function SupplierDashboard({
             selected={selected}
             onClose={() => setChatSeed(null)}
             onOpenProfile={setActiveSupplier}
-          />
-          <ResearchDialog
-            open={panel.kind === "research"}
-            onOpenChange={(open) => {
-              if (!open) setPanel({ kind: "none" })
-            }}
-            suppliers={suppliers}
-            jobs={researchJobs}
-            onEnqueue={(name, updateId) =>
-              enqueueResearch(name, updateId, {
-                onDone: (supplier) => {
-                  setResearched((previous) =>
-                    previous.some((s) => s.id === supplier.id)
-                      ? previous.map((s) =>
-                          s.id === supplier.id ? supplier : s
-                        )
-                      : [supplier, ...previous]
-                  )
-                  toggleSupplier(supplier.id, true)
-                },
-                onSelect: (supplier) =>
-                  setPanel({ kind: "profile", supplier }),
-              })
-            }
-            onSelectExisting={(supplier) => {
-              toggleSupplier(supplier.id, true)
-              setPanel({ kind: "none" })
-            }}
           />
           <Toaster position="bottom-right" />
         </>
@@ -649,8 +530,7 @@ export function SupplierDashboard({
                       </Badge>
                     </CardTitle>
                     <CardDescription>
-                      Filter, rank and select up to 20 suppliers for a closer
-                      look.
+                      Filter, rank and select suppliers to focus the chart.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-5">
@@ -745,7 +625,6 @@ export function SupplierDashboard({
                                   const next = new Set(previous)
                                   if (checked) {
                                     for (const s of visible) {
-                                      if (next.size >= 20) break
                                       next.add(s.id)
                                     }
                                   } else {
@@ -826,12 +705,8 @@ export function SupplierDashboard({
                                 onClick={(event) => event.stopPropagation()}
                               >
                                 <Checkbox
-                                  aria-label={`Compare ${supplier.id}`}
+                                  aria-label={`Select ${supplier.id}`}
                                   checked={selectedIds.has(supplier.id)}
-                                  disabled={
-                                    !selectedIds.has(supplier.id) &&
-                                    selected.length >= 20
-                                  }
                                   onCheckedChange={(checked) =>
                                     toggleSupplier(supplier.id, checked)
                                   }
@@ -955,43 +830,6 @@ export function SupplierDashboard({
                     </div>
                   </CardFooter>
                 </Card>
-                <div className="sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-4 rounded-2xl border bg-card/95 px-5 py-4 text-card-foreground shadow-sm backdrop-blur-sm">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-secondary">
-                      <GitCompareArrows className="size-4" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        <AnimatedNumber value={selected.length} /> of 20
-                        suppliers selected
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Compare risk profiles, delivery and financial exposure.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      className="h-10"
-                      disabled={!selected.length}
-                      onClick={() => {
-                        setSelectedIds(new Set())
-                        setNotice("")
-                      }}
-                    >
-                      Clear
-                    </Button>
-                    <Button
-                      size="lg"
-                      disabled={!selected.length}
-                      onClick={() => setPanel({ kind: "compare" })}
-                    >
-                      Compare suppliers
-                      <ArrowRight data-icon="inline-end" />
-                    </Button>
-                  </div>
-                </div>
               </div>
               <SupplierDetail
                 supplier={activeSupplier}

@@ -5,13 +5,10 @@ import { useTheme } from "next-themes"
 import {
   Building2,
   ChevronRight,
-  FileText,
   Factory,
-  GitCompareArrows,
   LayoutDashboard,
   Boxes,
   Moon,
-  Search,
   Sun,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -26,7 +23,6 @@ import {
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
@@ -34,20 +30,13 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { AnimatedNumber } from "./animated-number"
 
-/**
- * Shared app chrome: sidebar + header. Nav uses deep links
- * (/suppliers?panel=compare|research|memo) so it also works off the overview page.
- */
 export function AppShell({
   breadcrumb,
-  compareCount,
   children,
   overlay,
 }: {
   breadcrumb: string[]
-  compareCount?: number
   children: React.ReactNode
   overlay?: React.ReactNode
 }) {
@@ -106,38 +95,6 @@ export function AppShell({
                     >
                       <Factory />
                       <span>Production planning</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      tooltip="Compare suppliers"
-                      render={<Link href="/suppliers?panel=compare" />}
-                    >
-                      <GitCompareArrows />
-                      <span>Compare</span>
-                    </SidebarMenuButton>
-                    {compareCount !== undefined && (
-                      <SidebarMenuBadge>
-                        <AnimatedNumber value={compareCount} />
-                      </SidebarMenuBadge>
-                    )}
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      tooltip="Research agent"
-                      render={<Link href="/suppliers?panel=research" />}
-                    >
-                      <Search />
-                      <span>Research agent</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      tooltip="Export shortlist memo"
-                      render={<Link href="/suppliers?panel=memo" />}
-                    >
-                      <FileText />
-                      <span>Decision memo</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

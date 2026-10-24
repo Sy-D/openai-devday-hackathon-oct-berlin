@@ -115,7 +115,6 @@ function renderPillLabel(raw: string) {
 
 const EXAMPLE_PROMPTS = [
   "What is the risk of {supplier}?",
-  "Compare {supplier A} with {supplier B} financially",
   "Which selected supplier has the lowest financial risk?",
 ]
 
@@ -368,7 +367,7 @@ function Dock({
   function ask(question: string) {
     // The analyst only sees the dataset — name the current selection when
     // the question refers to it (e.g. "Which selected supplier …").
-    const ids = selected.slice(0, 20).map((s) => s.id)
+    const ids = selected.map((s) => s.id)
     void askAnalyst(
       /\bselected\b/i.test(question) && ids.length
         ? `${question} (Selected suppliers: ${ids.join(", ")})`

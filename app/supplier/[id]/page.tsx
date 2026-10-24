@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, Building2, Globe, Mail, MapPin, Search } from "lucide-react"
+import { ArrowLeft, Building2, Globe, Mail, MapPin } from "lucide-react"
 import { AppShell } from "@/components/dashboard/app-shell"
 import { Button } from "@/components/ui/button"
 import {
@@ -186,8 +186,8 @@ export default async function SupplierPage({
                     !supplier.website &&
                     !supplier.contactEmail && (
                       <p className="text-muted-foreground">
-                        Public contact details are collected in the research
-                        report.
+                        No public contact details are available for this
+                        supplier.
                       </p>
                     )}
                 </>
@@ -198,18 +198,6 @@ export default async function SupplierPage({
                     Anonymized dataset record — internal ERP entry, no public
                     contact fields.
                   </p>
-                  <p className="flex items-start gap-2 text-muted-foreground">
-                    <Search className="mt-0.5 size-4 shrink-0" />
-                    Run the research agent on the real company to pull HQ,
-                    website and contacts from public sources.
-                  </p>
-                  <div className="flex items-center gap-3 pt-1 text-muted-foreground/60">
-                    <Globe className="size-4" />
-                    <Mail className="size-4" />
-                    <span className="text-xs">
-                      Populated after research run
-                    </span>
-                  </div>
                 </>
               )}
             </CardContent>

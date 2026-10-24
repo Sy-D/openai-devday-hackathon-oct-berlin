@@ -15,7 +15,7 @@ const fontMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Infrastructure intelligence | FORMA",
   description:
-    "Explore supplier risks, compare your shortlist and make evidence-based sourcing decisions.",
+    "Explore supplier risks and make evidence-based sourcing decisions.",
 }
 
 export default function RootLayout({
