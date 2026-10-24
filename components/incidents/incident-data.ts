@@ -9,6 +9,7 @@ const sourceUrl = z
   .string()
   .url()
   .refine((value) => /^https?:\/\//i.test(value))
+const coordinate = z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)])
 const incidentSchema = z.object({
   id: z.string().min(1),
   sourceId,
@@ -28,9 +29,17 @@ const incidentSchema = z.object({
   status: z.enum(["active", "scheduled", "resolved", "historical", "unknown"]),
   country: z.string(),
   location: z.string(),
-  coordinates: z
-    .tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)])
-    .optional(),
+  coordinates: coordinate.optional(),
+  geometry: z.discriminatedUnion("type", [
+    z.object({ type: z.literal("LineString"), coordinates: z.array(coordinate).min(2).max(2000) }),
+    z.object({ type: z.literal("MultiLineString"), coordinates: z.array(z.array(coordinate).min(2).max(2000)) }),
+  ]).optional(),
+  roadImpact: z.object({
+    road: z.string().optional(),
+    scope: z.enum(["road", "carriageway", "lane", "ramp", "traffic-warning", "unknown"]),
+    restriction: z.enum(["closed", "restricted", "warning", "unknown"]),
+    direction: z.string().optional(),
+  }).optional(),
   startedAt: timestamp.optional(),
   endedAt: timestamp.optional(),
   updatedAt: timestamp.optional(),

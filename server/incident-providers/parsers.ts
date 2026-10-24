@@ -249,7 +249,8 @@ export function parseEonet(input: unknown, fetchedAt: string): ProviderBatch {
 export function parseAutobahn(
   input: unknown,
   service: "closure" | "warning",
-  fetchedAt: string
+  fetchedAt: string,
+  road: "A2" | "A24" | "A10" = "A2"
 ): ProviderBatch {
   const rows = requiredArray(input, service)
   const incidents = rows.flatMap((row) => {
@@ -269,10 +270,10 @@ export function parseAutobahn(
           : "Provider traffic warning; whole-motorway blockage is not confirmed."
     return [
       {
-        id: `autobahn:A2:${service}:${providerId}`,
+        id: `autobahn:${road}:${service}:${providerId}`,
         sourceId: "autobahn" as const,
         providerId,
-        title: `${ramp ? "A2 ramp restriction" : service === "closure" ? "A2 closure notice" : "A2 traffic warning"}: ${plain(p.title) || providerId}`,
+        title: `${road} ${ramp ? "ramp restriction" : service === "closure" ? "closure notice" : "traffic warning"}: ${plain(p.title) || providerId}`,
         description:
           `${scope} ${list(p.description).map(plain).filter(Boolean).join(" ")}`.slice(
             0,
@@ -282,20 +283,50 @@ export function parseAutobahn(
         severity: blocked ? ("high" as const) : ("unknown" as const),
         status: future ? ("scheduled" as const) : ("active" as const),
         country: "Germany",
-        location: plain(p.subtitle) || plain(p.title) || "A2",
+        location: plain(p.subtitle) || plain(p.title) || road,
         coordinates: coordinate(
           object(p.coordinate).long,
           object(p.coordinate).lat
         ),
+        geometry: roadGeometry(p.geometry),
+        roadImpact: {
+          road,
+          scope: ramp ? "ramp" as const : service === "warning" ? "traffic-warning" as const : blocked ? "road" as const : "unknown" as const,
+          restriction: service === "warning" ? "warning" as const : blocked || ramp ? "closed" as const : "restricted" as const,
+          direction: plain(p.subtitle) || undefined,
+        },
         startedAt,
         fetchedAt,
-        url: `${PROVIDER_URLS.autobahn}${service}`,
+        url: `https://verkehr.autobahn.de/o/autobahn/${road}/services/${service}`,
         evidence: "reported-restriction" as const,
         attribution: `Autobahn Germany${text(p.source) ? ` · ${text(p.source)}` : ""}`,
       },
     ]
   })
   return { incidents: validRecords(incidents, rows.length) }
+}
+
+function roadGeometry(value: unknown): LiveIncident["geometry"] {
+  const geo = object(value)
+  if (geo.type !== "LineString" || !Array.isArray(geo.coordinates) || geo.coordinates.length < 2 || geo.coordinates.length > 2000) return undefined
+  const points = geo.coordinates.map(value => Array.isArray(value) ? coordinate(value[0], value[1]) : undefined)
+  if (points.some(value => value === undefined)) return undefined
+  return { type: "LineString", coordinates: points.filter(value => value !== undefined) }
+}
+
+function ndwGeometry(record: unknown): LiveIncident["geometry"] {
+  const lines = descendants(record, "posList").flatMap(value => {
+    const values = text(value, 200_000).split(/\s+/).map(Number)
+    if (values.length < 4 || values.length > 4000 || values.length % 2) return []
+    const points: [number, number][] = []
+    for (let i = 0; i < values.length; i += 2) {
+      const point = coordinate(values[i + 1], values[i])
+      if (!point) return []
+      points.push(point)
+    }
+    return [points]
+  })
+  return lines.length === 1 ? { type: "LineString", coordinates: lines[0] } : lines.length ? { type: "MultiLineString", coordinates: lines } : undefined
 }
 
 // DATEX II has nested, namespaced location variants. Walk only the parsed tree,
@@ -388,6 +419,13 @@ export function parseNdw(xml: string, fetchedAt: string): ProviderBatch {
         .filter(Boolean)
         .join(", ")
       const road = firstText(record, "roadNumber")
+      const carriageway = firstText(record, "carriageway")
+      const roadImpact: NonNullable<LiveIncident["roadImpact"]> = {
+        road: road || undefined,
+        scope: /sliproad/i.test(carriageway) ? "ramp" : managementType === "roadClosed" ? "road" : managementType === "carriagewayClosures" ? "carriageway" : managementType === "laneClosures" ? "lane" : "unknown",
+        restriction: ["roadClosed", "carriagewayClosures", "laneClosures"].includes(managementType ?? "") ? "closed" : managementType ? "restricted" : "unknown",
+        direction: firstText(record, "alertCDirectionCoded") || undefined,
+      }
       const location =
         [
           road,
@@ -432,6 +470,8 @@ export function parseNdw(xml: string, fetchedAt: string): ProviderBatch {
         country: "Netherlands",
         location,
         coordinates: coordinates ?? coordinate(line[1], line[0]),
+        geometry: ndwGeometry(record),
+        roadImpact,
         startedAt,
         endedAt,
         updatedAt: date(record.situationRecordVersionTime),

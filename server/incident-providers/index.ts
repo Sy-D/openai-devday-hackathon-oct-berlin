@@ -109,22 +109,20 @@ export const incidentProviders: IncidentProvider[] = [
   },
   {
     id: "autobahn",
-    name: "Autobahn Germany · A2",
+    name: "Autobahn Germany · A2 / A24 / A10",
     url: "https://verkehr.autobahn.de/",
     intervalSeconds: 60,
     async load(now) {
-      // Both halves must succeed before replacing the last complete A2 snapshot.
-      const [closures, warnings] = await Promise.all([
-        json(`${PROVIDER_URLS.autobahn}closure`),
-        json(`${PROVIDER_URLS.autobahn}warning`),
-      ])
+      // All corridor endpoints must succeed before replacing the complete snapshot.
+      const batches = await Promise.all((["A2", "A24", "A10"] as const).flatMap(road =>
+        (["closure", "warning"] as const).map(async service => parseAutobahn(
+          await json(`https://verkehr.autobahn.de/o/autobahn/${road}/services/${service}`), service, now.toISOString(), road
+        ))
+      ))
       return {
-        incidents: [
-          ...parseAutobahn(closures, "closure", now.toISOString()).incidents,
-          ...parseAutobahn(warnings, "warning", now.toISOString()).incidents,
-        ],
+        incidents: batches.flatMap(batch => batch.incidents),
         message:
-          "Germany A2 only: closure notices and traffic warnings. Many closures affect entry/exit ramps. Provider end/update times are not supplied consistently.",
+          "Germany A2, A24 and A10 corridors: closure notices and traffic warnings. Many closures affect entry/exit ramps. Provider geometries and restriction scope are preserved; proximity does not establish a blocked route.",
       }
     },
   },

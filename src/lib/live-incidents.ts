@@ -14,6 +14,15 @@ export type LiveIncident = {
   country: string
   location: string
   coordinates?: [number, number]
+  geometry?:
+    | { type: "LineString"; coordinates: [number, number][] }
+    | { type: "MultiLineString"; coordinates: [number, number][][] }
+  roadImpact?: {
+    road?: string
+    scope: "road" | "carriageway" | "lane" | "ramp" | "traffic-warning" | "unknown"
+    restriction: "closed" | "restricted" | "warning" | "unknown"
+    direction?: string
+  }
   startedAt?: string
   endedAt?: string
   updatedAt?: string
