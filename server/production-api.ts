@@ -1,7 +1,7 @@
-import { answerRequest, DEFAULT_MODEL, InputError, validateRequest, type AssistantOptions } from './assistant';
+import { answerRequest, DEFAULT_MODEL, InputError, validateRequest, type AssistantOptions, type AssistantRequest, type AssistantResponse, type AssistantHealth } from './assistant';
 
 const MAX_BODY_BYTES = 96 * 1024;
-const json = (status: number, body: unknown) => Response.json(body, {
+const json = (status: number, body: AssistantResponse) => Response.json(body, {
   status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
 });
 
@@ -26,7 +26,7 @@ function originError(request: Request): Response | undefined {
   return json(403, { error: 'Only same-origin browser requests are allowed.' });
 }
 
-async function readBody(request: Request): Promise<unknown> {
+async function readBody(request: Request): Promise<AssistantRequest> {
   if (Number(request.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) throw new InputError('Request is too large.');
   if (!request.body) throw new InputError('Request must contain valid JSON.');
   const reader = request.body.getReader();
@@ -47,8 +47,10 @@ async function readBody(request: Request): Promise<unknown> {
     const combined = new Uint8Array(bytes);
     let offset = 0;
     for (const chunk of chunks) { combined.set(chunk, offset); offset += chunk.byteLength; }
-    try { return JSON.parse(new TextDecoder().decode(combined)); }
+    let input: unknown;
+    try { input = JSON.parse(new TextDecoder().decode(combined)); }
     catch { throw new InputError('Request must contain valid JSON.'); }
+    return validateRequest(input);
   } finally {
     clearTimeout(timer);
     void reader.cancel().catch(() => {});
@@ -64,12 +66,13 @@ export function createProductionApi(options: AssistantOptions = {}) {
       const forbidden = originError(request);
       if (forbidden) return forbidden;
       const configured = Boolean(options.apiKey?.trim());
-      return json(200, {
+      const health: AssistantHealth = {
         mode: configured ? 'live' : 'demo',
         ready: configured && providerStatus === 'verified',
         status: configured ? providerStatus : 'not_configured',
-        ...(configured ? { model: options.model || DEFAULT_MODEL } : {}),
-      });
+      };
+      if (configured) health.model = options.model || DEFAULT_MODEL;
+      return json(200, health);
     },
     async assistant(request: Request): Promise<Response> {
       const forbidden = originError(request);
@@ -78,7 +81,7 @@ export function createProductionApi(options: AssistantOptions = {}) {
       if (activeRequests >= 4) return json(429, { error: 'The assistant is busy. Try again in a moment.' });
       activeRequests += 1;
       try {
-        const input = validateRequest(await readBody(request));
+        const input = await readBody(request);
         const result = await answerRequest(input, options);
         if (options.apiKey?.trim()) providerStatus = result.mode === 'live' ? 'verified' : 'unavailable';
         return json(200, result);
@@ -94,6 +97,7 @@ export function createProductionApi(options: AssistantOptions = {}) {
 
 // Routes may be compiled separately. Share readiness only within this Node process;
 // a new process or serverless instance correctly begins unverified.
+// SAFETY: this optional slot is initialized only with createProductionApi; missing state is handled below.
 const processState = globalThis as typeof globalThis & { formaProductionApi?: ReturnType<typeof createProductionApi> };
 export function productionApi() {
   return processState.formaProductionApi ??= createProductionApi({

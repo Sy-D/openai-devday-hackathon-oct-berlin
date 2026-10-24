@@ -25,6 +25,7 @@ export function distance(a:Factory,b:Factory) {
 }
 export function createPlans(order:Order,disrupted=false):Plan[] {
   if(!validScenario(order))throw new RangeError('Order quantity and deadline must be whole numbers within the simulated scenario limits.');
+  // SAFETY: configurations is a module-owned literal with exactly the three PlanId keys and is never mutated.
   return (Object.keys(configurations) as PlanId[]).map(id=>{
     const config=configurations[id],assembly=siteById(config.assembly),issues:string[]=[];
     const legs=parts.map((part,i)=>{

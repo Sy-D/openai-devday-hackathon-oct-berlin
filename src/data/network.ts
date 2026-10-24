@@ -27,12 +27,12 @@ export const parts: Part[] = [
 export type Order = { id:string; name:string; customer:string; quantity:number; dueHours:number; state:'action'|'production'|'transit'|'planned'; priority:'Critical'|'Standard'; baselineEta:number; value:number; };
 const names = ['Robotic gripper kit','Compact gripper kit','Fixture gripper kit','Inspection gripper kit','Conveyor gripper kit','Automation gripper kit'];
 const customers = ['Nordwerk Robotics','Atlas Automation','Kraft Systems','Nexa Industrial','Vector Motion','Feldwerk'];
-export const orders:Order[] = Array.from({length:24},(_,i)=>({
+export const orders:Order[] = Array.from({length:24},(_,i):Order=>({
   id:`FM-${2048-i}`, name:names[i%names.length],customer:customers[i%customers.length],
   quantity:[12,24,8,16,20,10][i%6],dueHours:i===0?60:[72,48,96,80,120][(i-1+5)%5],
   state:i===0||i===7||i===16?'action':i%5===3?'transit':'production',
   priority:i===0||i===7?'Critical':'Standard',baselineEta:i===0?72:i===7?85:i===16?105:36+(i%4)*8,value:[6800,9240,3800,7600,8200,4300][i%6],
-})).map(order=>({...order,baselineEta:order.state==='action'?order.baselineEta:Math.min(order.baselineEta,order.dueHours-6)})) as Order[];
+})).map(order=>({...order,baselineEta:order.state==='action'?order.baselineEta:Math.min(order.baselineEta,order.dueHours-6)}));
 export const demoStart = new Date('2026-10-27T08:00:00+01:00');
 export const money = (n:number) => new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n);
 export const arrivalLabel = (hours:number) => new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Berlin'}).format(new Date(demoStart.getTime()+hours*3600000));

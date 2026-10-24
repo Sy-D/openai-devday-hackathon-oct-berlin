@@ -22,31 +22,50 @@ export type AssistantReply = {
   reply: string; suggestedPlanId?: string; mode: 'live' | 'demo';
   reason?: 'not_configured' | 'provider_unavailable';
 };
+export type AssistantHealth = {
+  mode: 'live' | 'demo'; ready: boolean;
+  status: 'not_configured' | 'unverified' | 'verified' | 'unavailable';
+  model?: string;
+};
+export type AssistantError = { error: string };
+export type AssistantResponse = AssistantReply | AssistantHealth | AssistantError;
 export type AssistantOptions = { apiKey?: string; model?: string; fetchImpl?: typeof fetch; timeoutMs?: number };
 
 export class InputError extends Error {}
+// This parser inspects untrusted JSON properties before validating each selected field.
+// oxlint-disable-next-line anti-slop/no-unknown-parameters, anti-slop/no-unsafe-dictionary-type
 const object = (value: unknown): Record<string, unknown> => {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Reject non-object input at the JSON boundary.
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new InputError('Expected an object.');
+  // SAFETY: the guard above rejects null, arrays and non-objects; properties remain untrusted.
+  // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type -- Each consumed property is validated below.
   return value as Record<string, unknown>;
 };
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- Primitive parser for untrusted JSON fields.
 const text = (value: unknown, label: string, max = 160): string => {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- This guard establishes the string contract before trimming.
   if (typeof value !== 'string' || !value.trim() || value.length > max) throw new InputError(`${label} must be a non-empty string of at most ${max} characters.`);
   return value.trim();
 };
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- Primitive parser for untrusted JSON fields.
 const number = (value: unknown, label: string, min = 0, max = 1_000_000): number => {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Reject coercible strings before numeric range validation.
   if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max) throw new InputError(`${label} is outside the allowed range.`);
   return value;
 };
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- Array elements are validated by each caller.
 const array = (value: unknown, label: string, max: number): unknown[] => {
   if (!Array.isArray(value) || value.length > max) throw new InputError(`${label} must be an array with at most ${max} entries.`);
   return value;
 };
 
 // Keep only the fields the assistant needs. Arbitrary client properties never reach the provider.
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- This is the public request parser, not an already validated domain consumer.
 export function validateRequest(input: unknown): AssistantRequest {
   const body = object(input), context = object(body.context), order = object(context.order);
   const plans = array(context.plans, 'plans', 12).map((value): Plan => {
     const plan = object(value);
+    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Require a real boolean from the incoming plan.
     if (typeof plan.feasible !== 'boolean') throw new InputError('Every plan needs a feasible flag.');
     const parsed: Plan = {
       id: text(plan.id, 'plan id', 80), name: text(plan.name, 'plan name'),
@@ -69,6 +88,7 @@ export function validateRequest(input: unknown): AssistantRequest {
   if (!plans.length || new Set(plans.map(plan => plan.id)).size !== plans.length) throw new InputError('Supply at least one plan with unique plan IDs.');
   const factories = array(context.factories ?? [], 'factories', 40).map(value => {
     const factory = object(value), result: Record<string, string | number | string[]> = {};
+    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Optional descriptive fields are copied only after string validation.
     for (const key of ['id', 'name', 'city', 'country', 'kind', 'qualification']) if (typeof factory[key] === 'string' && factory[key]) result[key] = text(factory[key], key, 160);
     for (const key of ['capacity', 'utilization', 'queueHours', 'productionHours', 'reliability']) if (factory[key] !== undefined) result[key] = number(factory[key], key);
     for (const key of ['processes', 'materials']) if (factory[key] !== undefined) result[key] = array(factory[key], key, 12).map(item => text(item, key, 80));
@@ -156,17 +176,22 @@ export function createResponsePayload(request: AssistantRequest, model = DEFAULT
   };
 }
 
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- External provider JSON must pass this parser before becoming a reply.
 function parseProviderReply(data: unknown, request: AssistantRequest): AssistantReply {
   const response = object(data);
   if (response.status !== 'completed' || !Array.isArray(response.output)) throw new Error('Provider did not complete.');
   const output = response.output.flatMap(item => {
+    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Provider output may contain non-message items.
     if (!item || typeof item !== 'object' || !Array.isArray(item.content)) return [];
+    // oxlint-disable-next-line anti-slop/no-unsafe-dictionary-type, anti-slop/no-runtime-typeof -- Consume only provider output_text parts with a string body.
     return item.content.filter((part: Record<string, unknown>) => part.type === 'output_text' && typeof part.text === 'string').map((part: Record<string, unknown>) => part.text);
   }).join('');
   const parsed = object(JSON.parse(output));
   const reply = text(parsed.reply, 'provider reply', 2500);
   if (parsed.suggestedPlanId !== null && !request.context.plans.some(plan => plan.id === parsed.suggestedPlanId && plan.feasible)) throw new Error('Provider suggested an unavailable plan.');
-  return { reply, mode: 'live', ...(typeof parsed.suggestedPlanId === 'string' ? { suggestedPlanId: parsed.suggestedPlanId } : {}) };
+  const result: AssistantReply = { reply, mode: 'live' };
+  if (parsed.suggestedPlanId !== null) result.suggestedPlanId = text(parsed.suggestedPlanId, 'suggestedPlanId', 80);
+  return result;
 }
 
 export async function answerRequest(request: AssistantRequest, options: AssistantOptions = {}): Promise<AssistantReply> {

@@ -20,7 +20,11 @@ const countries = [
   {name:'DENMARK',label:[9.8,55.5],points:[[8.6,54.9],[8.2,55.6],[8.6,56.6],[9.9,57.7],[10.6,57.1],[10.3,56.4],[10.8,55.9],[9.9,55.7],[9.9,54.8],[8.6,54.9]]},
 ];
 const xy = ([lon,lat]:number[]) => [lon*33.2,(55.5-lat)*49];
-const labelOffsets:Record<string,[number,number]>={eindhoven:[-18,26],dresden:[24,6],munich:[-8,27],poznan:[12,-16],vienna:[15,21],lyon:[12,23],leipzig:[-78,-16],prague:[-70,5],brno:[18,0],berlin:[14,-15]};
+const labelOffsets={eindhoven:[-18,26],dresden:[24,6],munich:[-8,27],poznan:[12,-16],vienna:[15,21],lyon:[12,23],leipzig:[-78,-16],prague:[-70,5],brno:[18,0],berlin:[14,-15]} satisfies Record<string,[number,number]>;
+function labelOffset(factory:Factory) {
+  // SAFETY: every ID in the fixed demo factories list has a corresponding labelOffsets entry above.
+  return labelOffsets[factory.id as keyof typeof labelOffsets];
+}
 const curve = (from:Factory,to:Factory,index:number) => {const [x1,y1]=xy(from.coordinates),[x2,y2]=xy(to.coordinates);return `M ${x1} ${y1} Q ${(x1+x2)/2+(index%2?28:-22)} ${(y1+y2)/2-32} ${x2} ${y2}`;};
 
 export default function NetworkMap({plan,orderQuantity,onInspect,disrupted}:{plan:Plan;orderQuantity:number;onInspect?:(factory:Factory)=>void;disrupted:boolean}){
@@ -39,7 +43,7 @@ export default function NetworkMap({plan,orderQuantity,onInspect,disrupted}:{pla
         {plan.legs.map((leg,i)=><g key={leg.partId}><path d={curve(siteById(leg.factoryId),siteById(plan.assemblyId),i)} fill="none" stroke="#fff" strokeWidth="6"/><path d={curve(siteById(leg.factoryId),siteById(plan.assemblyId),i)} fill="none" stroke={leg.partId==='actuator'?'#b28f62':'#398b76'} strokeWidth="2.5" strokeDasharray={leg.partId==='actuator'?'5 6':undefined} className="route-path"/></g>)}
         <path d={curve(siteById(plan.assemblyId),siteById('berlin'),0)} fill="none" stroke="white" strokeWidth="7"/>
         <path d={curve(siteById(plan.assemblyId),siteById('berlin'),0)} fill="none" stroke="#213f35" strokeWidth="3.5" className="route-path"/>
-        {factories.map(factory=>{const [x,y]=xy(factory.coordinates),[dx,dy]=labelOffsets[factory.id],isActive=active.has(factory.id);return <g key={factory.id} role="button" tabIndex={0} aria-label={`Inspect ${factory.name}, ${factory.city}`} onClick={()=>inspect(factory)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspect(factory);}}} className={`map-node ${isActive?'active':'inactive'}`}>
+        {factories.map(factory=>{const [x,y]=xy(factory.coordinates),[dx,dy]=labelOffset(factory),isActive=active.has(factory.id);return <g key={factory.id} role="button" tabIndex={0} aria-label={`Inspect ${factory.name}, ${factory.city}`} onClick={()=>inspect(factory)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inspect(factory);}}} className={`map-node ${isActive?'active':'inactive'}`}>
           {isActive&&<circle cx={x} cy={y} r={factory.kind==='customer'?20:17} fill={factory.kind==='customer'?'#213f3510':'#2e8e7615'}/>}
           {factory.kind==='assembly'?<rect x={x-9} y={y-9} width="18" height="18" rx="5" fill={isActive?'#fff':'#e2e8df'} stroke={isActive?'#43846e':'#b5c4b6'} strokeWidth="2.5" transform={`rotate(45 ${x} ${y})`}/>:<circle cx={x} cy={y} r={factory.kind==='customer'?10:8} fill={factory.kind==='customer'?'#213f35':factory.kind==='supplier'?'#b18d60':isActive?'#3b8c76':'#bac9bd'} stroke="white" strokeWidth="3" filter="url(#nodeShadow)"/>}
           {factory.id==='dresden'&&disrupted&&<circle cx={x+8} cy={y-8} r="5" fill="#d47c35" stroke="white" strokeWidth="2"/>}

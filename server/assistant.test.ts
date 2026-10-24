@@ -19,17 +19,21 @@ const fixture = (): AssistantRequest => ({
     ],
   },
 });
-const output = (value: unknown) => new Response(JSON.stringify({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(value) }] }] }), { status: 200 });
-const mockFetch = (fn: (url: string | URL | Request, init?: RequestInit) => Promise<Response>) => fn as typeof fetch;
+type ProviderAdvice = { reply: string; suggestedPlanId: string | null };
+const output = (value: ProviderAdvice) => new Response(JSON.stringify({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(value) }] }] }), { status: 200 });
+const mockFetch = (fn: typeof fetch) => fn;
 
 async function withServer(options: AssistantOptions, run: (base: string) => Promise<void>) {
   const server = createAssistantServer(options);
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
-  try { await run(`http://127.0.0.1:${(server.address() as AddressInfo).port}`); }
+  // SAFETY: the listening event follows a TCP listen call with a numeric port, so address is AddressInfo.
+  const address = server.address() as AddressInfo;
+  try { await run(`http://127.0.0.1:${address.port}`); }
   finally { server.closeAllConnections(); await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve())); }
 }
-const post = (base: string, body: unknown) => fetch(`${base}/api/assistant`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+type AssistantTestBody = AssistantRequest | { message: string };
+const post = (base: string, body: AssistantTestBody) => fetch(`${base}/api/assistant`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
 test('default demo advice chooses the cheapest on-time feasible plan', async () => {
   const result = await answerRequest(validateRequest(fixture()));
@@ -100,7 +104,7 @@ test('live request uses Responses schema, server credentials and model, and retu
     apiKey: 'test-key', model: 'test-model',
     fetchImpl: mockFetch(async (url, init) => {
       assert.equal(url, 'https://api.openai.com/v1/responses');
-      assert.equal((init!.headers as Record<string, string>).Authorization, 'Bearer test-key');
+      assert.equal(new Headers(init?.headers).get('Authorization'), 'Bearer test-key');
       const body = JSON.parse(String(init!.body));
       assert.equal(body.model, 'test-model');
       assert.equal(body.store, false);

@@ -1,14 +1,14 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { loadEnvFile } from 'node:process';
 import { pathToFileURL } from 'node:url';
-import { answerRequest, DEFAULT_MODEL, InputError, validateRequest, type AssistantOptions } from './assistant';
+import { answerRequest, DEFAULT_MODEL, InputError, validateRequest, type AssistantOptions, type AssistantRequest, type AssistantResponse, type AssistantHealth } from './assistant';
 
 const MAX_BODY_BYTES = 96 * 1024;
-const json = (response: ServerResponse, status: number, body: unknown) => {
+const json = (response: ServerResponse, status: number, body: AssistantResponse) => {
   response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
   response.end(JSON.stringify(body));
 };
-async function readBody(request: IncomingMessage): Promise<unknown> {
+async function readBody(request: IncomingMessage): Promise<AssistantRequest> {
   const chunks: Buffer[] = [];
   let bytes = 0;
   for await (const chunk of request) {
@@ -16,8 +16,10 @@ async function readBody(request: IncomingMessage): Promise<unknown> {
     if (bytes > MAX_BODY_BYTES) throw new InputError('Request is too large.');
     chunks.push(Buffer.from(chunk));
   }
-  try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
+  let input: unknown;
+  try { input = JSON.parse(Buffer.concat(chunks).toString('utf8')); }
   catch { throw new InputError('Request must contain valid JSON.'); }
+  return validateRequest(input);
 }
 
 export function createAssistantServer(options: AssistantOptions = {}) {
@@ -33,7 +35,9 @@ export function createAssistantServer(options: AssistantOptions = {}) {
     }
     if (route === '/api/health' && request.method === 'GET') {
       const configured = Boolean(options.apiKey?.trim());
-      json(response, 200, { mode: configured ? 'live' : 'demo', ready: configured && providerStatus === 'verified', status: configured ? providerStatus : 'not_configured', ...(configured ? { model: options.model || DEFAULT_MODEL } : {}) });
+      const health: AssistantHealth = { mode: configured ? 'live' : 'demo', ready: configured && providerStatus === 'verified', status: configured ? providerStatus : 'not_configured' };
+      if (configured) health.model = options.model || DEFAULT_MODEL;
+      json(response, 200, health);
       return;
     }
     if (route !== '/api/assistant') { json(response, 404, { error: 'Route not found.' }); return; }
@@ -43,7 +47,7 @@ export function createAssistantServer(options: AssistantOptions = {}) {
     if (activeRequests >= 4) { json(response, 429, { error: 'The assistant is busy. Try again in a moment.' }); return; }
     activeRequests += 1;
     try {
-      const body = validateRequest(await readBody(request));
+      const body = await readBody(request);
       const result = await answerRequest(body, options);
       if (options.apiKey?.trim()) providerStatus = result.mode === 'live' ? 'verified' : 'unavailable';
       json(response, 200, result);
@@ -56,7 +60,7 @@ export function createAssistantServer(options: AssistantOptions = {}) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try { loadEnvFile('.env'); }
-  catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+  catch (error) { if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error; }
   const port = Number(process.env.API_PORT || 8789);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('API_PORT must be a valid port number.');
   const server = createAssistantServer({ apiKey: process.env.OPENAI_API_KEY, model: process.env.OPENAI_MODEL });

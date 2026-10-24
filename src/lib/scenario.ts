@@ -4,12 +4,15 @@ export type ScenarioInputs = { quantity: number; dueHours: number };
 export type Scenarios = Record<string, ScenarioInputs>;
 export const scenarioLimits = { quantity: { min: 1, max: 500 }, dueHours: { min: 1, max: 336 } };
 
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- This predicate validates untrusted scenario values read from browser storage.
 export function validScenario(value: unknown): value is ScenarioInputs {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Establish an object before reading the two scenario fields.
   if (!value || typeof value !== 'object') return false;
-  const input = value as ScenarioInputs;
-  return (Object.keys(scenarioLimits) as (keyof ScenarioInputs)[]).every(key =>
-    Number.isInteger(input[key]) && input[key] >= scenarioLimits[key].min && input[key] <= scenarioLimits[key].max,
-  );
+  if (!('quantity' in value) || !('dueHours' in value)) return false;
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Numeric types, integer checks and bounds together establish the ScenarioInputs contract.
+  return typeof value.quantity === 'number' && typeof value.dueHours === 'number'
+    && Number.isInteger(value.quantity) && value.quantity >= scenarioLimits.quantity.min && value.quantity <= scenarioLimits.quantity.max
+    && Number.isInteger(value.dueHours) && value.dueHours >= scenarioLimits.dueHours.min && value.dueHours <= scenarioLimits.dueHours.max;
 }
 
 export function scenarioChanged(order: Order): boolean {

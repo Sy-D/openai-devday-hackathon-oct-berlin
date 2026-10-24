@@ -14,6 +14,7 @@ export default function AssistantDrawer({order,plans,factories,selectedPlanId,on
     try{
       const response=await fetch('/api/assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,context:{order,plans,factories,selectedPlanId}}),signal:AbortSignal.timeout(35000)});
       const data=await response.json();if(!response.ok)throw new Error(data.error||'Assistant request failed.');
+      // oxlint-disable-next-line anti-slop/no-runtime-typeof -- Validate the API response at the network boundary before displaying its reply; plan IDs are checked against current feasible plans below.
       if(typeof data.reply!=='string'||!['live','demo'].includes(data.mode))throw new Error('The assistant returned an invalid response.');
       const valid=plans.find(p=>p.id===data.suggestedPlanId&&p.feasible);
       setProviderLabel(data.mode==='live'?'Connected to OpenAI':data.reason==='provider_unavailable'?'Demo fallback · OpenAI request unavailable':'Demo assistant · no API key configured');setMessages(m=>[...m,{role:'assistant',text:data.reply,planId:valid?.id,mode:data.mode}]);

@@ -33,7 +33,7 @@ Open **http://localhost:3000** for the supplier dashboard and **http://localhost
 
 `package-lock.json` is the canonical JavaScript lockfile. `npm ci` also applies the checked-in `metal-fx` patch. Use `npm run build` followed by `npm start` to run the production build on port 3000.
 
-Repository: [Sy-D/openai-devday-hackathon-oct-berlin](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin). The integration is on `codex/forma-template-integration`; the earlier FORMA draft is preserved at `c89d43b` on `codex/forma-first-draft`. Publication is currently blocked by GitHub HTTP 403 for the signed-in account. A fresh clone of `main` does not yet include this integration. See [the handoff](docs/HANDOFF.md) for publication status and next steps.
+Repository: [Sy-D/openai-devday-hackathon-oct-berlin](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin). The published integration is on `codex/forma-template-integration` in [PR #2](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/2); the earlier FORMA draft is preserved at `c89d43b` on `codex/forma-first-draft`. Both branches are available to teammates. See [the handoff](docs/HANDOFF.md) for verification and hosting status.
 
 ## Optional AI features
 

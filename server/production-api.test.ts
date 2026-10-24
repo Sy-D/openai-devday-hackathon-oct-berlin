@@ -9,7 +9,8 @@ const fixture = () => ({
   message: 'Which feasible plan meets the deadline at the lowest cost?',
   context: { order: orders[0], plans: createPlans(orders[0]), factories, selectedPlanId: 'balanced' },
 });
-const post = (body: unknown = fixture(), headers: Record<string, string> = {}) => new Request(`${origin}/api/assistant`, {
+type AssistantTestBody = ReturnType<typeof fixture> | { message?: string };
+const post = (body: AssistantTestBody = fixture(), headers: Record<string, string> = {}) => new Request(`${origin}/api/assistant`, {
   method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin, ...headers }, body: JSON.stringify(body),
 });
 const health = () => new Request(`${origin}/api/health`, { headers: { Origin: origin } });

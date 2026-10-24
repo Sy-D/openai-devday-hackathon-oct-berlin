@@ -9,7 +9,7 @@ import { createPlans, recommendedPlan } from '../src/lib/planner';
 
 type SmokeResult = { exitCode: 0 | 1 | 2; message: string };
 
-/** One real provider request through the same HTTP server used by the app. */
+/** One real provider request through the retained HTTP adapter and shared assistant core. */
 export async function verifyLiveAssistant(options: AssistantOptions): Promise<SmokeResult> {
   if (!options.apiKey?.trim()) return {
     exitCode: 2,
@@ -29,6 +29,7 @@ export async function verifyLiveAssistant(options: AssistantOptions): Promise<Sm
 
     server.listen(0, '127.0.0.1');
     await once(server, 'listening');
+    // SAFETY: the listening event follows a TCP listen call with a numeric port, so address is AddressInfo.
     const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
     const initial = await (await fetch(`${base}/api/health`, { signal: AbortSignal.timeout(5_000) })).json();
     if (initial.ready !== false || initial.status !== 'unverified') throw new Error('Initial readiness was incorrect.');
@@ -67,7 +68,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   let envReady = true;
   try { loadEnvFile(fileURLToPath(new URL('../.env', import.meta.url))); }
   catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+    if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) {
       envReady = false;
       console.error('FAILED: the project .env could not be loaded. No provider request was sent.');
       process.exitCode = 2;

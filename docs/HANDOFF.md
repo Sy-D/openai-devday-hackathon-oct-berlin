@@ -1,6 +1,6 @@
 # FORMA: application handoff
 
-Updated 24 October 2026. The incoming supplier dashboard and FORMA production planner now share one Next.js application. Production build, unit tests and browser checks pass. Publication remains blocked; lint still has known failures.
+Updated 24 October 2026. The incoming supplier dashboard and FORMA production planner now share one Next.js application. The integration and first-draft branches are published. PR #2 consolidates the work for main; Vercel authorization is deferred.
 
 ## Start here
 
@@ -45,14 +45,16 @@ After restoring capacity, apply 42 kits / 60h. Balanced exceeds Dresden's finger
 
 ## Verification status
 
-The coordinator's final integrated run passed the production build, **45 unit
-tests** and **19 browser tests against the production server** (12.2 seconds).
+The final consolidation run passed the production build, **45 unit/API
+tests** and **19 browser tests against the production server** (42.2 seconds).
 `/`, `/planning`, `/compare` and `/api/health` returned HTTP 200. DuckDB's
 shared library and the supplier CSV were included in the server trace.
 
-Overall lint does **not** pass: 55 incoming custom anti-slop rule failures and
-an App state-update-in-effect finding remain. These findings must stay visible
-rather than being represented as a clean lint run. Reproduce checks with:
+The follow-up consolidation fixes the custom-rule errors and the App
+state-update-in-effect finding. Request and storage validation remain intact;
+true parser boundaries have narrowly documented lint exceptions. Generated
+legacy Vite output is excluded from lint. `npm run lint` passes with zero errors;
+two existing unused-code warnings remain in the supplier workspace panels. Reproduce checks with:
 
 ```sh
 npm run typecheck
@@ -89,15 +91,9 @@ Planning state stays in the current browser. Supplier research stays in local ou
 
 The first FORMA draft is preserved at **`c89d43b` on `codex/forma-first-draft`**. The supplier template arrived on `origin/main` at **`baa6a5c`**. The combined work is on **`codex/forma-template-integration`** in the shared local checkout.
 
-GitHub has rejected pushes with HTTP 403 because `carldiederichs` lacks write access to [Sy-D/openai-devday-hackathon-oct-berlin](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin). The integrated branch has not been published. The repository already has a `main` branch containing the supplier template.
+Write access is now available. Both branches were pushed normally and their remote SHAs verified. The earlier HTTP 403 is resolved and access-request issue #1 is closed. [PR #2](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/2) consolidates the integrated work; no other pull requests were open when it was created.
 
-The repository owner must grant write access. After the integration is committed and checks are complete, push normally and verify the remote SHA:
-
-```sh
-git push -u origin codex/forma-template-integration
-```
-
-Do not force-push over teammates' work. Once publication succeeds, teammates can clone the integrated branch:
+Teammates can clone the integrated branch:
 
 ```sh
 git clone --branch codex/forma-template-integration https://github.com/Sy-D/openai-devday-hackathon-oct-berlin.git
@@ -106,8 +102,8 @@ npm ci
 npm run dev
 ```
 
-Any earlier `forma-hackathon-work.bundle` is a historical standalone draft, not this integration. A replacement bundle must be generated from the final integration commit before it can serve as an offline handoff. Neither a local branch nor a bundle counts as GitHub publication or deployment.
+Any earlier `forma-hackathon-work.bundle` is a historical standalone draft. The coordinating chat provides a complete-history `forma-template-integration.bundle` at 535ff69; use the published branch for newer commits.
 
-Hosting has been requested at `forma-supply-chain.vercel.app` after the first
-push. Deployment authorization and access are still pending; no Vercel
-deployment has been performed. The requested name is not a verified live URL.
+Hosting is requested at `forma-supply-chain.vercel.app`. Carl chose to authorize
+the Vercel workspace later, so deployment is deferred. No Vercel project
+connection or deployment has been completed. The requested name is not a live URL.

@@ -16,14 +16,15 @@ type View = 'overview'|'orders'|'network'|'activity';
 function loadState(){
   try{return parseDemoState(localStorage.getItem(STORAGE));}catch{return parseDemoState(null);}
 }
-const labels:Record<Order['state'],string>={action:'Needs attention',production:'In production',transit:'In transit',planned:'Plan confirmed'};
+const labels={action:'Needs attention',production:'In production',transit:'In transit',planned:'Plan confirmed'} satisfies Record<Order['state'],string>;
+type ForecastStyle = React.CSSProperties & { '--value': string };
 export default function App(){
   const [initial]=useState(loadState);
   const [view,setView]=useState<View>('overview'),[orderId,setOrderId]=useState(originalOrders[0].id),[planId,setPlanId]=useState<PlanId>(()=>initial.assignments[originalOrders[0].id]?.planId??recommendedPlan(createPlans(scenarioOrders(initial.scenarios)[0],initial.disrupted))?.id??'balanced');
   const [assignments,setAssignments]=useState(initial.assignments),[disrupted,setDisrupted]=useState(initial.disrupted),[events,setEvents]=useState(initial.events),[scenarios,setScenarios]=useState(initial.scenarios);
   const orders=useMemo(()=>scenarioOrders(scenarios),[scenarios]);
   const currentFactories=useMemo(()=>factories.map(factory=>factory.id==='dresden'&&disrupted?{...factory,queueHours:factory.queueHours+24}:factory),[disrupted]);
-  const [filter,setFilter]=useState('all'),[query,setQuery]=useState(''),[page,setPage]=useState(0),[assistant,setAssistant]=useState(false),[confirm,setConfirm]=useState(false),[settings,setSettings]=useState(false),[notifications,setNotifications]=useState(false),[toast,setToast]=useState(''),[lateConsent,setLateConsent]=useState(false),[partTab,setPartTab]=useState<'parts'|'timeline'>('parts'),[tour,setTour]=useState(false);
+  const [filter,setFilterValue]=useState('all'),[query,setQueryValue]=useState(''),[page,setPage]=useState(0),[assistant,setAssistant]=useState(false),[confirm,setConfirm]=useState(false),[settings,setSettings]=useState(false),[notifications,setNotifications]=useState(false),[toast,setToast]=useState(''),[lateConsent,setLateConsent]=useState(false),[partTab,setPartTab]=useState<'parts'|'timeline'>('parts'),[tour,setTour]=useState(false);
   const scenarioRef=useRef<HTMLDivElement>(null),plannerRef=useRef<HTMLElement>(null),searchRef=useRef<HTMLInputElement>(null);
   const order=orders.find(o=>o.id===orderId)!;
   const plans=useMemo(()=>createPlans(order,disrupted),[order,disrupted]);
@@ -31,6 +32,7 @@ export default function App(){
   const actions=useMemo(()=>requiredActions(orders,assignments,disrupted),[orders,assignments,disrupted]);
   const attention=actions.length;
   const onTime=Math.round((orders.length-attention)/orders.length*1000)/10;
+  const forecastStyle:ForecastStyle={'--value':`${onTime}%`};
   const totalParts=orders.reduce((sum,o)=>sum+o.quantity*4,0);
   const filtered=orders.filter(o=>(filter==='all'||orderStatus(o,assignments,disrupted)===filter)&&`${o.id} ${o.name} ${o.customer}`.toLowerCase().includes(query.toLowerCase()));
   const displayed=filtered.slice(page*5,page*5+5);
@@ -41,19 +43,20 @@ export default function App(){
   const riskDescription=status==='production'||status==='transit'?`The current ${labels[status].toLowerCase()} forecast is ${order.dueHours-order.baselineEta}h ahead of the delivery target. Explore alternatives below.`:status==='planned'?`${plans.find(p=>p.id===assigned?.planId)?.name} plan confirmed for ${order.quantity} kits. Your network is ready to deliver.`:reviewReasons.length?reviewReasons.join(' '):scenarioChanged(order)?'Simulated inputs changed. Compare the new costs, capacity and delivery times before confirming.':disrupted?'Dresden’s queue increased by 24h. Review the available routes below.':`The current plan misses delivery by ${Math.max(0,order.baselineEta-order.dueHours)}h. Find a better route below.`;
   useEffect(()=>{try{localStorage.setItem(STORAGE,JSON.stringify({assignments,disrupted,events,scenarios}));}catch{/* The demo remains usable when browser storage is unavailable. */}},[assignments,disrupted,events,scenarios]);
   useEffect(()=>{if(toast){const timer=setTimeout(()=>setToast(''),5500);return()=>clearTimeout(timer);}},[toast]);
-  useEffect(()=>{setPage(0);},[query,filter]);
   useEffect(()=>{
     if(!confirm&&!settings&&!assistant)return;
-    const previous=document.activeElement as HTMLElement|null;
+    const previous=document.activeElement;
     const dialog=document.querySelector<HTMLElement>('[aria-modal="true"]');
     const focusable=()=>Array.from(dialog?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), [tabindex="0"]')??[]);
     focusable()[0]?.focus();
     const overflow=document.body.style.overflow;document.body.style.overflow='hidden';
     const trap=(event:KeyboardEvent)=>{if(event.key!=='Tab')return;const items=focusable(),first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}};
     dialog?.addEventListener('keydown',trap);
-    return()=>{dialog?.removeEventListener('keydown',trap);document.body.style.overflow=overflow;previous?.focus();};
+    return()=>{dialog?.removeEventListener('keydown',trap);document.body.style.overflow=overflow;if(previous instanceof HTMLElement||previous instanceof SVGElement)previous.focus();};
   },[confirm,settings,assistant]);
   useEffect(()=>{const listener=(e:KeyboardEvent)=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();searchRef.current?.focus();}if(e.key==='Escape'){setConfirm(false);setSettings(false);setNotifications(false);setAssistant(false);}};window.addEventListener('keydown',listener);return()=>window.removeEventListener('keydown',listener);},[]);
+  function setFilter(value:string){setFilterValue(value);if(value!==filter)setPage(0);}
+  function setQuery(value:string){setQueryValue(value);if(value!==query)setPage(0);}
   function addEvent(text:string,detail:string){setEvents(es=>[{id:crypto.randomUUID(),text,detail,time:new Date().toISOString()},...es]);}
   function selectOrder(o:Order,target:'inputs'|'plans'='plans'){setOrderId(o.id);setPlanId(assignments[o.id]?.planId??recommendedPlan(createPlans(o,disrupted))?.id??'balanced');setView('overview');setNotifications(false);requestAnimationFrame(()=>{const section=target==='inputs'?scenarioRef.current:plannerRef.current;section?.scrollIntoView({behavior:'smooth',block:'start'});section?.focus({preventScroll:true});});}
   function assign(){if(!plan.feasible||(plan.bufferHours<0&&!lateConsent))return;setAssignments(a=>({...a,[orderId]:{orderId,planId,cost:plan.totalCost,etaHours:plan.etaHours,assignedAt:new Date().toISOString(),quantity:order.quantity,dueHours:order.dueHours}}));addEvent(`${orderId} · ${plan.name} plan confirmed`,`${siteById(plan.assemblyId).city} assembly · ${money(plan.totalCost)} · ${duration(plan.etaHours)} to delivery`);setConfirm(false);setToast(`${plan.bufferHours>=0?'Order back on track.':'Late plan recorded.'} ${plan.name} plan confirmed for ${orderId}.`);setTour(false);}
@@ -85,7 +88,7 @@ export default function App(){
         <section className="metric-grid" aria-label="Network metrics">
           <button className="metric-card" onClick={()=>nav('orders')}><span className="metric-label">Active orders<Box size={17}/></span><span className="metric-value">24<small className="metric-change"><ArrowUpRight size={13}/> 4 this week</small></span><span className="metric-foot">Across your production network</span><div className="metric-sparkline"><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div></button>
           <button className="metric-card" onClick={()=>nav('orders')}><span className="metric-label">Production volume<LayersIcon/></span><span className="metric-value">{totalParts.toLocaleString()}<small>parts</small></span><span className="metric-foot">{orders.reduce((s,o)=>s+o.quantity,0)} kits · {money(orders.reduce((s,o)=>s+o.value,0))} order value</span></button>
-          <button className="metric-card" onClick={()=>{setView('orders');setFilter('all');}}><span className="metric-label">On-time forecast<Clock3 size={17}/></span><span className="metric-value">{onTime}<small>%</small><span className="mini-ring" style={{'--value':`${onTime}%`} as React.CSSProperties}/></span><span className="metric-foot">{24-attention} of 24 active orders on track</span></button>
+          <button className="metric-card" onClick={()=>{setView('orders');setFilter('all');}}><span className="metric-label">On-time forecast<Clock3 size={17}/></span><span className="metric-value">{onTime}<small>%</small><span className="mini-ring" style={forecastStyle}/></span><span className="metric-foot">{24-attention} of 24 active orders on track</span></button>
           <button className="metric-card attention-card" onClick={()=>{setView('orders');setFilter('action');}}><span className="metric-label">Needs attention<TriangleAlert size={17}/></span><span className="metric-value">{attention.toString().padStart(2,'0')}<small className="attention-pill">Action required</small></span><span className="metric-foot">Review at-risk delivery plans <ArrowRight size={14}/></span></button>
         </section>
         {(view==='overview'||view==='network')&&<>
