@@ -60,10 +60,10 @@ test("default overview shows documented products and actionable planning markers
 }) => {
   await page.goto("/")
   await expect(
-    page.getByRole("heading", { name: "A modular AI data center." })
+    page.getByRole("region", { name: "Delivery actions" })
   ).toBeVisible()
   const hardware = page.getByRole("region", {
-    name: "Hardware references",
+    name: "Component inventory",
     exact: true,
   })
   await expect(hardware.getByRole("button")).toHaveCount(10)
@@ -109,7 +109,7 @@ test("default overview shows documented products and actionable planning markers
     page.getByRole("combobox", { name: "Filter parts by delivery state" })
   ).toHaveCount(0)
   await expect(
-    page.getByRole("link", { name: "Plan a delivery" })
+    page.getByRole("link", { name: "Open delivery plan" })
   ).toHaveAttribute("href", "/planning?component=optics")
 })
 
@@ -169,7 +169,7 @@ test("mobile component selection reveals and focuses inspection, and reset resto
   await expect(viewer).toHaveAttribute("data-assembly", "exploded")
   await expect(viewer).toHaveAttribute("data-mode", "wireframe")
   const hardware = page.getByRole("region", {
-    name: "Hardware references",
+    name: "Component inventory",
     exact: true,
   })
   const card = hardware.getByRole("button", {
@@ -219,7 +219,7 @@ for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto("/")
     await expect(
-      page.getByRole("heading", { name: "A modular AI data center." })
+      page.getByRole("region", { name: "Delivery actions" })
     ).toBeVisible()
     await expect(page.getByTestId("rack-viewer")).toHaveAttribute(
       "data-renderer",

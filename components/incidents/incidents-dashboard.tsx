@@ -32,11 +32,7 @@ import {
   sourceNames,
   statusLabels,
 } from "./incident-data"
-import {
-  ConnectionStatus,
-  IncidentCard,
-  SourceState,
-} from "./incident-primitives"
+import { IncidentCard, SourceState } from "./incident-primitives"
 import { useLiveIncidents } from "./use-live-incidents"
 import styles from "./incidents.module.css"
 
@@ -304,7 +300,6 @@ export function IncidentsDashboard({ componentId }: { componentId?: string }) {
             </p>
           </div>
           <div className={styles.connectionBlock}>
-            <ConnectionStatus connection={connection} />
             <span>
               Last received {formatIncidentTime(receivedAt ?? undefined)}
             </span>

@@ -12,6 +12,8 @@ This is the active implementation checklist. The shared planning Page, Notion ch
 
 ## Finish and verify
 
+- [x] **Verified — Overview design cleanup:** Simon's shared Base UI Card surfaces now style the action rows, summary cards, model/inspection, real component inventory and compact incidents. The main hero, feed-connection labels, incident pills and decorative separators are removed. Actual data, review colors, model interaction, source-failure notices and route planning are preserved. Production build/TypeScript, 112 unit/API tests and 23 browser checks pass, including 320/390/768/1440px layouts and explicit Apply/reopen. Desktop overview, inventory and incident cards were visually inspected; no backend or data files changed. Shared documentation follows publication.
+
 - [x] **Verified — Explicit decision approval:** removed the overview evidence badge. Older saved decisions now require **Apply updated decision** while retaining their routes, inputs and previous calculations. **Reopen for review** returns an applied decision to the red review state. The new migration/reopen browser regression passes; the current browser's previous plan visibly awaits approval. Recording steps use the exact Apply controls.
 
 - [x] **Verified — Recording path and review dots:** red/amber/green markers follow review state. Browser regression proves save turns the part green and changed evidence turns it red. Exact recording clicks and narration are in DEMO.md; actual-provider rehearsal passed. Report popup CSS was repaired and its rendered boxed layout was verified.
