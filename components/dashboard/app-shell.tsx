@@ -30,7 +30,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { DeliveryChatLauncher } from "@/components/procurement/delivery-chat"
+import { DeliveryChatLauncher } from "@/components/procurement/delivery-chat-entry"
 
 /** Shared design system with navigation for the FORMA workspace. */
 export function AppShell({

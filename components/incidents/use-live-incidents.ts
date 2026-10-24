@@ -79,7 +79,12 @@ function connect() {
           "No recent successful source update. Retaining the last received reports for review.",
       }
     })
-    publish({ ...state, snapshot: { ...state.snapshot, sources } })
+    // No health change means no new snapshot: avoid rerunning route geometry
+    // screening across the workspace on every freshness timer tick.
+    if (
+      sources.some((source, index) => source !== state.snapshot!.sources[index])
+    )
+      publish({ ...state, snapshot: { ...state.snapshot, sources } })
   }, 30_000)
   publish({
     ...state,

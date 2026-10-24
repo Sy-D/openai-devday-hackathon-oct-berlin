@@ -4,7 +4,7 @@ The overview and every workspace header now expose **Ask FORMA**. Chat uses the 
 
 ## Try it
 
-1. Open the overview, select **Optical interconnects**, then **Ask FORMA**.
+1. Open the overview and select **Optical interconnects**. Type directly into the compact chat input, use **Check live incidents / Compare routes / Reduce emissions**, or open **Ask FORMA** in the header. The first message sends immediately from the overview. In chat, **Working on** opens a searchable delivery picker with product and manufacturer names.
 2. Ask: “Which current incidents affect this delivery, and what are its transport cost and carbon? Do not change anything.”
 3. Ask: “Set quantity to 2 and handling to 15 minutes, keep the current locations and departure, then calculate the fastest route. Leave the deadline empty.”
 4. Read the proposed inputs and comparison, then click **Update delivery draft**. The map and review state update in the same browser. **Undo draft changes** restores the previous draft if no later edit conflicts.
@@ -43,11 +43,11 @@ Optional Nebius support remains available via `DELIVERY_AI_PROVIDER=nebius`, `NE
 
 - [x] Bounded provider/tool integration; live OpenRouter function call verified.
 - [x] Qwen3 open-source model + live incident hub + Valhalla route proposal verified: quantity 2, handling 15, locations/departure preserved, deadline empty, approval absent.
-- [x] Overview and persistent chat panel, draft proposals, conflict checks, Undo, planner synchronization and manual approval.
-- [x] 126 unit/API tests and all 27 production browser tests pass. Build and TypeScript pass; lint has no errors and two existing legacy warnings.
+- [x] Compact overview composer, prioritized review card and redesigned persistent chat panel with searchable keyboard-accessible delivery picker. Draft proposals, conflict checks, Undo, planner synchronization and manual approval are preserved.
+- [x] 126 unit/API tests and all 27 production browser tests pass; all five chat tests passed after the panel redesign, including the new 320px keyboard/search check (28 distinct browser cases). Build and TypeScript pass; lint has no errors and two existing legacy warnings.
 - [x] Live browser read-only question returned current A24 reports and calculated cost/carbon without a draft change. Qwen3 independently passed draft-update, real A24 avoidance and read-only arrival/cost/carbon checks; the latter reports Berlin local time explicitly.
 - [x] Localhost refreshed for review.
-- [ ] Main publication/merge: intentionally on hold at Carl’s request. Keep work on `codex/nebius-delivery-agent`.
+- [x] Carl lifted the merge hold and requested a normal push and PR merge. The feature branch is `codex/nebius-delivery-agent`; GitHub is authoritative for its publication/merge status. See [performance measurements](PERFORMANCE.md).
 
 Provider reference: https://openrouter.ai/docs/guides/features/tool-calling
 

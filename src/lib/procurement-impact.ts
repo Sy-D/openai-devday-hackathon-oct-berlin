@@ -49,6 +49,24 @@ export function matchRouteIncidents(
   if (!snapshot) return []
   const departure = Date.parse(departureISO || snapshot.generatedAt)
   const arrival = departure + route.durationSeconds * 1000
+  // The route is identical for every report. Compute bounds once without large
+  // spread arguments (providers may return up to 100,000 route vertices).
+  let minLng = Infinity,
+    maxLng = -Infinity,
+    minLat = Infinity,
+    maxLat = -Infinity
+  for (const [lng, lat] of route.coordinates) {
+    minLng = Math.min(minLng, lng)
+    maxLng = Math.max(maxLng, lng)
+    minLat = Math.min(minLat, lat)
+    maxLat = Math.max(maxLat, lat)
+  }
+  minLng -= 0.2
+  maxLng += 0.2
+  minLat -= 0.1
+  maxLat += 0.1
+  const sources = new Map(snapshot.sources.map((source) => [source.id, source]))
+  const now = Date.now()
   return snapshot.incidents
     .flatMap((incident): RouteExposure[] => {
       if (
@@ -79,20 +97,17 @@ export function matchRouteIncidents(
       // Retain the complete reported stretch: avoiding its start point alone does
       // not establish that a route avoids the remaining queue or road works.
       const points = lines.length ? lines.flat() : [incident.coordinates]
-      const routeLng = route.coordinates.map((p) => p[0]),
-        routeLat = route.coordinates.map((p) => p[1])
-      const minLng = Math.min(...routeLng) - 0.2,
-        maxLng = Math.max(...routeLng) + 0.2
-      const minLat = Math.min(...routeLat) - 0.1,
-        maxLat = Math.max(...routeLat) + 0.1
       const nearby = points.filter(
         ([lng, lat]) =>
           lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat
       )
       if (!nearby.length) return []
-      let distanceKm = Math.min(
-        ...nearby.map((point) => pointRouteDistanceKm(point, route.coordinates))
-      )
+      let distanceKm = Infinity
+      for (const point of nearby)
+        distanceKm = Math.min(
+          distanceKm,
+          pointRouteDistanceKm(point, route.coordinates)
+        )
       for (const line of lines) {
         if (distanceKm <= 0.025) break
         for (const point of route.coordinates)
@@ -102,15 +117,13 @@ export function matchRouteIncidents(
       // These screening radii are disclosed, not invented obstruction geometry.
       const radius = incident.evidence === "reported-restriction" ? 0.25 : 10
       if (distanceKm > radius) return []
-      const source = snapshot.sources.find(
-        (item) => item.id === incident.sourceId
-      )
+      const source = sources.get(incident.sourceId)
       const lastSuccess = Date.parse(
         source?.lastSuccessAt ?? snapshot.generatedAt
       )
       const sourceAgeExceeded =
         !Number.isFinite(lastSuccess) ||
-        Date.now() - lastSuccess >
+        now - lastSuccess >
           Math.max(
             120_000,
             (source?.updateIntervalSeconds ?? 60) * 2000 + 30_000

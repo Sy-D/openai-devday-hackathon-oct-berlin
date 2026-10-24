@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { DeliveryChat } from "@/components/procurement/delivery-chat"
+import { DeliveryChatHost } from "@/components/procurement/delivery-chat-entry"
 import { cn } from "@/lib/utils"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
@@ -38,7 +38,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           {children}
-          <DeliveryChat />
+          <DeliveryChatHost />
         </ThemeProvider>
       </body>
     </html>

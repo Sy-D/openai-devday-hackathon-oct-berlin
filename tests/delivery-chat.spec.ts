@@ -69,11 +69,10 @@ test("overview chat prepares a draft, updates the planner, and leaves approval m
     await route.fulfill({ json: result })
   })
   await page.goto("/?component=optics")
-  await page.getByRole("button", { name: "Ask FORMA" }).first().click()
   await page
-    .getByRole("textbox", { name: "Message FORMA" })
+    .getByRole("textbox", { name: "Ask FORMA about a delivery" })
     .fill("Plan two units and calculate the road route.")
-  await page.getByRole("button", { name: "Send message" }).click()
+  await page.getByRole("button", { name: "Send to FORMA" }).click()
   await expect(
     page.getByRole("button", { name: "Update delivery draft" })
   ).toBeVisible()
@@ -173,21 +172,22 @@ test("a late chat proposal cannot overwrite a manual edit", async ({
 test("provider errors remain visible without fabricated answers or draft changes", async ({
   page,
 }) => {
-  await page.route("**/api/delivery-chat", (route) =>
-    route.fulfill({
+  await page.route("**/api/delivery-chat", (route) => {
+    expect(route.request().postDataJSON().componentId).toBe("cooling")
+    return route.fulfill({
       status: 503,
       json: {
         error: "OpenRouter rejected the server credential or model access.",
       },
     })
-  )
+  })
   await page.goto("/?component=cooling")
-  await page.getByRole("button", { name: "Ask FORMA" }).first().click()
-  await expect(page.getByLabel("Delivery in focus")).toHaveValue("cooling")
   await page
-    .getByRole("textbox", { name: "Message FORMA" })
-    .fill("Check incidents")
-  await page.getByRole("button", { name: "Send message" }).click()
+    .getByRole("button", { name: "Check live incidents", exact: true })
+    .click()
+  await expect(page.getByLabel("Delivery in focus")).toContainText(
+    "CoolChip CDU 600"
+  )
   await expect(page.getByRole("alert")).toContainText("OpenRouter rejected")
   await expect(
     page.getByRole("button", { name: "Update delivery draft" })
@@ -197,5 +197,47 @@ test("provider errors remain visible without fabricated answers or draft changes
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth
     )
+  ).toBe(true)
+})
+
+test("chat delivery picker supports search and keyboard selection on a narrow screen", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 740 })
+  let requests = 0
+  await page.route("**/api/delivery-chat", async (route) => {
+    requests++
+    expect(route.request().postDataJSON().componentId).toBe("controls")
+    await route.fulfill({
+      json: {
+        reply: "Monitoring delivery selected.",
+        activity: [],
+        changes: [],
+      },
+    })
+  })
+  await page.goto("/?component=optics")
+  await page.getByRole("button", { name: "Ask FORMA", exact: true }).click()
+  await page.getByLabel("Delivery in focus", { exact: true }).click()
+  const search = page.getByRole("combobox", { name: "Search deliveries" })
+  await search.fill("NetBotz")
+  await expect(page.getByRole("option")).toHaveCount(1)
+  await search.press("ArrowDown")
+  await search.press("Enter")
+  await expect(
+    page.getByLabel("Delivery in focus", { exact: true })
+  ).toContainText("NetBotz")
+  await page
+    .getByLabel("Message FORMA")
+    .fill("Which delivery is selected? Do not change anything.")
+  await page.getByRole("button", { name: "Send message", exact: true }).click()
+  await expect(page.getByRole("log")).toContainText(
+    "Monitoring delivery selected."
+  )
+  expect(requests).toBe(1)
+  expect(
+    await page
+      .getByRole("dialog")
+      .evaluate((element) => element.scrollWidth <= element.clientWidth)
   ).toBe(true)
 })

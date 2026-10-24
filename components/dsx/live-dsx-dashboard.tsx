@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic"
 import Link from "next/link"
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import {
   ArrowRight,
   AlertTriangle,
@@ -28,7 +28,7 @@ import {
 } from "@/src/data/part-catalog"
 import { PartProvenance } from "./part-provenance"
 import { useDeliveryOverview } from "@/components/procurement/use-delivery-overview"
-import { DeliveryChatOverview } from "@/components/procurement/delivery-chat"
+import { DeliveryChatOverview } from "@/components/procurement/delivery-chat-entry"
 import type { AssemblyView, RackPart } from "./rack-geometry"
 import styles from "./dsx.module.css"
 import live from "./live-dsx.module.css"
@@ -64,31 +64,35 @@ export default function LiveDsxDashboard({
 }) {
   const { snapshot } = useLiveIncidents()
   const deliveryStates = useDeliveryOverview(snapshot)
-  const viewerParts: RackPart[] = references.map((part) => {
-    const delivery = deliveryStates.find(
-      (item) => item.componentId === part.componentId
-    )
-    const review =
-      delivery?.status === "changed" ||
-      delivery?.status === "exposed" ||
-      (delivery?.status === "unplanned" && part.componentId === "optics")
-    return {
-      id: part.componentId,
-      name: componentNames[part.componentId],
-      status:
-        delivery?.status === "reviewed"
-          ? "on-track"
-          : review
-            ? "blocked"
-            : "delayed",
-      statusLabel:
-        delivery?.status === "reviewed"
-          ? "Delivery reviewed"
-          : review
-            ? "Review delivery"
-            : "Plan delivery",
-    }
-  })
+  const viewerParts = useMemo<RackPart[]>(
+    () =>
+      references.map((part) => {
+        const delivery = deliveryStates.find(
+          (item) => item.componentId === part.componentId
+        )
+        const review =
+          delivery?.status === "changed" ||
+          delivery?.status === "exposed" ||
+          (delivery?.status === "unplanned" && part.componentId === "optics")
+        return {
+          id: part.componentId,
+          name: componentNames[part.componentId],
+          status:
+            delivery?.status === "reviewed"
+              ? "on-track"
+              : review
+                ? "blocked"
+                : "delayed",
+          statusLabel:
+            delivery?.status === "reviewed"
+              ? "Delivery reviewed"
+              : review
+                ? "Review delivery"
+                : "Plan delivery",
+        }
+      }),
+    [deliveryStates]
+  )
   const needsReview = deliveryStates.filter(
     (item) => item.status === "changed" || item.status === "exposed"
   )
@@ -115,10 +119,18 @@ export default function LiveDsxDashboard({
   const inspectionRef = useRef<HTMLDivElement>(null)
   const inspectionTrigger = useRef<HTMLElement | null>(null)
   const selected = getPartReference(selectedId ?? "")
-  const filtered = references.filter((part) =>
-    `${componentNames[part.componentId]} ${part.manufacturer} ${part.productName}`
-      .toLowerCase()
-      .includes(query.trim().toLowerCase())
+  const filtered = useMemo(
+    () =>
+      references.filter((part) =>
+        `${componentNames[part.componentId]} ${part.manufacturer} ${part.productName}`
+          .toLowerCase()
+          .includes(query.trim().toLowerCase())
+      ),
+    [query]
+  )
+  const visibleIds = useMemo(
+    () => filtered.map((part) => part.componentId),
+    [filtered]
   )
   const current = snapshot?.incidents.filter(isCurrentIncident).length
   function inspect(id: string) {
@@ -156,7 +168,6 @@ export default function LiveDsxDashboard({
     <AppShell breadcrumb={["Workspace", "Overview"]}>
       <main id="main" className={styles.workspace} tabIndex={-1}>
         <h1 className="sr-only">Infrastructure overview</h1>
-        <DeliveryChatOverview />
         <section className={live.actionArea} aria-label="Delivery actions">
           <Card
             className={live.nextAction}
@@ -168,13 +179,17 @@ export default function LiveDsxDashboard({
                   : "ready"
             }
           >
-            {needsReview.length ? (
-              <AlertTriangle size={24} aria-hidden />
-            ) : (
-              <PackageSearch size={24} aria-hidden />
-            )}
+            <span className={live.primaryActionIcon}>
+              {needsReview.length ? (
+                <AlertTriangle size={24} aria-hidden />
+              ) : (
+                <PackageSearch size={24} aria-hidden />
+              )}
+            </span>
             <div>
-              <span className={live.actionEyebrow}>NEXT ACTION</span>
+              <span className={live.actionEyebrow}>
+                {needsReview.length ? "REQUIRES REVIEW" : "NEXT ACTION"}
+              </span>
               <h2>
                 {needsReview.length
                   ? `${needsReview.length} delivery ${needsReview.length === 1 ? "decision needs" : "decisions need"} review`
@@ -198,6 +213,7 @@ export default function LiveDsxDashboard({
               <ArrowRight size={14} />
             </Link>
           </Card>
+          <DeliveryChatOverview />
           <div className={live.actionRail}>
             {actions.map((item) => (
               <Card
@@ -371,7 +387,7 @@ export default function LiveDsxDashboard({
             <div className={styles.modelStage}>
               <RackViewer
                 parts={viewerParts}
-                visibleIds={filtered.map((part) => part.componentId)}
+                visibleIds={visibleIds}
                 selectedId={selected?.componentId ?? null}
                 onSelect={inspect}
                 mode={mode}

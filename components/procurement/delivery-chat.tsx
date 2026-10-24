@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useEffectEvent, useRef, useState } from "react"
 import Link from "next/link"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -11,6 +11,10 @@ import {
   Check,
   LoaderCircle,
   MessageSquare,
+  Package,
+  Radio,
+  Route,
+  Leaf,
   RotateCcw,
   Square,
 } from "lucide-react"
@@ -22,7 +26,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { partCatalog } from "@/src/data/part-catalog"
+import { partCatalog, type PartReference } from "@/src/data/part-catalog"
 import {
   chatResultSchema,
   freshDeliveryDraft,
@@ -35,9 +39,22 @@ import {
   type DraftWrite,
 } from "@/src/lib/delivery-store"
 import { draftKey, parseSavedDraft } from "./plan-state"
+import {
+  Combobox,
+  ComboboxTrigger,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+  ComboboxEmpty,
+} from "@/components/ui/combobox"
+const parts = Object.values(partCatalog)
+const partLabel = (part: PartReference) =>
+  `${part.category} ${part.manufacturer} ${part.productName}`
+
 import styles from "./delivery-chat.module.css"
 
-const OPEN_EVENT = "forma:open-delivery-chat"
+import type { ChatLaunch } from "./delivery-chat-entry"
 type Entry = ChatMessage & {
   result?: ChatResult
   expected?: Record<string, string | null>
@@ -45,53 +62,12 @@ type Entry = ChatMessage & {
   undone?: boolean
   undo?: DraftWrite[]
 }
-export function DeliveryChatLauncher({
-  prompt,
-  prominent = false,
-}: {
-  prompt?: string
-  prominent?: boolean
-}) {
-  return (
-    <Button
-      aria-label="Ask FORMA"
-      variant={prominent ? "default" : "outline"}
-      onClick={() =>
-        window.dispatchEvent(
-          new CustomEvent(OPEN_EVENT, { detail: { prompt } })
-        )
-      }
-    >
-      <MessageSquare size={16} />
-      <span className={prominent ? "" : "hidden sm:inline"}>Ask FORMA</span>
-    </Button>
-  )
-}
-
-export function DeliveryChatOverview() {
-  return (
-    <section className={styles.overview} aria-label="Plan with chat">
-      <div className={styles.overviewIcon}>
-        <MessageSquare size={24} />
-      </div>
-      <div className={styles.overviewCopy}>
-        <h2>Plan your next move with FORMA</h2>
-        <p>
-          Check incidents, reroute deliveries and compare time, cost and carbon
-          — in one conversation.
-        </p>
-      </div>
-      <DeliveryChatLauncher prominent />
-    </section>
-  )
-}
-
 const metric = (n: number | null | undefined, unit: string) =>
   n == null
     ? "—"
     : `${n.toLocaleString("en-IE", { maximumFractionDigits: 1 })}${unit}`
 
-export function DeliveryChat() {
+export function DeliveryChat({ launch }: { launch: ChatLaunch }) {
   const [open, setOpen] = useState(false),
     [text, setText] = useState("")
   const [componentId, setComponentId] = useState("optics")
@@ -100,31 +76,33 @@ export function DeliveryChat() {
     [error, setError] = useState("")
   const controller = useRef<AbortController | null>(null),
     bottom = useRef<HTMLDivElement>(null)
+  const sendFromLauncher = useEffectEvent(
+    (prompt: string, selectedComponent?: string) => {
+      void send(prompt, selectedComponent)
+    }
+  )
   useEffect(() => {
-    const show = (event: Event) => {
-      const id = new URL(window.location.href).searchParams.get("component")
-      if (id && Object.hasOwn(partCatalog, id)) setComponentId(id)
-      const detail =
-        event instanceof CustomEvent
-          ? z.object({ prompt: z.string().optional() }).safeParse(event.detail)
-          : null
-      const prompt = detail?.success ? detail.data.prompt : undefined
-      if (prompt) setText(prompt)
+    // Deferring the launch also prevents a duplicate submission during Strict Mode's
+    // setup/cleanup replay. The first prompt survives loading the panel chunk.
+    const timer = setTimeout(() => {
+      const id = launch.componentId
+      const selected = id && Object.hasOwn(partCatalog, id) ? id : undefined
+      if (selected) setComponentId(selected)
+      if (launch.prompt) setText(launch.prompt)
       setOpen(true)
-    }
-    window.addEventListener(OPEN_EVENT, show)
-    return () => {
-      window.removeEventListener(OPEN_EVENT, show)
-      controller.current?.abort()
-    }
-  }, [])
+      if (launch.prompt && launch.submit)
+        sendFromLauncher(launch.prompt, selected)
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [launch])
+  useEffect(() => () => controller.current?.abort(), [])
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" })
   }, [entries, busy, open])
 
-  async function send() {
-    if (!text.trim() || controller.current) return
-    const question = text.trim(),
+  async function send(override?: string, selectedComponent?: string) {
+    if (!(override ?? text).trim() || controller.current) return
+    const question = (override ?? text).trim(),
       request = new AbortController()
     controller.current = request
     setBusy(true)
@@ -151,7 +129,12 @@ export function DeliveryChat() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: request.signal,
-        body: JSON.stringify({ messages, componentId, timeZone: zone, drafts }),
+        body: JSON.stringify({
+          messages,
+          componentId: selectedComponent ?? componentId,
+          timeZone: zone,
+          drafts,
+        }),
       })
       const body = await response.json()
       if (!response.ok) {
@@ -221,39 +204,94 @@ export function DeliveryChat() {
     }
   }
 
+  const selectedPart =
+    parts.find((part) => part.componentId === componentId) ?? partCatalog.optics
   const prompts = [
-    "Which live incidents affect this delivery?",
-    "Calculate the fastest route for this delivery and explain its cost and carbon.",
-    "Compare the current route with an alternative avoiding nearby road restrictions.",
+    {
+      icon: Radio,
+      title: "Check live incidents",
+      description: "See which reports affect this delivery.",
+      prompt: "Which live incidents affect this delivery?",
+    },
+    {
+      icon: Route,
+      title: "Find a better route",
+      description: "Compare arrival time and transport cost.",
+      prompt:
+        "Calculate the fastest route for this delivery and explain its cost and carbon.",
+    },
+    {
+      icon: Leaf,
+      title: "Reduce the footprint",
+      description: "Compare lower-carbon route options.",
+      prompt:
+        "Calculate the lowest-carbon road route for this delivery and compare it with the current route.",
+    },
   ]
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent className={styles.panel}>
         <SheetHeader className={styles.header}>
-          <SheetTitle className={styles.title}>
-            <span className={styles.avatar}>
-              <MessageSquare size={20} />
-            </span>
-            FORMA assistant
-          </SheetTitle>
-          <SheetDescription>
-            Plan in conversation. Review the changes before applying a decision.
-          </SheetDescription>
+          <span className={styles.avatar}>
+            <MessageSquare size={18} />
+          </span>
+          <div>
+            <SheetTitle className={styles.title}>FORMA assistant</SheetTitle>
+            <SheetDescription className={styles.subtitle}>
+              Plan, compare, then decide.
+            </SheetDescription>
+          </div>
         </SheetHeader>
         <div className={styles.context}>
-          <label htmlFor="chat-component">Delivery in focus</label>
-          <select
-            id="chat-component"
-            value={componentId}
-            onChange={(event) => setComponentId(event.target.value)}
+          <span className={styles.contextLabel}>Working on</span>
+          <Combobox
+            items={parts}
+            value={selectedPart}
+            onValueChange={(part) => {
+              if (part) setComponentId(part.componentId)
+            }}
+            itemToStringLabel={partLabel}
             disabled={busy}
           >
-            {Object.values(partCatalog).map((part) => (
-              <option key={part.componentId} value={part.componentId}>
-                {part.category} · {part.productName}
-              </option>
-            ))}
-          </select>
+            <ComboboxTrigger
+              aria-label="Delivery in focus"
+              className={styles.contextTrigger}
+            >
+              <span className={styles.partIcon}>
+                <Package size={18} />
+              </span>
+              <span className={styles.partText}>
+                <small>
+                  {selectedPart.category} · {selectedPart.manufacturer}
+                </small>
+                <strong>{selectedPart.productName}</strong>
+              </span>
+            </ComboboxTrigger>
+            <ComboboxContent className={styles.contextMenu}>
+              <ComboboxInput
+                aria-label="Search deliveries"
+                placeholder="Find a part or supplier…"
+                showTrigger={false}
+              />
+              <ComboboxEmpty>No matching deliveries.</ComboboxEmpty>
+              <ComboboxList>
+                {(part: PartReference) => (
+                  <ComboboxItem
+                    key={part.componentId}
+                    value={part}
+                    className={styles.contextOption}
+                  >
+                    <span>
+                      <small>
+                        {part.category} · {part.manufacturer}
+                      </small>
+                      <strong>{part.productName}</strong>
+                    </span>
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
         </div>
         <div
           className={styles.messages}
@@ -263,14 +301,17 @@ export function DeliveryChat() {
         >
           {!entries.length && (
             <div className={styles.welcome}>
-              <h3>What should we work on?</h3>
-              <p>
-                Use the current delivery or name another component. I can look
-                up places, check current reports and prepare a route comparison.
-              </p>
-              {prompts.map((prompt) => (
-                <button key={prompt} onClick={() => setText(prompt)}>
-                  {prompt}
+              <h3>What’s the next move?</h3>
+              <p>Ask about this delivery or start with a suggestion.</p>
+              {prompts.map(({ icon: Icon, title, description, prompt }) => (
+                <button key={title} onClick={() => setText(prompt)}>
+                  <span className={styles.promptIcon}>
+                    <Icon size={18} />
+                  </span>
+                  <span>
+                    <strong>{title}</strong>
+                    <small>{description}</small>
+                  </span>
                   <ArrowRight size={16} />
                 </button>
               ))}
@@ -452,7 +493,7 @@ export function DeliveryChat() {
                 void send()
               }
             }}
-            rows={3}
+            rows={2}
           />
           <div>
             <span>Draft changes stay in this browser.</span>
