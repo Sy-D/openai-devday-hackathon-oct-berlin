@@ -251,6 +251,27 @@ test("stale or unmatched restrictions never reach the routing provider", async (
   assert.deepEqual(await tools.changes(), [])
 })
 
+test("model-facing results express arrival in the user's timezone and do not expose speculative tariff factors", async () => {
+  const { input, dependencies } = fixture()
+  const tools = createDeliveryToolSession(input, dependencies)
+  const result = z
+    .object({
+      routes: z.array(z.object({ metrics: z.object({ arrival: z.string() }) })),
+      costBasis: z.object({ label: z.string(), note: z.string() }),
+      incidentInterpretation: z.string(),
+    })
+    .parse(await tools.execute("get_delivery", '{"componentId":"optics"}'))
+  assert.equal(
+    result.routes[0].metrics.arrival,
+    "2026-10-24 15:00 Europe/Berlin"
+  )
+  assert.match(result.costBasis.note, /Do not infer/)
+  assert.match(
+    result.incidentInterpretation,
+    /actual impact may remain unknown/
+  )
+})
+
 test("the agent executes tools, returns proposals, and retains current input timezone", async () => {
   const { input, dependencies } = fixture()
   let step = 0
@@ -325,11 +346,22 @@ test("provider sends OpenRouter tools server-side and sanitizes credential failu
       assert.equal(url, "https://openrouter.ai/api/v1/chat/completions")
       const body = z
         .object({
+          model: z.string(),
+          provider: z.object({
+            sort: z.literal("price"),
+            require_parameters: z.literal(true),
+            max_price: z.object({
+              prompt: z.literal(0.15),
+              completion: z.literal(0.65),
+            }),
+          }),
+          max_tokens: z.literal(1600),
           tools: z.array(z.object({ type: z.literal("function") })),
           messages: z.array(z.object({ role: z.string() })),
         })
         .parse(JSON.parse(String(init?.body)))
       assert.equal(body.tools.length, 8)
+      assert.equal(body.model, "qwen/qwen3-235b-a22b-2507")
       observed = true
       return Response.json({
         choices: [

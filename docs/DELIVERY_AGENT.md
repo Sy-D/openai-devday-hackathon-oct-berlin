@@ -1,6 +1,6 @@
 # FORMA delivery assistant
 
-The overview and every workspace header now expose **Ask FORMA**. Chat uses OpenRouter on the server and calls FORMA’s existing catalog, incident, address-search, road-routing and metric functions. It does not reuse the retired supplier-research assistant.
+The overview and every workspace header now expose **Ask FORMA**. Chat uses the Apache-2.0 Qwen3-235B-A22B-Instruct-2507 model through OpenRouter on the server and calls FORMA’s existing catalog, incident, address-search, road-routing and metric functions. It does not reuse the retired supplier-research assistant.
 
 ## Try it
 
@@ -20,8 +20,10 @@ Local Next.js reads ignored `.env.local`:
 ```dotenv
 DELIVERY_AI_PROVIDER=openrouter
 OPENROUTER_API_KEY=your-server-key
-OPENROUTER_MODEL=anthropic/claude-sonnet-4.6
+OPENROUTER_MODEL=qwen/qwen3-235b-a22b-2507
 ```
+
+Carl’s standing requirement: use low-cost open-source models for this project. There is no expensive model fallback. Requests prefer the cheapest tool-compatible provider and enforce ceilings of $0.15 per million input tokens and $0.65 per million output tokens, with at most 1,600 output tokens per model step. OpenRouter rejects the request if no provider meets those limits. The model listing on 24 October 2026 showed $0.09 input / $0.55 output per million tokens.
 
 Restart the local production server after changing environment variables. Never use a `NEXT_PUBLIC_` credential. Docker Compose accepts these same variables from the shell or `docker compose --env-file .env.local up --build`. No key is included in Git or Docker build context.
 
@@ -40,11 +42,15 @@ Optional Nebius support remains available via `DELIVERY_AI_PROVIDER=nebius`, `NE
 ## Verification · 24 October 2026
 
 - [x] Bounded provider/tool integration; live OpenRouter function call verified.
-- [x] Real model + live incident hub + Valhalla route proposal verified: quantity 2, handling 15, locations/departure preserved, deadline empty, approval absent.
+- [x] Qwen3 open-source model + live incident hub + Valhalla route proposal verified: quantity 2, handling 15, locations/departure preserved, deadline empty, approval absent.
 - [x] Overview and persistent chat panel, draft proposals, conflict checks, Undo, planner synchronization and manual approval.
-- [x] 125 unit/API tests and all 27 production browser tests pass. Build and TypeScript pass; lint has no errors and two existing legacy warnings.
-- [x] Live browser read-only question returned current A24 reports and calculated cost/carbon without a draft change.
+- [x] 126 unit/API tests and all 27 production browser tests pass. Build and TypeScript pass; lint has no errors and two existing legacy warnings.
+- [x] Live browser read-only question returned current A24 reports and calculated cost/carbon without a draft change. Qwen3 independently passed draft-update, real A24 avoidance and read-only arrival/cost/carbon checks; the latter reports Berlin local time explicitly.
 - [x] Localhost refreshed for review.
 - [ ] Main publication/merge: intentionally on hold at Carl’s request. Keep work on `codex/nebius-delivery-agent`.
 
 Provider reference: https://openrouter.ai/docs/guides/features/tool-calling
+
+Model license: https://huggingface.co/Qwen/Qwen3-235B-A22B-Instruct-2507
+
+Provider price caps: https://openrouter.ai/docs/guides/routing/provider-selection#max-price

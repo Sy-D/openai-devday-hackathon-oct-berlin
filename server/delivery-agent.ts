@@ -23,7 +23,7 @@ export const agentKey = () =>
   )?.trim()
 export const agentModel = () =>
   agentProvider() === "openrouter"
-    ? process.env.OPENROUTER_MODEL?.trim() || "anthropic/claude-sonnet-4.6"
+    ? process.env.OPENROUTER_MODEL?.trim() || "qwen/qwen3-235b-a22b-2507"
     : process.env.NEBIUS_MODEL?.trim() || "Qwen/Qwen3-235B-A22B-Instruct-2507"
 const toolCallSchema = z.object({
   id: z.string().min(1).max(160),
@@ -118,11 +118,19 @@ export function providerCompletion(fetcher: typeof fetch = fetch): Complete {
       },
       body: JSON.stringify({
         model: agentModel(),
+        provider:
+          agentProvider() === "openrouter"
+            ? {
+                sort: "price",
+                require_parameters: true,
+                max_price: { prompt: 0.15, completion: 0.65 },
+              }
+            : undefined,
         messages,
         tools: deliveryTools,
         tool_choice: "auto",
         temperature: 0.1,
-        max_tokens: 2400,
+        max_tokens: 1600,
         stream: false,
       }),
       signal: timeout,

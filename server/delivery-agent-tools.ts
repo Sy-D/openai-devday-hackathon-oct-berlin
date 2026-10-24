@@ -195,6 +195,15 @@ export function createDeliveryToolSession(
       offerFor(draft)?.dataMode === "assumed"
         ? getAssumptionBases(id)
         : undefined
+    const displayMetrics = (value: ReturnType<typeof metrics>) =>
+      value
+        ? {
+            ...value,
+            arrival: value.arrival
+              ? `${inTimeZone(value.arrival, input.timeZone).replace("T", " ")} ${input.timeZone}`
+              : null,
+          }
+        : null
     return {
       componentId: id,
       offer: offerFor(draft),
@@ -210,12 +219,20 @@ export function createDeliveryToolSession(
               id: r.id,
               label: r.label,
               avoidance: r.avoidance,
-              metrics: metrics(draft, r, feed),
+              metrics: displayMetrics(metrics(draft, r, feed)),
             }))
           : [],
-      baseline: metrics(draft, draft.baseline ?? undefined, feed),
-      costBasis: bases?.costBasis ?? transportCostBasis,
+      baseline: displayMetrics(
+        metrics(draft, draft.baseline ?? undefined, feed)
+      ),
+      costBasis: {
+        label: (bases?.costBasis ?? transportCostBasis).label,
+        source: (bases?.costBasis ?? transportCostBasis).source,
+        note: "Use the calculated transport estimate. Do not infer tariff multipliers or timing surcharges from the amount; this is not a carrier quote.",
+      },
       carbonBasis: bases?.emissionsBasis ?? emissionsBasis,
+      incidentInterpretation:
+        "Matched reports establish proximity, not confirmed obstruction or an unaffected route. Zero reported delay means no usable quantified delay; actual impact may remain unknown.",
       proposedChange: changed.has(id),
       hasPreviousDecision: Boolean(draft.saved),
       finalApproval:
