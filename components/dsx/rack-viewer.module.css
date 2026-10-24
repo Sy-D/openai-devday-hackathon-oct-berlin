@@ -1,0 +1,423 @@
+.viewer {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: radial-gradient(
+    ellipse at 45% 38%,
+    #1f3348 0,
+    #131f2d 50%,
+    #0b131f 100%
+  );
+  color: #d6e0e9;
+}
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  cursor: grab;
+  touch-action: none;
+}
+.canvas[hidden] {
+  display: none;
+}
+.canvas:active {
+  cursor: grabbing;
+}
+.canvas:focus-visible {
+  outline: 2px solid #b8d987;
+  outline-offset: -6px;
+}
+.schematic {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+.markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.markers[hidden] {
+  display: none;
+}
+.hotspot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--marker-color);
+  pointer-events: auto;
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: #0e1929ed;
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--marker-color) 12%, transparent),
+    0 3px 14px #0008;
+  font:
+    600 10px/1 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  transition:
+    background 150ms,
+    transform 150ms,
+    box-shadow 150ms;
+}
+.hotspot[data-status="blocked"] .dot {
+  background: #7e2635ef;
+  box-shadow:
+    0 0 0 6px #ff616d25,
+    0 0 24px #ff616d35;
+}
+.hotspot[data-status="delayed"] .dot {
+  background: #6e4c2bed;
+  box-shadow:
+    0 0 0 5px #ffbd6120,
+    0 0 18px #ffbd6120;
+}
+.hotspot[data-status="blocked"]::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 1px solid #ff616d55;
+  border-radius: 50%;
+  animation: pulse 2.8s ease-out infinite;
+}
+.hotspot:focus-visible .dot,
+.hotspot:hover .dot,
+.hotspot[data-selected="true"] .dot {
+  transform: scale(1.17);
+  background: var(--marker-color);
+  color: #101926;
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--marker-color) 25%, transparent),
+    0 0 26px color-mix(in srgb, var(--marker-color) 20%, transparent);
+}
+.hotspot:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 7px;
+}
+.tooltip {
+  position: absolute;
+  left: 42px;
+  top: 50%;
+  min-width: 134px;
+  max-width: 230px;
+  padding: 10px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #101c2cf5;
+  border: 1px solid #66809a55;
+  border-radius: 7px;
+  box-shadow: 0 5px 16px #0004;
+  color: #e8eff4;
+  text-align: left;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-4px, -50%);
+  pointer-events: none;
+  transition:
+    opacity 160ms,
+    transform 160ms;
+}
+.tooltip strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+.tooltip > span {
+  color: var(--marker-color);
+  font-size: 10px;
+}
+.hotspot:focus-visible .tooltip,
+.hotspot:hover .tooltip,
+.hotspot[data-selected="true"] .tooltip {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+.hotspot:nth-child(n + 7) .tooltip {
+  right: 42px;
+  left: auto;
+}
+.instructions {
+  position: absolute;
+  z-index: 5;
+  bottom: 20px;
+  left: 25px;
+  right: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  pointer-events: none;
+  color: #7d95aa;
+  font:
+    9px/1.5 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 1px;
+}
+.instructions i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #567087;
+}
+.modelLabel {
+  position: absolute;
+  left: 25px;
+  top: 23px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  pointer-events: none;
+  font:
+    11px/1.4 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 2px;
+  color: #a0b4c6;
+}
+.modelLabel > span > span {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.6px;
+  color: #59748b;
+  margin-top: 4px;
+}
+.crosshair {
+  font-size: 20px;
+  line-height: 1;
+  color: #a8cb85;
+}
+.axis {
+  position: absolute;
+  right: 27px;
+  top: 27px;
+  width: 38px;
+  height: 38px;
+  opacity: 0.7;
+  font:
+    9px ui-monospace,
+    monospace;
+  color: #9cb7c8;
+  pointer-events: none;
+}
+.axis::before {
+  content: "";
+  position: absolute;
+  width: 1px;
+  height: 26px;
+  left: 17px;
+  top: 0;
+  background: #80a585;
+}
+.axis::after {
+  content: "";
+  position: absolute;
+  width: 29px;
+  height: 1px;
+  left: 4px;
+  top: 25px;
+  transform: rotate(-25deg);
+  background: #91a5bb;
+}
+.axis b {
+  position: absolute;
+  top: -12px;
+  left: 14px;
+  font-weight: 400;
+}
+.axis span {
+  position: absolute;
+  left: -6px;
+  top: 28px;
+}
+.axis small {
+  position: absolute;
+  right: -5px;
+  top: 15px;
+  font-size: inherit;
+}
+.loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #90a9bd;
+  font-size: 12px;
+}
+.loading > span {
+  width: 13px;
+  height: 13px;
+  border: 1px solid #667e91;
+  border-top-color: #bbd78f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes pulse {
+  0% {
+    transform: scale(0.83);
+    opacity: 0.9;
+  }
+  80%,
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 650px) {
+  .instructions {
+    left: 12px;
+    right: 12px;
+    bottom: 15px;
+    gap: 8px;
+    font-size: 7px;
+    letter-spacing: 0.5px;
+  }
+  .modelLabel {
+    left: 17px;
+    top: 18px;
+  }
+  .axis {
+    right: 19px;
+    top: 25px;
+  }
+  .hotspot {
+    width: 28px;
+    height: 28px;
+  }
+  .dot {
+    width: 26px;
+    height: 26px;
+    font-size: 9px;
+  }
+  .tooltip {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hotspot::before,
+  .loading > span {
+    animation: none !important;
+  }
+  .dot,
+  .tooltip {
+    transition: none;
+  }
+}
+
+.viewer[data-mode="wireframe"] {
+  background: radial-gradient(
+    ellipse at 45% 35%,
+    #ffffff 0,
+    #f5f8fc 60%,
+    #edf2f8 100%
+  );
+  color: #345779;
+}
+.viewer[data-mode="wireframe"] .modelLabel {
+  color: #49719c;
+}
+.viewer[data-mode="wireframe"] .modelLabel > span > span {
+  color: #7c99b6;
+}
+.viewer[data-mode="wireframe"] .crosshair {
+  color: #5c88b7;
+}
+.viewer[data-mode="wireframe"] .axis {
+  color: #5c81a9;
+}
+.viewer[data-mode="wireframe"] .axis::before {
+  background: #7da4bd;
+}
+.viewer[data-mode="wireframe"] .axis::after {
+  background: #829fc2;
+}
+.viewer[data-mode="wireframe"] .instructions {
+  color: #6f8ba5;
+}
+.viewer[data-mode="wireframe"] .instructions i {
+  background: #9db4cb;
+}
+.viewer[data-mode="wireframe"] .dot {
+  background: #fff;
+  color: #3a739b;
+  border-color: #7ea5c5;
+  box-shadow:
+    0 0 0 4px #aac9e625,
+    0 2px 6px #456a8a15;
+}
+.viewer[data-mode="wireframe"] .hotspot[data-status="blocked"] .dot {
+  color: #d24e53;
+  border-color: #db7c80;
+  background: #fff4f4;
+  box-shadow: 0 0 0 5px #ff616d12;
+}
+.viewer[data-mode="wireframe"] .hotspot[data-status="delayed"] .dot {
+  color: #ab6d1c;
+  border-color: #d0a163;
+  background: #fff9ec;
+  box-shadow: 0 0 0 5px #ffbd6117;
+}
+.viewer[data-mode="wireframe"] .hotspot[data-status="on-track"] .dot {
+  color: #508c6c;
+  border-color: #95b9a6;
+}
+.viewer[data-mode="wireframe"] .hotspot[data-status="delivered"] .dot {
+  color: #518d9b;
+  border-color: #8db6bd;
+}
+.viewer[data-mode="wireframe"] .hotspot[data-selected="true"] .dot,
+.viewer[data-mode="wireframe"] .hotspot:hover .dot {
+  color: #fff;
+  background: #367cba;
+  border-color: #367cba;
+}
+.viewer[data-mode="wireframe"] .tooltip {
+  background: #fffffff5;
+  border-color: #c7d7e6;
+  color: #29425c;
+  box-shadow: 0 4px 14px #45709614;
+}
+.viewer[data-mode="wireframe"] .tooltip > span {
+  color: #5f7c98;
+}
+.viewer[data-mode="wireframe"] .hotspot:focus-visible {
+  outline-color: #367cba;
+}
+.hotspot[hidden] {
+  display: none;
+}

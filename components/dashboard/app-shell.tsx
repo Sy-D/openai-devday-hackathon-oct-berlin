@@ -9,6 +9,7 @@ import {
   Factory,
   GitCompareArrows,
   LayoutDashboard,
+  Boxes,
   Moon,
   Search,
   Sun,
@@ -37,7 +38,7 @@ import { AnimatedNumber } from "./animated-number"
 
 /**
  * Shared app chrome: sidebar + header. Nav uses deep links
- * (/?panel=compare|research|memo) so it also works off the overview page.
+ * (/suppliers?panel=compare|research|memo) so it also works off the overview page.
  */
 export function AppShell({
   breadcrumb,
@@ -68,10 +69,10 @@ export function AppShell({
               </div>
               <div className="min-w-0 group-data-[collapsible=icon]:hidden">
                 <p className="text-sm font-semibold tracking-tight">
-                  Siemens Mobility
+                  FORMA
                 </p>
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                  Supplier intelligence
+                  Infrastructure intelligence
                 </p>
               </div>
             </div>
@@ -92,6 +93,12 @@ export function AppShell({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
+                    <SidebarMenuButton isActive={breadcrumb.at(-1) === "Suppliers"} tooltip="Suppliers" render={<Link href="/suppliers" />}>
+                      <Boxes />
+                      <span>Suppliers</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
                     <SidebarMenuButton
                       isActive={breadcrumb.at(-1) === "Production planning"}
                       tooltip="Production planning"
@@ -104,7 +111,7 @@ export function AppShell({
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       tooltip="Compare suppliers"
-                      render={<Link href="/?panel=compare" />}
+                      render={<Link href="/suppliers?panel=compare" />}
                     >
                       <GitCompareArrows />
                       <span>Compare</span>
@@ -118,7 +125,7 @@ export function AppShell({
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       tooltip="Research agent"
-                      render={<Link href="/?panel=research" />}
+                      render={<Link href="/suppliers?panel=research" />}
                     >
                       <Search />
                       <span>Research agent</span>
@@ -127,7 +134,7 @@ export function AppShell({
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       tooltip="Export shortlist memo"
-                      render={<Link href="/?panel=memo" />}
+                      render={<Link href="/suppliers?panel=memo" />}
                     >
                       <FileText />
                       <span>Decision memo</span>
@@ -140,12 +147,12 @@ export function AppShell({
           <SidebarFooter className="gap-4 p-4 group-data-[collapsible=icon]:p-2">
             <div className="flex items-center gap-3 overflow-hidden py-1">
               <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium">
-                SM
+                FM
               </div>
               <div className="group-data-[collapsible=icon]:hidden">
                 <p className="text-xs font-medium">Procurement workspace</p>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Siemens Mobility
+                  FORMA
                 </p>
               </div>
             </div>

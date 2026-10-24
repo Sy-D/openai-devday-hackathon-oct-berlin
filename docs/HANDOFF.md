@@ -1,17 +1,29 @@
 # FORMA: application handoff
 
-Updated 24 October 2026. The incoming supplier dashboard and FORMA production planner now share one Next.js application. The integration and first-draft branches are published. PR #2 consolidates the work for main; Vercel authorization is deferred.
+Updated 24 October 2026.
+
+## Current DSX overview extension
+
+The new landing page at `/` shows a selectable 3D container with ten subsystems, wireframe and 2D views. Red/amber delivery markers lead to `/planning?component=ID`, which compares transport routes and stores explicit recovery confirmations. `/api/disruptions` streams simulated incidents via SSE; closed links invalidate routes, delays recalculate ETA, and changed confirmations require review. Simon's supplier dashboard is preserved at `/suppliers`; the original manufacturing demo remains at `/planning`.
+
+Simon’s frontend supplies the design template across overview, recovery and manufacturing screens. Shared theme tokens, buttons, panels, motion and light/dark mode replace the earlier separate design. **Reset view** clears filters and selection and restores solid 3D with full camera framing. Simon’s supplied screenshot and DSX video informed the blue technical wireframe, part/supplier search, delivery-state filters, roof framing and cable details. See [DESIGN_REFERENCES.md](DESIGN_REFERENCES.md).
+
+Source branch: `codex/dsx-digital-twin`, based on main `9532785` after PR #2. Read [DSX_OVERVIEW.md](DSX_OVERVIEW.md) for the interaction, stream lifecycle and demo; [DSX_DATA.md](DSX_DATA.md) describes the fictional dataset. This extension adds no live incident provider, actual bookings or hardware telemetry. Vercel remains deferred.
+
+## Previous integrated application baseline
+
+The incoming supplier dashboard and FORMA production planner now share one Next.js application. The integration and first-draft branches are published. PR #2 consolidates the work for main; Vercel authorization is deferred.
 
 ## Start here
 
-In the existing checkout on `codex/forma-template-integration`, use Node.js 22.12 or later:
+In the existing checkout on `codex/dsx-digital-twin`, use Node.js 22.12 or later:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open **http://localhost:3000** for supplier risk and **http://localhost:3000/planning** for production planning. Both use the same Next server. The planner calls native `/api/assistant` and `/api/health` routes; it does not require a separate API process or a frontend proxy.
+Open **http://localhost:3000** for the pod overview (supplier risk is at `/suppliers`) and **http://localhost:3000/planning** for production planning. Both use the same Next server. The planner calls native `/api/assistant` and `/api/health` routes; it does not require a separate API process or a frontend proxy.
 
 No credentials or Python setup are needed for bundled supplier browsing or the planning demo. Supplier maps and climate panels use public network services. Optional supplier AI needs Python and Nebius/Tavily configuration; optional planning AI uses OpenAI. Follow [the root README](../README.md) and [AI setup](AI.md) for these separate settings.
 
@@ -45,16 +57,11 @@ After restoring capacity, apply 42 kits / 60h. Balanced exceeds Dresden's finger
 
 ## Verification status
 
-The final consolidation run passed the production build, **45 unit/API
-tests** and **19 browser tests against the production server** (42.2 seconds).
-`/`, `/planning`, `/compare` and `/api/health` returned HTTP 200. DuckDB's
-shared library and the supplier CSV were included in the server trace.
+The DSX extension passes the production build with TypeScript checking, **68 unit/API tests** and **27 browser tests against the production server**. Browser coverage includes part search and delivery filters, camera reset, 3D/wireframe/2D and WebGL fallback, mobile navigation, actual SSE arrivals, recovery confirmation and stale-route review, supplier browsing and the existing planner. Desktop, dark mode and mobile renders were visually inspected. Supplier CSV and native DuckDB libraries remain included in the server trace.
 
-The follow-up consolidation fixes the custom-rule errors and the App
-state-update-in-effect finding. Request and storage validation remain intact;
-true parser boundaries have narrowly documented lint exceptions. Generated
-legacy Vite output is excluded from lint. `npm run lint` passes with zero errors;
-two existing unused-code warnings remain in the supplier workspace panels. Reproduce checks with:
+`npm run lint` passes with zero errors and two existing unused-code warnings in the supplier workspace panels. Small planning guidance text is checked at 4.5:1 contrast in both themes. The build still reports the existing dynamic Python path tracing warning; this does not establish deployment readiness for the Python backend.
+
+Reproduce checks with:
 
 ```sh
 npm run typecheck
@@ -62,10 +69,10 @@ npm test
 npm run lint
 npm run build
 npx playwright install chromium
-npm run test:e2e
+PLAYWRIGHT_USE_PRODUCTION=1 npm run test:e2e
 ```
 
-Unit tests cover planning, actions, scenarios, persistence, assistant validation, native Next request handling and the bounded live check. Browser checks exercise `/planning` and navigation from the incoming dashboard. Screenshots in `outputs/` support visual review but do not establish provider access or teammate setup.
+Screenshots in `outputs/` support visual review but do not establish provider access or teammate setup.
 
 `npm run test:live` requires a configured OpenAI key and must return a real, validated provider reply. The current missing-key result is an external setup blocker. Live supplier research, supplier analyst calls and the integrated Docker runtime also need separate environment verification. Do not treat earlier standalone FORMA test counts as the final integrated result.
 
@@ -89,20 +96,18 @@ Planning state stays in the current browser. Supplier research stays in local ou
 
 ## Publication
 
-The first FORMA draft is preserved at **`c89d43b` on `codex/forma-first-draft`**. The supplier template arrived on `origin/main` at **`baa6a5c`**. The combined work is on **`codex/forma-template-integration`** in the shared local checkout.
+The first FORMA draft remains on `codex/forma-first-draft` at `c89d43b`. Simon’s frontend (`baa6a5c`) and the original integration were merged into main at `9532785` through [PR #2](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/2). The current DSX extension and shared styling are on `codex/dsx-digital-twin`.
 
-Write access is now available. Both branches were pushed normally and their remote SHAs verified. The earlier HTTP 403 is resolved and access-request issue #1 is closed. [PR #2](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/2) consolidates the integrated work; no other pull requests were open when it was created.
-
-Teammates can clone the integrated branch:
+To continue this extension:
 
 ```sh
-git clone --branch codex/forma-template-integration https://github.com/Sy-D/openai-devday-hackathon-oct-berlin.git
+git clone --branch codex/dsx-digital-twin https://github.com/Sy-D/openai-devday-hackathon-oct-berlin.git
 cd openai-devday-hackathon-oct-berlin
 npm ci
 npm run dev
 ```
 
-Any earlier `forma-hackathon-work.bundle` is a historical standalone draft. The coordinating chat provides a complete-history `forma-template-integration.bundle` at 535ff69; use the published branch for newer commits.
+Earlier bundle files preserve the previous integration. Use the current branch for the DSX model, recovery workflow and shared frontend styles.
 
 Hosting is requested at `forma-supply-chain.vercel.app`. Carl chose to authorize
 the Vercel workspace later, so deployment is deferred. No Vercel project

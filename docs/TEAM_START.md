@@ -33,7 +33,7 @@ npm run test:e2e
 
 The browser-test configuration starts Next at **http://127.0.0.1:5174** using `npm run dev -- --hostname 127.0.0.1 --port 5174`. It may reuse a server already running there. Keep that port for the tested checkout and run the demo tests without a live OpenAI key, because several scenarios verify the labelled fallback. A successful build alone does not verify the browser or a live model call.
 
-For a quick manual check, open **Production planning** in the shared sidebar or visit `/planning`. Click **Run demo**, then **Compare routes** for FM-2048 in **Needs action**. Confirm Balanced, simulate the Dresden disruption, and confirm Fastest. The action should clear, return after the delay, and clear after recovery. Refresh once to verify persistence, then reset. Also visit `/` to check the supplier dashboard and shared navigation. Use [the three-minute script](DEMO.md) for the presentation.
+For a quick manual check, open **Production planning** in the shared sidebar or visit `/planning`. Click **Run demo**, then **Compare routes** for FM-2048 in **Needs action**. Confirm Balanced, simulate the Dresden disruption, and confirm Fastest. The action should clear, return after the delay, and clear after recovery. Refresh once to verify persistence, then reset. Also visit `/` for the DSX POD overview, use its Reset view control after rotating or switching views, and visit `/suppliers` for supplier intelligence. Use [the three-minute script](DEMO.md) for the presentation.
 
 ## Proposed work lanes
 
@@ -51,7 +51,7 @@ Before touching another lane's files, tell its owner. Keep each change on a feat
 
 ## Continue the template integration
 
-The Next.js supplier-risk template arrived in `main` at `baa6a5c`. The integration preserves the supplier dashboard at `/` and places the production planner at `/planning` inside `AppShell`. The first Vite draft is preserved on `codex/forma-first-draft`; new work belongs on the integration branch or a feature branch based on it.
+The Next.js supplier-risk template arrived in `main` at `baa6a5c`. Simon’s frontend provides the shared design template for all workflows: theme tokens, Button/Card controls, typography, light/dark styling and motion. The DSX overview is at `/`, supplier intelligence at `/suppliers`, and production planning at `/planning`, all inside `AppShell`. The first Vite draft is preserved on `codex/forma-first-draft`; new work belongs on the integration branch or a feature branch based on it.
 
 Inspect new template commits before merging and preserve teammates' changes. Keep **Needs action** before production metrics and drill-downs. Preserve scenario validation, confirmation warnings, the no-action state, keyboard labels and mobile next-action buttons. Keep planner styles scoped so they do not alter the supplier dashboard. Run the affected checks and both routes after integration. Update the Page and Excalidraw to match the resulting code, then record the verified commit in the handoff.
 

@@ -13,7 +13,7 @@ const fontMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Supplier intelligence | Siemens Mobility",
+  title: "Infrastructure intelligence | FORMA",
   description:
     "Explore supplier risks, compare your shortlist and make evidence-based sourcing decisions.",
 }
