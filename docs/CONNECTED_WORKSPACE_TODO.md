@@ -1,3 +1,11 @@
+## Delivery chat · 24 October 2026
+
+- [x] Add OpenRouter chat to overview and planner; use our current delivery/incident/routing functions.
+- [x] Support draft edits, rerouting, cost/carbon comparisons, Undo and conflict protection.
+- [x] Preserve explicit Apply decision; verify real provider calls and 125 unit/API + 27 browser tests.
+- [x] Refresh localhost for Carl’s review. [Setup and exact steps](DELIVERY_AGENT.md).
+- [ ] Main push/merge is deliberately on hold until Carl asks to publish it.
+
 # Connected procurement workspace — remaining work
 
 This is the active implementation checklist. The shared planning Page, Notion checkpoint and Excalidraw were reconciled after implementation and publication, as requested.

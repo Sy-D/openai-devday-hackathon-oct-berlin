@@ -30,6 +30,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { DeliveryChatLauncher } from "@/components/procurement/delivery-chat"
 
 /** Shared design system with navigation for the FORMA workspace. */
 export function AppShell({
@@ -140,6 +141,7 @@ export function AppShell({
               ))}
             </div>
             <div className="flex items-center gap-2">
+              <DeliveryChatLauncher />
               <Button
                 variant="ghost"
                 size="icon-lg"

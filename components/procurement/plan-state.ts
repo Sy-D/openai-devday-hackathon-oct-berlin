@@ -32,6 +32,7 @@ const responseSchema = z.object({
     .url()
     .refine((value) => /^https?:\/\//.test(value)),
   exclusions: z.array(coordinate),
+  exclusionPaths: z.array(z.array(coordinate)).optional(),
   warnings: z.array(z.string()),
 })
 const inputsSchema = z.object({
@@ -40,7 +41,7 @@ const inputsSchema = z.object({
   handlingMinutes: z.number().min(0).max(10080),
   quantity: z.number().int().min(1).max(10000),
 })
-const metricsSchema = z.object({
+export const metricsSchema = z.object({
   distanceKm: z.number(),
   drivingMinutes: z.number(),
   reportedDelayMinutes: z.number().nonnegative(),
@@ -64,7 +65,7 @@ const savedSchema = z.object({
   offerId: z.string(),
   offerObservedAt: timestamp,
 })
-const draftSchema = z.object({
+export const draftSchema = z.object({
   version: z.literal(1),
   componentId: z.string(),
   offerId: z.string(),

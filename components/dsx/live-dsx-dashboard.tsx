@@ -28,6 +28,7 @@ import {
 } from "@/src/data/part-catalog"
 import { PartProvenance } from "./part-provenance"
 import { useDeliveryOverview } from "@/components/procurement/use-delivery-overview"
+import { DeliveryChatOverview } from "@/components/procurement/delivery-chat"
 import type { AssemblyView, RackPart } from "./rack-geometry"
 import styles from "./dsx.module.css"
 import live from "./live-dsx.module.css"
@@ -155,6 +156,7 @@ export default function LiveDsxDashboard({
     <AppShell breadcrumb={["Workspace", "Overview"]}>
       <main id="main" className={styles.workspace} tabIndex={-1}>
         <h1 className="sr-only">Infrastructure overview</h1>
+        <DeliveryChatOverview />
         <section className={live.actionArea} aria-label="Delivery actions">
           <Card
             className={live.nextAction}

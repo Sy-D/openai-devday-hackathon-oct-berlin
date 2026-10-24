@@ -70,6 +70,8 @@ import {
   type DeliveryDraft,
 } from "./plan-state"
 import { LocationSearch } from "./location-search"
+import { persistDeliveryDraft } from "@/src/lib/delivery-store"
+import { freshDeliveryDraft } from "@/src/lib/delivery-chat"
 import styles from "./procurement.module.css"
 
 const RouteMap = dynamic(() => import("./route-map"), {
@@ -323,12 +325,46 @@ function ReadyProcurementWorkbench({
   useEffect(() => () => requestRef.current?.abort(), [])
   useEffect(() => {
     try {
-      localStorage.setItem(draftKey(componentId), JSON.stringify(draft))
+      persistDeliveryDraft(draft)
     } catch {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Surface an external browser storage failure, not derived render state.
       setNotice("Changes remain in this tab; browser storage is unavailable.")
     }
   }, [draft, componentId])
+  useEffect(() => {
+    function syncDraft() {
+      try {
+        const raw = localStorage.getItem(draftKey(componentId))
+        const next =
+          raw === null
+            ? freshDeliveryDraft(
+                componentId,
+                Intl.DateTimeFormat().resolvedOptions().timeZone
+              )
+            : parseSavedDraft(raw, componentId)
+        if (
+          next &&
+          JSON.stringify(next) !== JSON.stringify(currentDraftRef.current)
+        ) {
+          requestRef.current?.abort()
+          currentDraftRef.current = next
+          setDraft(next)
+          setBusy(false)
+          setNotice(
+            "Delivery draft updated. Review the route before applying the decision."
+          )
+        }
+      } catch {
+        /* Keep the current draft if storage is unavailable. */
+      }
+    }
+    window.addEventListener("forma:delivery-updated", syncDraft)
+    window.addEventListener("storage", syncDraft)
+    return () => {
+      window.removeEventListener("forma:delivery-updated", syncDraft)
+      window.removeEventListener("storage", syncDraft)
+    }
+  }, [componentId])
   const offer = offers.find((item) => item.id === draft.offerId)
   const sellerDispatchSelected =
     offer?.dispatch &&
