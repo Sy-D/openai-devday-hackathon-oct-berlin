@@ -1,6 +1,6 @@
 # Connected procurement workspace — remaining work
 
-This is the active implementation checklist. The shared planning Page will be reconciled after implementation, as requested.
+This is the active implementation checklist. The shared planning Page, Notion checkpoint and Excalidraw were reconciled after implementation and publication, as requested.
 
 ## Verified milestones
 
@@ -12,7 +12,7 @@ This is the active implementation checklist. The shared planning Page will be re
 
 ## Finish and verify
 
-- [x] **Verified — Recording path and review dots:** red/amber/green markers follow review state. Browser regression proves save turns the part green and changed evidence turns it red. Exact recording clicks and narration are in DEMO.md; actual-provider rehearsal passed. Report popup CSS was repaired; final visual readback follows the refreshed preview.
+- [x] **Verified — Recording path and review dots:** red/amber/green markers follow review state. Browser regression proves save turns the part green and changed evidence turns it red. Exact recording clicks and narration are in DEMO.md; actual-provider rehearsal passed. Report popup CSS was repaired and its rendered boxed layout was verified.
 
 - [x] **Verified — Usable location search and map:** explicit city/address/facility search selects named locations; coordinates are collapsed under Advanced. Real Photon lookup succeeded for Berlin. Styled component picker, OpenFreeMap light/dark tiles, endpoint labels, legend, fit and loading state are implemented. Actual desktop and 390px controls/map screenshots were inspected; browser regression checks lookup-to-route payload and component navigation.
 
@@ -21,9 +21,10 @@ This is the active implementation checklist. The shared planning Page will be re
 - [x] **Verified — Visual repairs:** modular AI data-center labels, stronger action colors, compact part cards and unclipped badge are visible. Rendered desktop/mobile screenshots inspected; 320/390/768/1440px browser layout checks pass.
 - [x] **Verified — Local checks:** 112 unit/API tests and all 22 production browser tests pass. Production build/TypeScript pass; lint has zero errors and two existing legacy warnings. Actual Photon, Valhalla and incident-provider workflow passed, including saved decisions and live reported-delay changes. Retired simulation-only suites were replaced with current flow coverage.
 - [x] **Published — Branch and PR:** connected application pushed to `codex/connected-procurement`; [PR #7](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/7) is open. Remote SHA verified. Only selected frontend improvements from Simon were adopted.
-- [ ] **In progress — CI and merge:** verify the latest PR head and merge when checks pass.
+- [x] **Merged — Application:** PR #7 merged into main at `3b3d3ab`; it contains tested implementation `c59947a` with no content difference.
+- [ ] **External CI:** GitHub Docker run 40098287449 is still running at this handoff. Local build and tests passed; no completed Docker result is claimed.
 - [x] **Verified — Two-minute demo script:** [DEMO.md](DEMO.md) traces the optical module, Glinde/Berlin route, current traffic evidence, alternatives and saved decision. Actual browser clicks and calculations passed; human spoken timing remains below. The script uses the displayed result even when keeping the baseline is best.
-- [ ] **Pending — Documentation and cleanup after implementation:** update shared Page, Notion and Excalidraw; stop extra preview/test servers while retaining localhost:3000; preserve teammate work and the current branch.
+- [x] **Verified — Documentation and cleanup:** planning Page updated and read back; Notion checkpoint saved and read back; Excalidraw architecture/status/demo frames updated and visually inspected. Only localhost:3000 remains; extra preview/test servers are stopped. Teammate work is preserved.
 
 ## External follow-ups
 
