@@ -4,7 +4,7 @@ A shared hackathon workspace for infrastructure delivery, supplier intelligence 
 
 - **POD overview at `/`**: inspect a DSX POD inspired 3D container, switch to wireframe or 2D, and select ten tracked subsystems. Red and amber markers identify disrupted deliveries.
 - **Component recovery at `/planning?component=compute-a`**: inspect the affected supplier shipment, compare transport alternatives, and explicitly confirm a recovery route. Incoming simulated incidents update availability and ETA without refreshing.
-- **Supplier intelligence at `/suppliers`**: Simon's existing dashboard, with 10,000 anonymized suppliers, maps, profiles, comparison and optional research agents.
+- **Supplier intelligence at `/suppliers`**: Simon's existing dashboard, with 10,000 anonymized suppliers, maps, profiles and optional analyst chat.
 - **Manufacturing planning at `/planning`**: the original FORMA order and manufacturing demo remains available.
 
 Simon’s frontend is the design template for every view: shared controls, theme colors, typography, rounded surfaces and animations. **Reset view** restores the full 3D model after switching modes or moving the camera. The new pod's supplier assignments, geometry, transport costs and incident scenarios are illustrative. They are not actual NVIDIA supplier reports, live flight/rail data or an official CAD model. The supplier directory and manufacturing demo keep their separate datasets.
@@ -45,7 +45,7 @@ Keep credentials server-side in the ignored root `.env` file. If no `.env` exist
 | --- | --- |
 | Planning copilot at `/planning` | `OPENAI_API_KEY`; optional `OPENAI_MODEL`. Without a key, it uses an explicitly labelled deterministic demo reply. |
 | Supplier dataset analyst | Python setup below, `data/suppliers.duckdb`, and `NEBIUS_API_KEY`. |
-| Research a real company | Python setup below, `NEBIUS_API_KEY` and `TAVILY_API_KEY`. |
+| Standalone company research | Python setup below, `NEBIUS_API_KEY` and `TAVILY_API_KEY`. No dashboard UI. |
 
 The two AI integrations have separate configuration. Setting an OpenAI key does not configure the supplier agents. Never prefix secrets with `NEXT_PUBLIC_` or `VITE_`. Planning API details and the one-request live check are in [docs/AI.md](docs/AI.md).
 
@@ -63,7 +63,7 @@ The last command builds the local database used by the dataset analyst. The dash
 
 Supplier defaults are `NEBIUS_MODEL=MiniMaxAI/MiniMax-M3` and `NEBIUS_BASE_URL=https://api.tokenfactory.nebius.com/v1`. Research streams progress while it runs; duration depends on provider and search response times.
 
-The research agent can also run on its own:
+The research agent UI is currently removed. Its backend and CLI remain available:
 
 ```sh
 cd deep-research-agent
@@ -89,9 +89,7 @@ It serves the same application routes on port 3000. Optional provider values com
 - **Search**: start typing or press Cmd+K / Ctrl+K. Arrow keys and Enter open a supplier profile; Cmd/Ctrl+Enter sends the text to the analyst chat.
 - **Analyst chat**: asks the configured Nebius model to generate a read-only SQL query over the local supplier database, then explains the result. It supports follow-up questions and optional structured answer blocks. This feature needs the Python setup and Nebius key above.
 - **Table and filters**: sort columns and filter by risk level, maximum total or financial risk, minimum delivery rating and sourcing risk.
-- **Selection and chart**: select up to 20 suppliers to focus the chart and fact cards. Open supplier profiles from the chart or table.
-- **Compare and export**: compare selected suppliers on `/compare` or export a shortlist memo.
-- **Research a real company**: check existing matches, resolve the official name, and watch eight criteria groups gather evidence and score risk. The result includes reasons and source URLs. Researched rows use `RSCH_` IDs alongside anonymized `SUPP_` rows.
+- **Selection and chart**: select suppliers to focus the chart and fact cards. Open supplier profiles from the chart or table.
 
 Risk scores run from 0 (no risk) to 100 (maximum risk); higher delivery ratings are better. [Column definitions](data/risk_criteria_description.md) explain the schema. Public-source model estimates need review before procurement decisions.
 
@@ -118,8 +116,9 @@ After configuring the production assistant's key, `npm run test:live` makes one 
 
 ```text
 app/                    Next.js App Router
-  page.tsx              Supplier dashboard
-  compare/, supplier/   Supplier comparison and profile pages
+  page.tsx              POD delivery overview
+  suppliers/            Supplier dashboard
+  supplier/             Single-supplier profile pages
   planning/             Production planner inside the shared shell
   api/resolve/          Company-name resolution
   api/research/         Supplier research and scoring (SSE)

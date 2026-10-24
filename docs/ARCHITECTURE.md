@@ -29,7 +29,7 @@ flowchart TB
   DB[(data/suppliers.duckdb)]
   Local[(Browser planning state)]
   UI --> Data --> CSV
-  UI --> Research --> Agent
+  Research --> Agent
   Agent --> Nebius[Nebius Token Factory]
   Agent --> Tavily[Tavily search]
   Agent --> CSV
@@ -44,6 +44,8 @@ flowchart TB
 
 One Next.js process serves both views and their native API routes. Supplier
 research and analyst routes start Python child processes and stream progress.
+The company research backend remains available to API and CLI clients. The
+dashboard has no Research agent, supplier comparison or Decision memo UI.
 Supplier pages query CSV files with embedded DuckDB; the text-to-SQL analyst
 uses a separately generated DuckDB file. No database server is required.
 
@@ -61,7 +63,7 @@ operational data.
 
 ### Loading the dashboard
 
-1. `app/page.tsx` is a Server Component and calls `getSuppliers()` from
+1. `app/suppliers/page.tsx` is a Server Component and calls `getSuppliers()` from
    `lib/supplier-data.ts`. It is rendered per request
    (`dynamic = "force-dynamic"`), so newly researched rows show up on reload.
 2. DuckDB (embedded, in-memory) runs one SQL query over
@@ -74,48 +76,41 @@ operational data.
    loudly instead of rendering wrong numbers.
 4. The validated list is passed to the client component `SupplierDashboard`,
    which does all filtering, sorting, charting and selection in the browser.
-   `/compare?ids=…` loads the same data server-side and shows the selected
-   suppliers side by side.
+   Selected suppliers focus the charts and provide context to analyst chat.
 
 `@duckdb/node-api` is a native module, so it is listed in
 `serverExternalPackages` in `next.config.ts` and loaded with Node's own
 `require` instead of being bundled.
 
-### Researching a real company
+### Company research backend
 
-1. **Check the portfolio first.** The "Research a real company" dialog
-   fuzzy-matches the typed name against the loaded suppliers
-   (`lib/fuzzy-match.ts`: exact id, then character-bigram similarity ignoring
-   legal suffixes such as GmbH or AG). If there are matches, the user can pick
-   an existing supplier instead of researching it again.
-2. **Resolve the name.** Otherwise the dialog calls `POST /api/resolve`, which
+These endpoints remain for API clients. The dashboard no longer starts research.
+
+1. **Resolve the name.** `POST /api/resolve`
    runs `app.py --resolve <name>`: one short model call that turns casual
    input ("stadler") into the official company name ("Stadler Rail AG"). If
-   the result differs, the user confirms it; on any failure the typed name is
-   used.
-3. **Research with live progress.** The dialog calls `POST /api/research`.
+   the result differs, the client can review the official name before research.
+2. **Research with live progress.** The client calls `POST /api/research`.
    `lib/agent-stream.ts` runs `app.py --json <name>` (5-minute timeout) and
    turns the agent's `PROGRESS|…` lines on stderr into Server-Sent Events, so
-   the dialog shows an activity feed while the research runs.
-4. **Score in parallel.** The agent splits the work into eight criteria groups
+   clients can show progress while the research runs.
+3. **Score in parallel.** The agent splits the work into eight criteria groups
    (compliance and governance, financial and market, ESG and environmental,
    operations/quality/safety, labor, cyber, geopolitical and political,
    media and external intelligence). Each group is a small LangGraph ReAct
    agent with the Tavily search tool and the MiniMax-M3 model, and returns its
    scores with a reason and source URLs. Up to four groups run at once; a
    whole research takes roughly 30–60 seconds.
-5. **Derive levels in code.** Levels and `Total_Risk_Index` are computed in
+4. **Derive levels in code.** Levels and `Total_Risk_Index` are computed in
    `schema.py`, not by the model: a score below 25 is `Low`, below 50
    `Medium`, below 75 `High`, otherwise `Critical`; `Total_Risk_Index` is the
    mean of the 18 dimension scores.
-6. **Persist.** The agent appends the row (with a `Last Modified` UTC
+5. **Persist.** The agent appends the row (with a `Last Modified` UTC
    timestamp) to `output/suppliers.csv` and the per-column reasoning to
    `output/suppliers_reasoning.jsonl`, then prints both as JSON.
-7. **Show the result.** The route maps the row to the dashboard's supplier
-   shape and sends it as the final `result` event. The dialog shows the
-   scores and their sources; the dashboard adds the supplier to the table
-   right away and selects it for comparison. After a reload it comes from the
-   CSV as an `RSCH_` row.
+6. **Return the result.** The route maps the row to the dashboard's supplier
+   shape and sends it as the final `result` event. Reloading the supplier
+   dashboard reads the persisted CSV row with an `RSCH_` ID.
 
 ### Asking the supplier analyst
 
