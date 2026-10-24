@@ -50,6 +50,7 @@ function MapBackgroundStatus() {
     const loaded = () => {
       ready.current = true
       setStatus("ready")
+      map.attributionControl.removeAttribution(attribution)
     }
     const failed = () => {
       ready.current = false
@@ -172,26 +173,26 @@ export default function NetworkMapCanvas({
         {plan.legs.map((leg) => (
           <MapPolyline
             key={leg.partId}
+            className={
+              leg.partId === "actuator"
+                ? "stroke-muted-foreground stroke-[3]"
+                : "stroke-foreground stroke-[3]"
+            }
             positions={[
               position(siteById(leg.factoryId)),
               position(siteById(plan.assemblyId)),
             ]}
             pathOptions={{
-              color:
-                leg.partId === "actuator"
-                  ? "var(--muted-foreground)"
-                  : "var(--foreground)",
-              weight: 3,
               dashArray: leg.partId === "actuator" ? "5 5" : undefined,
             }}
           />
         ))}
         <MapPolyline
+          className="stroke-[color:var(--risk-low)] stroke-[4]"
           positions={[
             position(siteById(plan.assemblyId)),
             position(siteById("berlin")),
           ]}
-          pathOptions={{ color: "var(--risk-low)", weight: 4 }}
         />
         {factories.map((factory) => {
           const blocked =

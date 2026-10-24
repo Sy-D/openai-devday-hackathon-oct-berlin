@@ -50,7 +50,7 @@ import {
   Search,
   Settings2,
   ShieldCheck,
-  Sparkles,
+  MessageSquare,
   TriangleAlert,
   Truck,
   X,
@@ -443,7 +443,7 @@ export default function App() {
                   className="h-11"
                   onClick={() => setAssistant(true)}
                 >
-                  <Sparkles size={15} />
+                  <MessageSquare size={15} />
                   Ask copilot
                 </Button>
               </div>

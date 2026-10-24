@@ -22,6 +22,16 @@ test("geographic map has real controls, updates selected routes and exposes loca
     map.getByRole("button", { name: "Enter fullscreen", exact: true })
   ).toBeVisible()
   await expect(map.locator(".leaflet-marker-icon")).toHaveCount(10)
+  const routeLines = map.locator(".leaflet-overlay-pane path")
+  await expect(routeLines).toHaveCount(4)
+  const routeStyles = await routeLines.evaluateAll((lines) =>
+    lines.map((line) => ({
+      fill: getComputedStyle(line).fill,
+      stroke: getComputedStyle(line).stroke,
+    }))
+  )
+  expect(routeStyles.every((style) => style.fill === "none")).toBe(true)
+  expect(new Set(routeStyles.map((style) => style.stroke)).size).toBe(3)
   await expect(map.locator(".leaflet-control-attribution")).toContainText(
     "OpenStreetMap"
   )
