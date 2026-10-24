@@ -375,7 +375,14 @@ export default function RackViewer({
       direction.z = Math.max(direction.z, 0.65)
       direction.normalize()
       targetPosition.copy(anchor).addScaledVector(direction, distance)
-      moving = true
+      const snap =
+        reducedMotion || document.activeElement?.matches(":focus-visible")
+      if (snap) {
+        camera.position.copy(targetPosition)
+        controls.target.copy(targetLook)
+        controls.update()
+      }
+      moving = !snap
       dirty = true
     }
     const resize = () => {

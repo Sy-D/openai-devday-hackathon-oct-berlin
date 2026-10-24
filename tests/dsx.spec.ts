@@ -11,7 +11,8 @@ test("reference-style part search and status filters preserve global actions and
   const filter = page.getByRole("combobox", {
     name: "Filter parts by delivery state",
   })
-  await filter.selectOption("attention")
+  await filter.click()
+  await page.getByRole("option", { name: "Needs action", exact: true }).click()
   await expect(page.getByRole("button", { name: /^Inspect / })).toHaveCount(3)
   await search.fill("Compute rack A")
   await expect(page.getByRole("button", { name: /^Inspect / })).toHaveCount(1)
@@ -19,14 +20,14 @@ test("reference-style part search and status filters preserve global actions and
   await page.getByRole("button", { name: "2D", exact: true }).click()
   await page.getByRole("button", { name: /^Inspect Compute rack A/ }).click()
   await expect(
-    page.getByRole("dialog", { name: "Compute rack A" })
+    page.getByRole("region", { name: "Compute rack A" })
   ).toBeVisible()
   await search.fill("no matching component")
   await expect(page.getByText("No parts match these filters.")).toBeVisible()
   await expect(page.getByRole("button", { name: /^Inspect / })).toHaveCount(0)
   await page.getByRole("button", { name: "Reset view", exact: true }).click()
   await expect(search).toHaveValue("")
-  await expect(filter).toHaveValue("all")
+  await expect(filter).toContainText("All delivery states")
   await expect(page.getByTestId("rack-viewer")).toHaveAttribute(
     "data-mode",
     "solid"
@@ -79,7 +80,7 @@ test("Reset view restores the full 3D model after camera movement and mode chang
   await page.getByRole("button", { name: "2D", exact: true }).click()
   await marker.click()
   await expect(
-    page.getByRole("dialog", { name: "Compute rack A" })
+    page.getByRole("region", { name: "Compute rack A" })
   ).toBeVisible()
   await page.getByRole("button", { name: "Reset view", exact: true }).click()
   await expect(viewer).toHaveAttribute("data-mode", "solid")
@@ -102,7 +103,7 @@ test("pod selection, camera views and recovery preserve the exact component", as
   page.on("pageerror", (error) => errors.push(error.message))
   await page.goto("/")
   await expect(
-    page.getByRole("heading", { name: "One pod. Every dependency." })
+    page.getByRole("heading", { name: "POD 01 delivery" })
   ).toBeVisible()
   await page.getByRole("button", { name: "Pause feed", exact: true }).click()
   await expect(page.getByTestId("dsx-action-count")).toHaveText("3 of 10 parts")
@@ -114,11 +115,11 @@ test("pod selection, camera views and recovery preserve the exact component", as
   await page.getByRole("button", { name: "2D", exact: true }).click()
   await page.getByRole("button", { name: /^Inspect Compute rack A/ }).click()
   await expect(
-    page.getByRole("dialog", { name: "Compute rack A" })
+    page.getByRole("region", { name: "Compute rack A" })
   ).toBeVisible()
   await expect(
     page
-      .getByRole("dialog")
+      .getByRole("region", { name: "Compute rack A", exact: true })
       .getByText("Frankfurt cargo lane closed", { exact: true })
   ).toBeVisible()
   await page
@@ -211,7 +212,7 @@ test("mobile pod remains usable and keeps Simon supplier navigation", async ({
   await page.getByRole("button", { name: "2D", exact: true }).click()
   await page.getByRole("button", { name: /10 Container and roof/ }).click()
   await expect(
-    page.getByRole("dialog", { name: "Container and roof" })
+    page.getByRole("region", { name: "Container and roof" })
   ).toBeVisible()
   expect(
     await page.evaluate(
@@ -278,9 +279,127 @@ test("2D fallback remains selectable when WebGL is unavailable", async ({
   )
   await page.getByRole("button", { name: /^Inspect Cooling manifold/ }).click()
   await expect(
-    page.getByRole("dialog", { name: "Cooling manifold" })
+    page.getByRole("region", { name: "Cooling manifold" })
   ).toBeVisible()
   await expect(
     page.getByRole("link", { name: "Open recovery plan", exact: true })
   ).toHaveAttribute("href", "/planning?component=manifold")
+})
+
+test("keyboard filters, empty reset and inline inspection stay usable", async ({
+  page,
+}) => {
+  const errors: string[] = []
+  page.on("pageerror", (error) => errors.push(error.message))
+  await page.goto("/")
+  await page.getByRole("button", { name: "Pause feed", exact: true }).click()
+  const filter = page.getByRole("combobox", {
+    name: "Filter parts by delivery state",
+  })
+  await filter.focus()
+  await page.keyboard.press("Enter")
+  await page.getByRole("option", { name: "Delivered", exact: true }).click()
+  await expect(page.getByRole("button", { name: /^Inspect / })).toHaveCount(1)
+  const search = page.getByRole("searchbox", {
+    name: "Find a part or supplier",
+  })
+  await search.fill("unlisted supplier")
+  await page.getByRole("button", { name: "Clear part filters" }).click()
+  await expect(filter).toContainText("All delivery states")
+  await expect(search).toHaveValue("")
+  await expect(page.getByRole("button", { name: /^Inspect / })).toHaveCount(10)
+  await page.getByRole("button", { name: /01 Compute rack A/ }).click()
+  const inspection = page.getByRole("region", {
+    name: "Compute rack A",
+    exact: true,
+  })
+  await expect(inspection).toBeVisible()
+  await expect(page.getByRole("dialog")).toHaveCount(0)
+  await page.getByRole("button", { name: "Close part inspection" }).click()
+  await expect(inspection).toHaveCount(0)
+  await expect(
+    page.getByRole("button", { name: /01 Compute rack A/ })
+  ).toBeFocused()
+  expect(errors).toEqual([])
+})
+
+test("recovery keeps route stops and review available when geographic tiles fail", async ({
+  page,
+}) => {
+  const errors: string[] = []
+  const rasterRequests: string[] = []
+  page.on("pageerror", (error) => errors.push(error.message))
+  page.on("request", (request) => {
+    if (request.url().includes("tile.openstreetmap.org"))
+      rasterRequests.push(request.url())
+  })
+  await page.route("**/api/map-proxy/**", (route) =>
+    route.fulfill({ status: 503, body: "Tile source unavailable" })
+  )
+  await page.goto("/planning?component=compute-a")
+  await page.getByRole("button", { name: "Pause feed", exact: true }).click()
+  await expect(page.getByTestId("recovery-map")).toHaveAttribute(
+    "data-tile-status",
+    "error",
+    { timeout: 16000 }
+  )
+  await expect(
+    page.getByText(
+      "Map tiles unavailable. Route stops and delivery estimates remain available below."
+    )
+  ).toBeVisible()
+  const stops = page.getByRole("list", { name: "Route stops" })
+  await expect(stops).toContainText("Taoyuan air cargo")
+  await expect(stops).toContainText("Amsterdam cargo hub")
+  await page.getByTestId("dsx-route-compute-a-fra").click()
+  await expect(stops).toContainText("Frankfurt cargo hub")
+  await expect(
+    page.getByRole("button", { name: "Review recovery plan" })
+  ).toBeDisabled()
+  await page.getByTestId("dsx-route-compute-a-ams").click()
+  await page.getByRole("button", { name: "Review recovery plan" }).click()
+  await expect(
+    page.getByRole("dialog", { name: "Confirm recovery route" })
+  ).toBeVisible()
+  await page.getByRole("button", { name: "Keep reviewing" }).click()
+  await expect(page.getByRole("dialog")).toHaveCount(0)
+  expect(rasterRequests).toEqual([])
+  expect(errors).toEqual([])
+})
+
+test.describe("reduced-motion recovery on touch", () => {
+  test.use({
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+    reducedMotion: "reduce",
+  })
+
+  test("dark theme keeps the confirmation centered and its actions reachable", async ({
+    page,
+  }) => {
+    const errors: string[] = []
+    page.on("pageerror", (error) => errors.push(error.message))
+    await page.goto("/planning?component=compute-a")
+    await page.getByRole("button", { name: "Pause feed", exact: true }).click()
+    await page
+      .getByRole("button", { name: "Toggle light and dark theme" })
+      .click()
+    await expect(page.locator("html")).toHaveClass(/dark/)
+    await page.getByRole("button", { name: "Review recovery plan" }).click()
+    const dialog = page.getByRole("dialog", { name: "Confirm recovery route" })
+    await expect(dialog).toBeVisible()
+    const box = (await dialog.boundingBox())!
+    expect(Math.abs(box.x + box.width / 2 - 195)).toBeLessThan(2)
+    expect(Math.abs(box.y + box.height / 2 - 422)).toBeLessThan(2)
+    for (const name of ["Keep reviewing", "Confirm recovery route", "Close"]) {
+      const action = dialog.getByRole("button", { name, exact: true })
+      const hitArea = (await action.boundingBox())!
+      expect(hitArea.height).toBeGreaterThanOrEqual(44)
+      expect(hitArea.width).toBeGreaterThanOrEqual(44)
+    }
+    await dialog.getByRole("button", { name: "Keep reviewing" }).click()
+    await expect(dialog).toHaveCount(0)
+    expect(errors).toEqual([])
+  })
 })
