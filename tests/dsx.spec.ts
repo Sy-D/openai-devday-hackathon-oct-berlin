@@ -5,7 +5,7 @@ test("video-inspired enclosure views reveal layers and preserve inspection and r
 }) => {
   const errors: string[] = []
   page.on("pageerror", (error) => errors.push(error.message))
-  await page.goto("/")
+  await page.goto("/?mode=demo")
   await page.getByRole("button", { name: "Pause feed", exact: true }).click()
   const viewer = page.getByTestId("rack-viewer")
   const assembly = page.getByRole("group", { name: "Enclosure assembly view" })
@@ -65,7 +65,7 @@ test("video-inspired enclosure views reveal layers and preserve inspection and r
 test("reference-style part search and status filters preserve global actions and reset", async ({
   page,
 }) => {
-  await page.goto("/")
+  await page.goto("/?mode=demo")
   await page.getByRole("button", { name: "Pause feed", exact: true }).click()
   const search = page.getByRole("searchbox", {
     name: "Find a part or supplier",
@@ -100,7 +100,7 @@ test("reference-style part search and status filters preserve global actions and
 test("Reset view restores the full 3D model after camera movement and mode changes", async ({
   page,
 }) => {
-  await page.goto("/")
+  await page.goto("/?mode=demo")
   await page.getByRole("button", { name: "Pause feed", exact: true }).click()
   const viewer = page.getByTestId("rack-viewer")
   await expect(viewer).toHaveAttribute("data-renderer", "webgl")
@@ -162,7 +162,7 @@ test("pod selection, camera views and recovery preserve the exact component", as
 }) => {
   const errors: string[] = []
   page.on("pageerror", (error) => errors.push(error.message))
-  await page.goto("/")
+  await page.goto("/?mode=demo")
   await expect(
     page.getByRole("heading", { name: "One pod. Every dependency." })
   ).toBeVisible()
@@ -250,7 +250,7 @@ test("real SSE adds an incident without a page reload", async ({ page }) => {
     if (response.url().includes("/api/disruptions"))
       streamResponses.push(response.status())
   })
-  await page.goto("/")
+  await page.goto("/?mode=demo")
   await expect(
     page.getByRole("heading", { name: /North Sea port departure/ })
   ).toHaveCount(0)
@@ -263,11 +263,11 @@ test("real SSE adds an incident without a page reload", async ({ page }) => {
   await expect(page.getByText("Scenario feed paused").first()).toBeVisible()
 })
 
-test("mobile pod remains usable and keeps Simon supplier navigation", async ({
+test("mobile rehearsal remains usable with shared incident navigation", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto("/")
+  await page.goto("/?mode=demo")
   await page.getByRole("button", { name: "Pause feed", exact: true }).click()
   await expect(page.getByTestId("dsx-action-count")).toBeVisible()
   await page.getByRole("button", { name: "2D", exact: true }).click()
@@ -292,10 +292,10 @@ test("mobile pod remains usable and keeps Simon supplier navigation", async ({
   await page
     .getByRole("button", { name: "Toggle Sidebar", exact: true })
     .click()
-  await page.getByRole("link", { name: "Suppliers", exact: true }).click()
-  await expect(page).toHaveURL("/suppliers")
+  await page.getByRole("link", { name: "Incidents", exact: true }).click()
+  await expect(page).toHaveURL("/incidents")
   await expect(
-    page.getByRole("region", { name: "Portfolio facts" })
+    page.getByRole("heading", { name: "Incidents, in focus." })
   ).toBeVisible()
 })
 
@@ -332,7 +332,7 @@ test("2D fallback remains selectable when WebGL is unavailable", async ({
       return original.call(this, kind, ...args);
     };
   `)
-  await page.goto("/")
+  await page.goto("/?mode=demo")
   await page.getByRole("button", { name: "Pause feed", exact: true }).click()
   await expect(page.getByTestId("rack-viewer")).toHaveAttribute(
     "data-renderer",

@@ -5,7 +5,7 @@ export type AssemblyView = "cutaway" | "enclosed" | "exploded"
 export type RackPart = {
   id: string
   name: string
-  status: "blocked" | "delayed" | "on-track" | "delivered"
+  status: "blocked" | "delayed" | "on-track" | "delivered" | "unknown"
 }
 
 export const partAnchors = new Map<string, THREE.Vector3>([
@@ -22,6 +22,7 @@ export const partAnchors = new Map<string, THREE.Vector3>([
 ])
 
 export const partColors = {
+  unknown: "#94a3b8",
   blocked: "#ff616d",
   delayed: "#ffbd61",
   "on-track": "#a9d876",

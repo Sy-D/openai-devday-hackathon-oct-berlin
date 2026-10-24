@@ -46,6 +46,7 @@ const schematicAnchors = new Map<string, [number, number]>([
 ])
 
 const statusLabels = {
+  unknown: "Shipment not verified",
   blocked: "Delivery blocked",
   delayed: "Delivery delayed",
   "on-track": "On track",

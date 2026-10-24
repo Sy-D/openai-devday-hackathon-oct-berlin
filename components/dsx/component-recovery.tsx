@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import {
   ArrowLeft,
   ArrowRight,
@@ -57,6 +57,7 @@ export default function ComponentRecovery({
   const [chosenId, setChosenId] = useState<string | null>(null)
   const [reviewing, setReviewing] = useState<RouteAssessment | null>(null)
   const [notice, setNotice] = useState("")
+  const optionsRef = useRef<HTMLElement>(null)
   const selected =
     routes.find((route) => route.id === chosenId) ?? recommended ?? routes[0]
   const reviewRequired =
@@ -85,17 +86,17 @@ export default function ComponentRecovery({
   }
   return (
     <main id="main" className={styles.workspace} tabIndex={-1}>
-      <Link href="/" className={styles.back}>
+      <Link href="/?mode=demo" className={styles.back}>
         <ArrowLeft size={15} />
         Back to pod overview
       </Link>
       <header className={styles.hero}>
         <div>
-          <div className={styles.eyebrow}>POD 01 / COMPONENT RECOVERY</div>
+          <div className={styles.eyebrow}>POD 01 / RECOVERY REHEARSAL</div>
           <h1>{part.name}</h1>
           <p>
-            Find a clear route from supplier to site. Review the tradeoff, then
-            confirm.
+            Illustrative shipments, prices and disruptions. Compare a recovery
+            decision here without changing real incident reports.
           </p>
         </div>
         <FeedStatus />
@@ -106,6 +107,33 @@ export default function ComponentRecovery({
         data-status={needsAction ? "blocked" : "on-track"}
         aria-label="Component required action"
       >
+        {needsAction && (
+          <a
+            className={styles.bannerAction}
+            href="#suggested-recovery"
+            aria-label={
+              recommended
+                ? "View suggested recovery plan"
+                : "Review recovery options"
+            }
+            onClick={(event) => {
+              event.preventDefault()
+              if (recommended) setChosenId(recommended.id)
+              setNotice("")
+              optionsRef.current?.focus({ preventScroll: true })
+              optionsRef.current?.scrollIntoView({
+                behavior: "instant",
+                block: "start",
+              })
+            }}
+          >
+            <span className="sr-only">
+              {recommended
+                ? "View suggested recovery plan"
+                : "Review recovery options"}
+            </span>
+          </a>
+        )}
         {needsAction ? <TriangleAlert size={23} /> : <CheckCircle2 size={23} />}
         <div>
           <h2>
@@ -130,7 +158,9 @@ export default function ComponentRecovery({
           data-status={needsAction ? "blocked" : "on-track"}
         >
           {needsAction
-            ? "Action required"
+            ? recommended
+              ? "View suggested recovery →"
+              : "Review options →"
             : assessment.status === "delivered"
               ? "Delivered"
               : "On track"}
@@ -140,7 +170,7 @@ export default function ComponentRecovery({
         <div role="status" className={styles.savedNotice}>
           <Check size={17} />
           {notice}
-          <Link href="/">
+          <Link href="/?mode=demo">
             View updated pod <ArrowRight size={14} />
           </Link>
         </div>
@@ -293,6 +323,9 @@ export default function ComponentRecovery({
           </div>
         </section>
         <section
+          id="suggested-recovery"
+          ref={optionsRef}
+          tabIndex={-1}
           className={styles.routeChoices}
           aria-label="Recovery route options"
         >
@@ -354,8 +387,8 @@ export default function ComponentRecovery({
             Saves a planning decision in this browser. It does not book
             transport or mark the shipment delivered.
           </p>
-          <Link className={styles.textLink} href="/suppliers">
-            Open supplier intelligence <ArrowRight size={14} />
+          <Link className={styles.textLink} href={`/?component=${part.id}`}>
+            View researched hardware <ArrowRight size={14} />
           </Link>
         </section>
       </div>

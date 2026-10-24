@@ -350,8 +350,9 @@
 }
 
 .actionList {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   margin-top: 10px;
 }
 .actionList button {
@@ -359,6 +360,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
   padding: 16px 0;
   text-align: left;
   border: 0;
@@ -368,6 +370,8 @@
 }
 .actionList button > div {
   flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .actionList strong {
   display: block;
@@ -381,6 +385,7 @@
   margin-top: 5px;
 }
 .actionList button > svg {
+  flex-shrink: 0;
   color: var(--muted-foreground);
 }
 .actionList button:hover strong {
@@ -544,9 +549,14 @@
   background: color-mix(in oklch, var(--primary) 6.3%, transparent);
 }
 .partNumber {
+  flex-shrink: 0;
   font-size: 10px;
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
+}
+.partInventory button > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .partInventory strong {
   font-weight: 500;
@@ -716,6 +726,7 @@
   margin: 0 0 20px;
 }
 .actionBanner {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -724,6 +735,22 @@
   padding: 20px;
   border-radius: var(--radius-xl);
   margin: 22px 0;
+}
+.bannerAction {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+.bannerAction:hover {
+  background: color-mix(in oklch, var(--risk-critical) 4%, transparent);
+}
+.bannerAction:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.routeChoices {
+  scroll-margin-top: 24px;
 }
 .actionBanner > svg {
   color: var(--risk-critical);
@@ -1101,7 +1128,7 @@
     font-size: 9px;
   }
   .partInventory {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
   }
   .partInventory button {
     padding: 10px 8px;
@@ -1140,12 +1167,11 @@
     font-size: 23px;
   }
   .actionList {
-    flex-direction: row;
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: 0 20px;
     margin: 0;
   }
   .actionList button {
-    flex: 1;
     padding: 12px 0;
   }
   .inspectionNote {
@@ -1304,7 +1330,7 @@
     max-width: 65%;
   }
   .actionList {
-    display: block;
+    grid-template-columns: minmax(0, 1fr);
   }
   .actionList button {
     width: 100%;
