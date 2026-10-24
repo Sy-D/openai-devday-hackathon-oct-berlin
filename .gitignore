@@ -1,13 +1,57 @@
-node_modules/
-dist/
-.env
-.env.*
+# dependencies
+/node_modules
+.venv/
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+/data/*
+!/data/risk_criteria_description.md
+!/data/supplier_risk_dataset.csv
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
 !.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# local AI assistant notes
+/.claude/
+
+scripts/__pycache__
+data/suppliers.duckdb
+
+# Production-planning demo outputs and local verification
+dist/
 work/
 test-results/
 playwright-report/
-*.tsbuildinfo
-.DS_Store
-
-# Portable source handoff, generated from committed history.
 outputs/*.bundle

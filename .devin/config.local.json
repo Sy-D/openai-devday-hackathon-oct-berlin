@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Exec(agent-browser console)",
+      "Exec(agent-browser eval)",
+      "Exec(agent-browser screenshot)",
+      "Exec(sleep)",
+      "Exec(./node_modules/.bin/tsc)",
+      "Exec(./node_modules/.bin/oxlint)",
+      "Exec(./node_modules/.bin/eslint)",
+      "Exec(agent-browser click)"
+    ]
+  }
+}

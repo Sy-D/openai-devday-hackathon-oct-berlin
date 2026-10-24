@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-test.beforeEach(async({page})=>{await page.goto('/');await page.evaluate(()=>localStorage.clear());await page.reload();});
+test.beforeEach(async({page})=>{await page.goto('/planning');await page.evaluate(()=>localStorage.clear());await page.reload();});
 
 test('urgent order can be recovered, persisted, disrupted and recovered again',async({page})=>{
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));

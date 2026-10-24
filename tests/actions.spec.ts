@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-test.beforeEach(async ({ page }) => { await page.goto('/'); await page.evaluate(() => localStorage.clear()); await page.reload(); });
+test.beforeEach(async ({ page }) => { await page.goto('/planning'); await page.evaluate(() => localStorage.clear()); await page.reload(); });
 
 test('actions are above metrics, identify orders and navigate to a working recovery path', async ({ page }) => {
   const actions = page.getByRole('region', { name: 'Needs action' });

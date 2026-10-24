@@ -1,5 +1,11 @@
 # FORMA: three-minute demonstration
 
+## Open the production planner
+
+Start Next with `npm run dev -- --hostname 127.0.0.1`, then open **http://127.0.0.1:3000/planning** or choose **Production planning** in the shared sidebar. The supplier-risk dashboard lives at `/`. Both routes share `AppShell`; the production demo still uses its own synthetic orders and factories.
+
+The production copilot uses `/api/assistant` and `/api/health` on the same Next server. No separate port 8789 API is needed. Live OpenAI responses require optional server-side configuration and a successful real response; otherwise present the explicitly labelled demo fallback.
+
 ## Promise
 
 "FORMA helps a planner recover an urgent order by choosing where its parts are made, where they come together, and how the complete product reaches the customer."
@@ -12,7 +18,7 @@ An urgent order needs twelve robotic gripper kits in Berlin and is forecast to a
 
 | Time | Action | What the audience should understand |
 | --- | --- | --- |
-| 0:00–0:25 | Show Needs action at the top; click Compare routes for FM-2048. | The planner sees order volume and delivery risk, then has a concrete next action. |
+| 0:00–0:25 | On `/planning`, show Needs action at the top; click Compare routes for FM-2048. | The planner sees order volume and delivery risk, then has a concrete next action. |
 | 0:25–0:55 | Open the urgent order and inspect its components and factory capabilities. | A polymer printer cannot manufacture the metal part, and the purchased actuator still belongs in the schedule. |
 | 0:55–1:35 | Compare cost, balanced and fast alternatives on the map. | The route includes production, transport to assembly, assembly and final delivery. Cost and deadline buffer update together. |
 | 1:35–2:10 | Ask the assistant: "Which plan meets the deadline at the lowest cost, and why?" | The assistant explains the existing feasible options from the same data used by the interface. Its suggestion does not assign a plan. |
@@ -32,7 +38,7 @@ When no OpenAI API key is configured, the interface must label the assistant's d
 
 ## What is real in this prototype
 
-The interface, route comparisons, eligibility rules, schedule calculations, state changes and confirmation path are implemented product behaviour. The operational inputs are synthetic. There are no real factory bookings or carrier reservations.
+The interface, route comparisons, eligibility rules, schedule calculations, state changes and confirmation path are implemented product behaviour. The production inputs are synthetic. The supplier dashboard uses the supplied risk dataset, which is not automatically linked to the production routes. There are no real factory bookings or carrier reservations.
 
 ## Drawing
 
@@ -48,13 +54,13 @@ The prototype scales assembly duration with quantity. It does not independently 
 
 ## Before presenting
 
-- Run the application and exercise the entire confirmation path once.
+- Run the application, open `/planning` and exercise the entire confirmation path once. Verify navigation back to the supplier dashboard at `/`.
 - Reset to the at-risk scenario so the audience sees the before/after change.
 - Check whether the assistant is in live or demo mode.
 - Keep the local demo available if venue connectivity fails.
 - Use the research notes for problem framing; do not claim the prototype replaces an existing industrial platform.
 
-For the technical setup, work lanes and incoming template handoff, use [team startup](TEAM_START.md). A passing automated rehearsal verifies the product path; the presenter still needs to practise the spoken three-minute story.
+For the npm setup, work lanes and merged-template boundaries, use [team startup](TEAM_START.md). The browser suite runs Next on port 5174; the default manual demo uses port 3000. The earlier Vite rehearsal does not establish that the merged app is ready: check the final integration evidence in `docs/HANDOFF.md`. A passing automated rehearsal verifies the product path; the presenter still needs to practise the spoken three-minute story.
 
 ## Optional what-if extension
 

@@ -1,6 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 
-test.beforeEach(async({page})=>{await page.goto('/');await page.evaluate(()=>localStorage.clear());await page.reload();});
+test.beforeEach(async({page})=>{await page.goto('/planning');await page.evaluate(()=>localStorage.clear());await page.reload();});
 async function apply(page:Page,quantity:number,deadline:number){
   await page.getByRole('spinbutton',{name:'Simulated order quantity'}).fill(String(quantity));
   await page.getByRole('spinbutton',{name:'Simulated delivery deadline'}).fill(String(deadline));

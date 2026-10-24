@@ -4,9 +4,9 @@ The assistant explains the plans produced by the local planner. It cannot create
 
 ## Run
 
-Use Node 22.12 or later (verified here with Node 22.22.2). `npm run dev` starts both the API and Vite application. For separate terminals, use `npm run dev:api` and `npm run dev:ui`. Vite forwards `/api` to `http://127.0.0.1:8789`.
+Use Node 22.12 or later (verified here with Node 22.22.2). `npm run dev` starts the Next.js application. The supplier-risk dashboard is at `/`; the production planner is at `/planning`. Native Next route handlers serve `/api/assistant` and `/api/health` in the same application, so the browser does not depend on a second local API server or a Vite proxy.
 
-For live OpenAI responses, copy `.env.example` to `.env`, set `OPENAI_API_KEY` in that local file and restart the API. The key belongs only on the server. Never add a `VITE_` prefix to it. `OPENAI_MODEL` is optional; the default is `gpt-6-astra`, as shown in the official Structured Outputs documentation checked on 24 October 2026. Account access to that model is not assumed; a different Responses-compatible model can be configured.
+For live OpenAI responses, copy `.env.example` to `.env`, set `OPENAI_API_KEY` in that local file and restart the application. The key belongs only on the server. Never add a `NEXT_PUBLIC_` or `VITE_` prefix to it. `OPENAI_MODEL` is optional; the default is `gpt-6-astra`, as shown in the official Structured Outputs documentation checked on 24 October 2026. Account access to that model is not assumed; a different Responses-compatible model can be configured.
 
 Without a key, the API returns deterministic route advice with `mode: "demo"` and text beginning “Demo analysis”. A provider error, timeout, refusal, incomplete response, malformed output or invalid route suggestion also returns a clearly disclosed demo response. No live API call has been verified unless the health endpoint reports a successful response or the dashboard receives `mode: "live"`.
 
@@ -51,7 +51,7 @@ The UI should render `reply` as text, show the returned `mode`, and offer a sepa
 }
 ```
 
-A configured key is not proof of network access, valid billing or model availability. Use `ready` and `status` for that distinction. Health does not send a paid API request.
+A configured key is not proof of network access, valid billing or model availability. Use `ready` and `status` for that distinction. Health does not send a paid API request. Readiness belongs to one running Node process; a restart or a different serverless instance begins unverified. A validated live reply is the direct evidence for the request that produced it.
 
 ## Verify a real connection
 
@@ -61,7 +61,7 @@ After setting the server-side key and optional model in the project's ignored `.
 npm run test:live
 ```
 
-This command starts a temporary loopback API on a free port, uses the repository's current FM-2048 data and planner, and sends **one real OpenAI request** through the same HTTP endpoint as the app. It verifies that the response is live, suggests the cheapest feasible on-time plan, and changes the temporary server's health from unverified to verified. It does not change orders or browser state, print credentials, or expose the provider's raw response. The request uses the server's 25-second timeout; the temporary server closes when the check finishes.
+This command starts a temporary loopback API on a free port, uses the repository's current FM-2048 data and planner, and sends **one real OpenAI request** through the shared validated assistant core. The temporary server uses the retained Node HTTP adapter; Next route integration is checked separately by the route and browser tests. The command verifies that the response is live, suggests the cheapest feasible on-time plan, and changes the temporary server's health from unverified to verified. It does not change orders or browser state, print credentials, or expose the provider's raw response. The request uses the server's 25-second timeout; the temporary server closes when the check finishes.
 
 - Exit **0**: the live response and planning suggestion passed verification.
 - Exit **1**: the request failed, fell back to demo mode or returned an unsuitable suggestion. Live planning advice is not verified.
@@ -75,8 +75,10 @@ npx tsx --test scripts/live-smoke.test.ts
 
 ## Implementation and validation
 
-`server/assistant.ts` calls `POST https://api.openai.com/v1/responses` using native `fetch`. Structured Outputs constrain the reply to a text field and a nullable plan ID selected from the current feasible plans. The server validates the returned ID again. Requests set `store: false`, send no tool definitions, and contain no key in the JSON body. The server binds to loopback and rejects remote browser origins; this is a local hackathon service, not a publicly hosted authenticated API.
+`server/assistant.ts` calls `POST https://api.openai.com/v1/responses` using native `fetch`. Structured Outputs constrain the reply to a text field and a nullable plan ID selected from the current feasible plans. The server validates the returned ID again. Requests set `store: false`, send no tool definitions, and contain no key in the JSON body.
 
-Run `npx tsx --test server/assistant.test.ts` for request validation, route selection, provider failure, output validation and real HTTP endpoint tests. Provider responses in tests are mocked; those tests do not prove a real API connection. Run `npx tsc -p server/tsconfig.json` for the server type check.
+`server/production-api.ts` supplies the native Next handlers. It accepts same-origin browser requests, reads at most 96 KiB of JSON, limits in-process concurrency, redacts provider errors and disables response caching. `server/index.ts` remains the loopback-only adapter for isolated provider/HTTP verification. Same-origin checks and in-process limits are not user authentication or shared rate limiting; a public deployment still needs an access-control decision before exposing a configured key-backed endpoint.
+
+Run `npx tsx --test server/assistant.test.ts server/production-api.test.ts` for request validation, route selection, provider failure, output validation, HTTP contracts, same-origin checks, streaming body limits and concurrency. Provider responses in tests are mocked; those tests do not prove a real API connection. Run `npm run typecheck` for the integrated application type check.
 
 Official sources: [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs) and [Responses API reference](https://developers.openai.com/api/reference/resources/responses/methods/create). The first source was fetched and used to verify the endpoint, schema format and model example. The full second page exceeded the documentation fetch limit; it is a navigation link, not independent verification.

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { orders } from '../src/data/network';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/planning');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
 });

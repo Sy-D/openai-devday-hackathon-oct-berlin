@@ -1,85 +1,142 @@
-# FORMA
+# FORMA: supplier risk and production planning
 
-An interactive hackathon prototype for planning a distributed manufacturing order across 3D printing, purchased components, assembly and delivery.
+A shared hackathon workspace with two connected views:
+
+- **Supplier risk dashboard at `/`**: the incoming Siemens Mobility dashboard explores 10,000 anonymized suppliers, their risk profiles, maps and comparison views. Optional Python agents research real companies on the public web and answer questions about the supplier dataset.
+- **Production planning at `/planning`**: FORMA shows which orders need action, compares three manufacturing routes, tests quantity and deadline changes, and records reviewed confirmations. Its factory network and orders are synthetic.
+
+Both views run in one Next.js application and share the navigation. Supplier risk data is not yet an input to the production planner; the two datasets remain separate.
+
+```mermaid
+flowchart LR
+  Browser --> Dashboard[Supplier dashboard /]
+  Browser --> Planner[Production planning /planning]
+  Dashboard --> Data[DuckDB + supplier CSVs]
+  Dashboard --> Research[Native research and analyst routes]
+  Research --> Python[Python agents]
+  Python --> Suppliers[Nebius + Tavily]
+  Planner --> Engine[Deterministic route comparison]
+  Planner --> Assistant[Native /api/assistant]
+  Assistant --> OpenAI[Optional OpenAI Responses API]
+```
 
 ## Start locally
 
-Requires Node 22.12 or later (verified here with Node 22.22.2).
+Use **Node.js 22.12 or later** and npm. In an existing checkout of the integration branch:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open **http://127.0.0.1:5173**. The command starts the Vite frontend and the assistant API on port 8789. Both bind to the local computer. Stop both with Ctrl+C. There is no database or map API to configure.
+Open **http://localhost:3000** for the supplier dashboard and **http://localhost:3000/planning** for production planning. Stop the server with Ctrl+C. No credentials or Python installation are needed to explore the bundled supplier data or run the planning demo. Map tiles and climate panels use public network services.
 
-The application works with synthetic data immediately. To enable live OpenAI responses, copy `.env.example` to `.env`, set `OPENAI_API_KEY` in that file, and restart `npm run dev`. Do not put the key in frontend code or in a variable beginning with `VITE_`. See [assistant setup](docs/AI.md) for the exact API contract and fallback behaviour.
+`package-lock.json` is the canonical JavaScript lockfile. `npm ci` also applies the checked-in `metal-fx` patch. Use `npm run build` followed by `npm start` to run the production build on port 3000.
 
-## Try the demonstration
+Repository: [Sy-D/openai-devday-hackathon-oct-berlin](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin). The integration is on `codex/forma-template-integration`; the earlier FORMA draft is preserved at `c89d43b` on `codex/forma-first-draft`. Publication is currently blocked by GitHub HTTP 403 for the signed-in account. A fresh clone of `main` does not yet include this integration. See [the handoff](docs/HANDOFF.md) for publication status and next steps.
 
-1. Click **Run demo** to reset the order and activity state. The **Needs action** section at the top shows the affected orders and the next decision. Click **Compare routes** on FM-2048.
-2. Compare **Lowest cost**, **Balanced**, and **Fastest** for order FM-2048. The map, price, arrival and component routing change together.
-3. Inspect Lyon on the map to see why its printer is incompatible. Open **Delivery timeline** to see assembly waiting for the last component.
-4. Ask the copilot for the cheapest plan that arrives on time. Review its suggestion, then separately confirm the plan.
-5. Confirm **Balanced**. The order returns to track and the attention count falls from three to two. Refreshing keeps this decision.
-6. Click **Simulate disruption**. Dresden's queue gains 24 hours, making the balanced plan late. Its action card returns with a recovery step. Select and confirm **Fastest** to recover through Munich.
-7. Restore capacity, then change the quantity to **42** and apply the scenario. Balanced exceeds capacity; Fastest can deliver 42 kits in 49h for €13,081. The old confirmation remains a snapshot until you review and reconfirm. Try **49** kits to see the explicit no-capacity state.
-8. Resolve all three affected orders through their action cards to see **No actions required**. Reset for the next presentation.
+## Optional AI features
 
-See [the three-minute presentation script](docs/DEMO.md), [research and assumptions](docs/RESEARCH.md), [team startup and work lanes](docs/TEAM_START.md), and [team handoff](docs/HANDOFF.md).
+Keep credentials server-side in the ignored root `.env` file. If no `.env` exists, copy `.env.example` to `.env`, then fill in only the providers you intend to use. Do not overwrite an existing configuration or commit secrets. Restart the server after changing configuration.
 
-## What is implemented
+| Feature | Requirements |
+| --- | --- |
+| Planning copilot at `/planning` | `OPENAI_API_KEY`; optional `OPENAI_MODEL`. Without a key, it uses an explicitly labelled deterministic demo reply. |
+| Supplier dataset analyst | Python setup below, `data/suppliers.duckdb`, and `NEBIUS_API_KEY`. |
+| Research a real company | Python setup below, `NEBIUS_API_KEY` and `TAVILY_API_KEY`. |
 
-- Responsive dashboard with order-level actions above metrics, clear reasons and next steps, searchable/filterable orders, network and activity views.
-- Editable simulated quantity and deadline, with recomputed eligibility, costs, assembly time and recommendations.
-- Confirmation snapshots that flag changed inputs, late delivery, infeasible capacity or changed estimates for review.
-- Interactive schematic European map with factory details and route comparison.
-- Process, material, qualification and batch-capacity checks.
-- Parallel component preparation, purchased-part lead time, transport, assembly and final delivery calculations.
-- Full-order cost breakdown and explicit acknowledgement before accepting a late plan.
-- Demo state persistence, disruption simulation, reset and plan export.
-- OpenAI Responses integration, constrained to explaining and suggesting existing plans, plus explicitly labelled deterministic fallback.
+The two AI integrations have separate configuration. Setting an OpenAI key does not configure the supplier agents. Never prefix secrets with `NEXT_PUBLIC_` or `VITE_`. Planning API details and the one-request live check are in [docs/AI.md](docs/AI.md).
 
-## Verification
+### Supplier agent setup
+
+Install Python 3.12 or later, then run these commands from the repository root:
 
 ```sh
-npm run build
+python3 -m venv deep-research-agent/.venv
+deep-research-agent/.venv/bin/pip install -r deep-research-agent/requirements.txt
+deep-research-agent/.venv/bin/python scripts/create_duckdb.py
+```
+
+The last command builds the local database used by the dataset analyst. The dashboard itself queries the CSV files directly. For a different interpreter, set `ANALYST_PYTHON` to its absolute path before starting Next.js.
+
+Supplier defaults are `NEBIUS_MODEL=MiniMaxAI/MiniMax-M3` and `NEBIUS_BASE_URL=https://api.tokenfactory.nebius.com/v1`. Research streams progress while it runs; duration depends on provider and search response times.
+
+The research agent can also run on its own:
+
+```sh
+cd deep-research-agent
+.venv/bin/python app.py "Robert Bosch GmbH"          # score one supplier
+.venv/bin/python app.py --jobs 2 "Bosch" "Siemens"   # several in parallel
+.venv/bin/python analyst.py "Your risk question"     # sourced web-research answer
+```
+
+The standalone `analyst.py` is separate from the dashboard's dataset analyst, which uses `scripts/ask.py`. See [the agent README](deep-research-agent/README.md) and [pipeline overview](deep-research-agent/OVERVIEW.md).
+
+### Docker
+
+The Docker configuration packages Node.js and Python in one container:
+
+```sh
+docker compose up --build
+```
+
+It serves the same two pages on port 3000. Optional provider values come from the root `.env`; research results persist in the `agent-output` volume. The integrated Docker setup still needs a build and runtime check on a machine with Docker available.
+
+## Using the supplier dashboard
+
+- **Search**: start typing or press Cmd+K / Ctrl+K. Arrow keys and Enter open a supplier profile; Cmd/Ctrl+Enter sends the text to the analyst chat.
+- **Analyst chat**: asks the configured Nebius model to generate a read-only SQL query over the local supplier database, then explains the result. It supports follow-up questions and optional structured answer blocks. This feature needs the Python setup and Nebius key above.
+- **Table and filters**: sort columns and filter by risk level, maximum total or financial risk, minimum delivery rating and sourcing risk.
+- **Selection and chart**: select up to 20 suppliers to focus the chart and fact cards. Open supplier profiles from the chart or table.
+- **Compare and export**: compare selected suppliers on `/compare` or export a shortlist memo.
+- **Research a real company**: check existing matches, resolve the official name, and watch eight criteria groups gather evidence and score risk. The result includes reasons and source URLs. Researched rows use `RSCH_` IDs alongside anonymized `SUPP_` rows.
+
+Risk scores run from 0 (no risk) to 100 (maximum risk); higher delivery ratings are better. [Column definitions](data/risk_criteria_description.md) explain the schema. Public-source model estimates need review before procurement decisions.
+
+## Using production planning
+
+Open `/planning` and start with **Needs action**. Each card names the affected order, reason and next decision. Compare Lowest cost, Balanced and Fastest; review capability checks, component routing, assembly timing and costs before confirming a plan.
+
+The demo supports quantity and deadline changes, a Dresden queue disruption, recovery, local persistence and plan export. The copilot can suggest an existing route; only the user can confirm it. See [the planning guide](docs/PRODUCTION_PLANNING.md), [demo script](docs/DEMO.md) and [team setup](docs/TEAM_START.md).
+
+## Checks
+
+```sh
+npm run typecheck
 npm test
+npm run lint
+npm run build
 npx playwright install chromium
 npm run test:e2e
 ```
 
-`npm run build` checks frontend and server types and creates the frontend in `dist/`. `npm test` runs planner and assistant tests. Playwright checks action navigation and the empty state, changed quantity/deadline, capacity failures, confirmation snapshots, persistence, disruption, current copilot context, provider status, capability inspection, search and mobile layout.
+After configuring the production assistant's key, `npm run test:live` makes one bounded OpenAI request. Missing credentials or a demo fallback cause a nonzero exit. Final integrated check results are recorded in the handoff; a passing mocked test is not evidence of live provider access.
 
-For an existing compatible Chromium installation, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to its executable before running browser tests. This is optional; normal installations use Playwright's downloaded Chromium.
+## Repository layout
 
-After configuring the server-side key, `npm run test:live` makes one bounded real provider request and verifies the current planning recommendation. It fails clearly if credentials are missing or the API falls back to demo mode. Passing mocked tests does not establish live provider access.
+```text
+app/                    Next.js App Router
+  page.tsx              Supplier dashboard
+  compare/, supplier/   Supplier comparison and profile pages
+  planning/             Production planner inside the shared shell
+  api/resolve/          Company-name resolution
+  api/research/         Supplier research and scoring (SSE)
+  api/analyst/          Dataset questions via scripts/ask.py (SSE)
+  api/assistant/        Validated production-planning copilot (JSON)
+  api/health/           Production assistant readiness (JSON)
+components/dashboard/   Supplier UI and shared app shell
+components/analyst/     Supplier analyst answer rendering and chat state
+components/ui/          shadcn/ui components using Base UI
+lib/                    Supplier data, agent streams, maps and cache
+src/                    FORMA planner UI, synthetic network and planning rules
+server/                 Shared production assistant and HTTP adapters
+scripts/                Dataset loading, SQL analyst and live assistant check
+data/                   Anonymized supplier dataset and column definitions
+deep-research-agent/    Python research, scoring and standalone web analyst
+Dockerfile, compose.yml Combined Node.js and Python container setup
+docs/                   Architecture, AI, planning and team handoff
+tests/                  Browser checks for planning and shared navigation
+tools/oxlint/           Incoming custom lint rules
+```
 
-`npm run preview` previews only the built frontend. For the complete copilot workflow, use `npm run dev`; production hosting and an authenticated hosted API are not configured.
-
-## Model and limits
-
-The demo clock is 27 October 2026 at 08:00 CET. The urgent order's deadline is 60 hours later. Each kit contains one SLS PA12 housing, two LPBF AlSi10Mg fingers, and one purchased actuator. The first version compares three predefined production combinations; it does not search every possible route.
-
-Every factory, order, cost, capacity and transport input is synthetic. Map borders and routes are schematic. Ready times bundle print/purchase preparation and assumed finishing; finishing steps and inspections are not independently scheduled. Assembly begins when all components arrive; assembly slots are assumed available. Print time is fixed for one capacity-limited batch. Assembly hours scale with kit quantity from the 12-kit reference order; transport costs remain fixed per leg. Quantity is limited to whole kits from 1 to 500; deadline is 1 to 336 hours from the fixed demo clock. Forecast confidence is an illustrative heuristic, and emissions are placeholder scenario values. No real factory is contacted, no capacity is reserved, and no real order is placed.
-
-State is stored in this browser, not shared across teammates. An API key is required to verify actual OpenAI responses. Existing platform capabilities are documented in the research notes; this prototype does not claim Siemens or Schaeffler lack solutions.
-
-## Source map
-
-| Location | Purpose |
-| --- | --- |
-| `src/data/network.ts` | Factories, component requirements, orders and demo clock |
-| `src/lib/planner.ts` | Eligibility, route timing, costs and recommendation |
-| `src/lib/actions.ts` | Order-level reasons and next decisions |
-| `src/lib/scenario.ts`, `src/lib/demo-state.ts` | Simulated inputs and saved-state validation |
-| `src/App.tsx` | Dashboard views and confirmation state |
-| `src/components/NeedsAction.tsx`, `ScenarioControls.tsx` | Replaceable action and input interfaces |
-| `src/components/NetworkMap.tsx` | Schematic map and factory inspection |
-| `src/components/AssistantDrawer.tsx` | Copilot conversation and reviewed suggestion |
-| `server/assistant.ts` | Validated model context, Responses request and fallback |
-| `server/index.ts` | Local HTTP endpoints and server-side environment loading |
-| `docs/` | Research, pitch, integration and team handoff |
-| `outputs/` | Verified screenshots and editable Excalidraw export |
-
-The [shared planning Page](https://chatgpt.com/space/page_d8c7928de5848191a983913da6ed1e4c) contains the team checklist. The [editable Excalidraw board](https://link.excalidraw.com/l/44SXhWFHIar/5fLHSSwDGK8) explains the current system and component boundaries. No runtime secrets are needed outside your ignored `.env` file.
+[Architecture](docs/ARCHITECTURE.md) explains data flow and API contracts. [Tech stack](docs/TECH-STACK.md) lists the main dependencies and external services.
