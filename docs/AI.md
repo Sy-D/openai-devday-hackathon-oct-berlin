@@ -4,7 +4,7 @@ The assistant explains the plans produced by the local planner. It cannot create
 
 ## Run
 
-Use Node 22 or later. `npm run dev` starts both the API and Vite application. For separate terminals, use `npm run dev:api` and `npm run dev:ui`. Vite forwards `/api` to `http://127.0.0.1:8789`.
+Use Node 22.12 or later (verified here with Node 22.22.2). `npm run dev` starts both the API and Vite application. For separate terminals, use `npm run dev:api` and `npm run dev:ui`. Vite forwards `/api` to `http://127.0.0.1:8789`.
 
 For live OpenAI responses, copy `.env.example` to `.env`, set `OPENAI_API_KEY` in that local file and restart the API. The key belongs only on the server. Never add a `VITE_` prefix to it. `OPENAI_MODEL` is optional; the default is `gpt-6-astra`, as shown in the official Structured Outputs documentation checked on 24 October 2026. Account access to that model is not assumed; a different Responses-compatible model can be configured.
 

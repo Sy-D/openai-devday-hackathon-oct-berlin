@@ -4,7 +4,7 @@ An interactive hackathon prototype for planning a distributed manufacturing orde
 
 ## Start locally
 
-Requires Node 22 or later.
+Requires Node 22.12 or later (verified here with Node 22.22.2).
 
 ```sh
 npm ci

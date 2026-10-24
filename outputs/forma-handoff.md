@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Requires Node 22 or later. Open http://127.0.0.1:5173 on the computer running the application. The local assistant API uses port 8789. No map service or database is required. The remote clone command is currently blocked: GitHub denied the push because the signed-in account lacks write access. The local application is available, and a portable Git bundle is provided as described below.
+Requires Node 22.12 or later (verified here with Node 22.22.2). Open http://127.0.0.1:5173 on the computer running the application. The local assistant API uses port 8789. No map service or database is required. The remote clone command is currently blocked: GitHub denied the push because the signed-in account lacks write access. The local application is available, and a portable Git bundle is provided as described below.
 
 The [planning Page](https://chatgpt.com/space/page_d8c7928de5848191a983913da6ed1e4c) owns the unified team checklist. The [shared Excalidraw board](https://link.excalidraw.com/l/44SXhWFHIar/5fLHSSwDGK8) explains the system and component boundaries. The planning chat owns both documents; the application chat owns this code and publication. Keep milestones aligned without overlapping edits.
 
