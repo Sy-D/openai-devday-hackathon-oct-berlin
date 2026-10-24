@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { z } from "zod"
+import { draftKey, parseSavedDraft } from "../components/procurement/plan-state"
 import type { IncidentSnapshot, LiveIncident } from "../src/lib/live-incidents"
 import type { RoadRoute, RoadRouteResponse } from "../src/lib/procurement"
 
@@ -173,7 +174,7 @@ test("sourced product to real route decision persists and relevant updates reope
   })
   await expect(chosen).toHaveAttribute("aria-pressed", "true")
   await page
-    .getByRole("button", { name: "Save route decision", exact: true })
+    .getByRole("button", { name: "Apply route decision", exact: true })
     .click()
   await expect(
     page.getByRole("region", { name: "Saved delivery action" })
@@ -272,7 +273,7 @@ test("routing outage does not invent a route or permit a saved decision", async 
     page.getByRole("alert").filter({ hasText: "routing service" })
   ).toContainText("routing service could not calculate")
   await expect(
-    page.getByRole("button", { name: "Save route decision", exact: true })
+    page.getByRole("button", { name: "Apply route decision", exact: true })
   ).toHaveCount(0)
   await expect(
     page.getByRole("button", { name: /Original road route/ })
@@ -432,4 +433,78 @@ test("address search selects named endpoints and component picker retains naviga
     .click()
   await page.getByRole("option", { name: /CoolChip CDU 600/ }).click()
   await expect(page).toHaveURL(/component=cooling/)
+})
+
+test("previous saved decisions require explicit apply and reopening preserves their history", async ({
+  page,
+}) => {
+  await page.goto("/planning?component=optics")
+  await page
+    .getByRole("button", { name: "Calculate road routes", exact: true })
+    .click()
+  await page
+    .getByRole("button", { name: "Apply route decision", exact: true })
+    .click()
+  const raw = await page.evaluate(
+    (key) => localStorage.getItem(key),
+    draftKey("optics")
+  )
+  const draft = parseSavedDraft(raw, "optics")
+  if (!draft?.saved)
+    throw new Error("Expected an applied decision for migration coverage")
+  expect(draft.saved.reviewVersion).toBe(2)
+  const savedRoute = draft.saved.route
+  const savedAt = draft.saved.savedAt
+  delete draft.saved.reviewVersion
+  await page.evaluate(({ key, value }) => localStorage.setItem(key, value), {
+    key: draftKey("optics"),
+    value: JSON.stringify(draft),
+  })
+  await page.reload()
+  await expect(
+    page.getByRole("region", { name: "Saved delivery action" })
+  ).toContainText("Saved decision needs review")
+  await expect(
+    page.getByRole("heading", {
+      name: "Previously saved decision",
+      exact: true,
+    })
+  ).toBeVisible()
+  await page
+    .getByRole("link", { name: "Back to this part", exact: true })
+    .click()
+  await expect(
+    page.getByRole("button", {
+      name: "Inspect Optical interconnects: Review delivery",
+      exact: true,
+    })
+  ).toHaveAttribute("data-status", "blocked")
+  await page
+    .getByRole("link", { name: "Plan this delivery", exact: true })
+    .click()
+  await page
+    .getByRole("button", { name: "Apply updated decision", exact: true })
+    .click()
+  await expect(
+    page.getByRole("region", { name: "Saved delivery action" })
+  ).toContainText("Saved delivery decision")
+  await page
+    .getByRole("button", { name: "Reopen for review", exact: true })
+    .click()
+  await expect(
+    page.getByRole("region", { name: "Saved delivery action" })
+  ).toContainText("Saved decision needs review")
+  await page.reload()
+  const reopened = parseSavedDraft(
+    await page.evaluate((key) => localStorage.getItem(key), draftKey("optics")),
+    "optics"
+  )
+  expect(reopened?.saved?.reviewVersion).toBe(1)
+  expect(reopened?.saved?.route).toEqual(savedRoute)
+  expect(Date.parse(reopened?.saved?.savedAt ?? "")).toBeGreaterThanOrEqual(
+    Date.parse(savedAt)
+  )
+  await expect(
+    page.getByRole("button", { name: "Apply updated decision", exact: true })
+  ).toBeEnabled()
 })

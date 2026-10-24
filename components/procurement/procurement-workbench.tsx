@@ -61,6 +61,7 @@ import type {
 } from "@/src/lib/procurement"
 import {
   draftKey,
+  REVIEW_VERSION,
   endpointSignature,
   inputSignature,
   localDateTime,
@@ -439,7 +440,8 @@ function ReadyProcurementWorkbench({
   const evidencePending = !!draft.saved && !snapshot
   const reviewRequired =
     !!draft.saved &&
-    (draft.saved.route.id !== selectedRoute?.id ||
+    (draft.saved.reviewVersion !== REVIEW_VERSION ||
+      draft.saved.route.id !== selectedRoute?.id ||
       draft.saved.inputSignature !== inputSignature(draft) ||
       draft.saved.offerObservedAt !== offer?.observedAt ||
       (snapshot !== null &&
@@ -621,6 +623,7 @@ function ReadyProcurementWorkbench({
     setDraft((previous) => ({
       ...previous,
       saved: {
+        reviewVersion: REVIEW_VERSION,
         savedAt: new Date().toISOString(),
         route: selectedRoute,
         baseline: previous.baseline ?? selectedRoute,
@@ -632,7 +635,7 @@ function ReadyProcurementWorkbench({
       },
     }))
     setNotice(
-      "Route decision saved in this browser. No order, payment or transport booking was made."
+      "Route decision applied to your plan in this browser. No order, payment or transport booking was made."
     )
   }
 
@@ -682,11 +685,13 @@ function ReadyProcurementWorkbench({
                     ? "Delivery decision reviewed"
                     : exposures.length
                       ? `Review ${exposures.length} nearby route reports`
-                      : "Review and save your route"}
+                      : "Review and apply your route"}
             </strong>
             <p>
               {reviewRequired
-                ? "Inputs or relevant evidence changed since the saved plan."
+                ? draft.saved?.reviewVersion !== REVIEW_VERSION
+                  ? "Your previous plan is preserved. Review it and apply the decision when ready."
+                  : "Inputs or relevant evidence changed since the saved plan."
                 : !selectedRoute
                   ? "Check the dispatch point and timing, then calculate the road options."
                   : draft.saved && !evidencePending
@@ -730,7 +735,7 @@ function ReadyProcurementWorkbench({
             03 <span>Review exposure</span>
           </a>
           <a href="#decision">
-            04 <span>Save decision</span>
+            04 <span>Apply decision</span>
           </a>
         </nav>
         {draft.saved && (
@@ -750,13 +755,34 @@ function ReadyProcurementWorkbench({
               </strong>
               <p>
                 {reviewRequired
-                  ? "Delivery inputs or relevant incident evidence changed. The original decision remains below for comparison."
+                  ? draft.saved.reviewVersion !== REVIEW_VERSION
+                    ? "This plan awaits your approval. The previous route and calculations remain available below."
+                    : "Delivery inputs or relevant incident evidence changed. The original decision remains below for comparison."
                   : `${draft.saved.route.label} · saved ${formatIncidentTime(draft.saved.savedAt)} · in this browser`}
               </p>
             </div>
             <a href="#decision">
               Review decision <ArrowRight size={14} />
             </a>
+            {!reviewRequired && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setDraft((previous) => ({
+                    ...previous,
+                    saved: previous.saved
+                      ? { ...previous.saved, reviewVersion: 1 }
+                      : null,
+                  }))
+                  setNotice(
+                    "Decision reopened for review. The previous route and calculations are preserved."
+                  )
+                }}
+              >
+                Reopen for review
+              </Button>
+            )}
           </section>
         )}
         {error && (
@@ -1462,7 +1488,7 @@ function ReadyProcurementWorkbench({
                   <p>
                     Saved {formatIncidentTime(draft.saved.savedAt)}.{" "}
                     {reviewRequired
-                      ? "Review the changed inputs and current evidence before saving again."
+                      ? "Review the changed inputs and current evidence before applying the decision again."
                       : "Original evidence baseline preserved."}
                   </p>
                 </div>
@@ -1474,8 +1500,8 @@ function ReadyProcurementWorkbench({
                 >
                   <Save size={15} />
                   {draft.saved
-                    ? "Save reviewed decision"
-                    : "Save route decision"}
+                    ? "Apply updated decision"
+                    : "Apply route decision"}
                 </Button>
                 <p>
                   Stores a decision in this browser. It does not purchase stock,
