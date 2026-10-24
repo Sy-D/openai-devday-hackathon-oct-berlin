@@ -1,3 +1,13 @@
+## Delivery chat · 24 October 2026
+
+- [x] Add OpenRouter chat to overview and planner; use our current delivery/incident/routing functions.
+- [x] Support draft edits, rerouting, cost/carbon comparisons, Undo and conflict protection.
+- [x] Preserve explicit Apply decision; verify real provider calls and 126 unit/API + 27 browser tests.
+- [x] Refresh localhost for Carl’s review. [Setup and exact steps](DELIVERY_AGENT.md).
+- [x] Carl explicitly requested push and PR merge, lifting the previous hold. Publish the tested `codex/nebius-delivery-agent` branch through its PR; current merge status is on GitHub.
+- [x] Compact action-first overview chat, redesigned assistant header and searchable delivery picker; five chat browser checks pass, including keyboard selection at 320px.
+- [x] Defer chat code until first use, reduce repeated model updates and freshness checks, and accelerate route screening. [Measured benchmark and reproduction](PERFORMANCE.md).
+
 # Connected procurement workspace — remaining work
 
 This is the active implementation checklist. The shared planning Page, Notion checkpoint and Excalidraw were reconciled after implementation and publication, as requested.

@@ -44,11 +44,12 @@
   border: 0;
 }
 .nextAction {
+  --primary-action-color: #4f7fee;
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 16px;
-  padding: 20px;
+  padding: 18px 20px;
   margin-bottom: 0;
   border: 0;
   border-radius: var(--radius-2xl);
@@ -63,6 +64,7 @@
   background: color-mix(in oklab, #4f7fee 7%, var(--card));
 }
 .nextAction[data-status="changed"] {
+  --primary-action-color: var(--risk-critical);
   border-color: color-mix(in oklab, var(--risk-critical) 40%, var(--border));
   background: color-mix(in oklab, var(--risk-critical) 7%, var(--card));
 }
@@ -73,11 +75,22 @@
   color: var(--risk-critical);
 }
 .nextAction[data-status="exposed"] {
+  --primary-action-color: var(--risk-medium);
   border-color: color-mix(in oklab, var(--risk-medium) 40%, var(--border));
   background: color-mix(in oklab, var(--risk-medium) 7%, var(--card));
 }
 .nextAction[data-status="exposed"] > svg {
   color: var(--risk-medium);
+}
+.primaryActionIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  color: var(--primary-action-color);
+  background: color-mix(in oklab, var(--primary-action-color) 12%, transparent);
 }
 .actionEyebrow {
   display: block;
@@ -385,9 +398,9 @@
     flex-wrap: wrap;
   }
   .nextAction > div {
-    flex-basis: calc(100% - 42px);
+    flex-basis: calc(100% - 58px);
   }
   .nextAction > a {
-    margin-left: 38px;
+    margin-left: 58px;
   }
 }

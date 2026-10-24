@@ -57,9 +57,13 @@ export function useDeliveryOverview(snapshot: IncidentSnapshot | null) {
     () =>
       componentIds.map((componentId) => {
         const draft = drafts.find((item) => item.componentId === componentId)
-        const route = draft?.response?.routes.find(
-          (item) => item.id === draft.selectedRouteId
-        )
+        const route =
+          draft?.response?.routes.find(
+            (item) => item.id === draft.selectedRouteId
+          ) ??
+          (draft?.baseline?.id === draft?.selectedRouteId
+            ? draft?.baseline
+            : undefined)
         const exposures =
           route && draft
             ? matchRouteIncidents(

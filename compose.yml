@@ -3,6 +3,9 @@ services:
     build: .
     environment:
       # Read from the host shell; falls back to .env (copy .env.example) if present.
+      DELIVERY_AI_PROVIDER: ${DELIVERY_AI_PROVIDER:-openrouter}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-qwen/qwen3-235b-a22b-2507}
       NEBIUS_API_KEY: ${NEBIUS_API_KEY:-}
       NEBIUS_BASE_URL: ${NEBIUS_BASE_URL:-https://api.tokenfactory.nebius.com/v1}
       NEBIUS_MODEL: ${NEBIUS_MODEL:-MiniMaxAI/MiniMax-M3}
