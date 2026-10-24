@@ -8,3 +8,6 @@ test-results/
 playwright-report/
 *.tsbuildinfo
 .DS_Store
+
+# Portable source handoff, generated from committed history.
+outputs/*.bundle

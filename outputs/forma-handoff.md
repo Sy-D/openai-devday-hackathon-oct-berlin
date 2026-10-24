@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Requires Node 22 or later. Open http://127.0.0.1:5173 on the computer running the application. The local assistant API uses port 8789. No map service or database is required. The clone command becomes usable when the branch is published; publication status is recorded below.
+Requires Node 22 or later. Open http://127.0.0.1:5173 on the computer running the application. The local assistant API uses port 8789. No map service or database is required. The remote clone command is currently blocked: GitHub denied the push because the signed-in account lacks write access. The local application is available, and a portable Git bundle is provided as described below.
 
 The [planning Page](https://chatgpt.com/space/page_d8c7928de5848191a983913da6ed1e4c) owns the unified team checklist. The [shared Excalidraw board](https://link.excalidraw.com/l/44SXhWFHIar/5fLHSSwDGK8) explains the system and component boundaries. The planning chat owns both documents; the application chat owns this code and publication. Keep milestones aligned without overlapping edits.
 
@@ -63,4 +63,18 @@ Factory capabilities, prices, reliability, capacities, queues, orders and emissi
 
 ## Publication
 
-Carl authorized pushing the existing branch without overwriting remote work. The remote was empty at the pre-push check; the GitHub connector reported read-only access. The normal Git push outcome is recorded in the final handoff. No deployment was requested.
+Application revision: `0dbdf3e` on `codex/hackathon-work`, following baseline `2cb4918`. The normal command `git push -u origin codex/hackathon-work` failed with HTTP 403: GitHub denied write access to `carldiederichs`. The remote had no branches at the pre-push check, so there is no PR base. No source was published and no deployment occurred.
+
+Next step: the repository owner grants `carldiederichs` Write access to `Sy-D/openai-devday-hackathon-oct-berlin`. Then rerun the normal push and verify the remote branch SHA. Do not force-push or overwrite teammates' commits.
+
+A portable `outputs/forma-hackathon-work.bundle` contains the committed branch and history without dependencies or credentials. After receiving that file, a teammate can clone it locally:
+
+```sh
+git clone --branch codex/hackathon-work /path/to/forma-hackathon-work.bundle forma
+cd forma
+git remote set-url origin https://github.com/Sy-D/openai-devday-hackathon-oct-berlin.git
+npm ci
+npm run dev
+```
+
+The bundle is a local handoff, not a GitHub publication. It is generated after the final documentation commit and intentionally excluded from Git to avoid recursively bundling itself.
