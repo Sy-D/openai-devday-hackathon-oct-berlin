@@ -191,6 +191,20 @@
   border-bottom: 1px solid var(--border);
   background: var(--card);
 }
+.assemblyToolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 18px 8px;
+}
+.assemblyToolbar > span {
+  flex: 1;
+  min-width: 180px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  line-height: 1.5;
+}
 .searchField {
   position: relative;
   flex: 1;
@@ -219,6 +233,10 @@
   color: var(--muted-foreground);
 }
 @media (max-width: 600px) {
+  .assemblyToolbar {
+    padding: 0 10px 8px;
+    gap: 6px;
+  }
   .modelSearch {
     padding: 10px;
     gap: 8px;

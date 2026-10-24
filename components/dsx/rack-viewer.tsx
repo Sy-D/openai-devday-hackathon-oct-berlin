@@ -8,6 +8,7 @@ import {
   partAnchors,
   partColors,
   type RackPart,
+  type AssemblyView,
 } from "./rack-geometry"
 import styles from "./rack-viewer.module.css"
 
@@ -19,6 +20,7 @@ type RackViewerProps = {
   mode: ViewerMode
   resetKey: number
   visibleIds?: readonly string[]
+  assemblyView?: AssemblyView
 }
 type MarkerStyle = CSSProperties & { "--marker-color": string }
 type SceneHandle = {
@@ -26,6 +28,7 @@ type SceneHandle = {
   focus: (id: string | null) => void
   setMode: (mode: ViewerMode) => void
   setVisibleIds: (ids: readonly string[] | undefined) => void
+  setAssemblyView: (view: AssemblyView) => void
   reset: () => void
 }
 
@@ -219,6 +222,7 @@ export default function RackViewer({
   mode,
   resetKey,
   visibleIds,
+  assemblyView = "cutaway",
 }: RackViewerProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -238,6 +242,7 @@ export default function RackViewer({
     const host = hostRef.current
     const canvas = canvasRef.current
     if (!host || !canvas) return
+    const hostDataset = host.dataset
     let disposed = false
     let renderer: THREE.WebGLRenderer
     try {
@@ -308,7 +313,7 @@ export default function RackViewer({
     controls.enableDamping = true
     controls.dampingFactor = 0.09
     controls.minDistance = 3.5
-    controls.maxDistance = 29
+    controls.maxDistance = 42
     controls.maxPolarAngle = Math.PI * 0.49
     controls.minPolarAngle = Math.PI * 0.13
     controls.enablePan = true
@@ -322,6 +327,14 @@ export default function RackViewer({
     let partStatuses: readonly RackPart[] = []
     let filteredIds: readonly string[] | undefined
     let frame = 0
+    let sceneReady = false
+    let currentAssembly: AssemblyView = "cutaway"
+    let assemblyMoving = false
+    function invalidate() {
+      dirty = true
+      if (sceneReady && frame === 0 && !disposed)
+        frame = requestAnimationFrame(animate)
+    }
     let width = 1
     let height = 1
     const reducedMotion = window.matchMedia(
@@ -334,12 +347,26 @@ export default function RackViewer({
     const home = () => {
       overviewCamera = true
       const aspect = width / height
-      const distance = Math.max(15.8, 18.8 / aspect)
-      const direction = new THREE.Vector3(0.54, 0.34, 0.77).normalize()
-      targetPosition.copy(direction.multiplyScalar(distance))
-      targetLook.set(0.1, 1.55, 0)
+      const exploded = currentAssembly === "exploded"
+      const enclosed = currentAssembly === "enclosed"
+      const distance = exploded
+        ? Math.max(24, 25.4 / aspect)
+        : enclosed
+          ? Math.max(17.6, 19.8 / aspect)
+          : Math.max(15.8, 18.8 / aspect)
+      const direction = new THREE.Vector3(
+        0.54,
+        exploded ? 0.42 : 0.34,
+        0.77
+      ).normalize()
+      targetLook.set(
+        0.1,
+        exploded ? 2.9 : enclosed ? 2.3 : 1.55,
+        exploded ? 0.8 : 0
+      )
+      targetPosition.copy(targetLook).addScaledVector(direction, distance)
       moving = true
-      dirty = true
+      invalidate()
     }
     const focus = (id: string | null) => {
       selected = id
@@ -376,7 +403,7 @@ export default function RackViewer({
       direction.normalize()
       targetPosition.copy(anchor).addScaledVector(direction, distance)
       moving = true
-      dirty = true
+      invalidate()
     }
     const resize = () => {
       const previousAspect = width / height
@@ -387,7 +414,7 @@ export default function RackViewer({
       renderer.setSize(width, height, false)
       if (overviewCamera && Math.abs(previousAspect - camera.aspect) > 0.02)
         home()
-      dirty = true
+      invalidate()
     }
     const resizeObserver = new ResizeObserver(resize)
     resizeObserver.observe(host)
@@ -398,11 +425,12 @@ export default function RackViewer({
     controls.update()
     moving = false
     const changed = () => {
-      dirty = true
+      invalidate()
     }
     const interactionStarted = () => {
       overviewCamera = false
       moving = false
+      invalidate()
     }
     controls.addEventListener("change", changed)
     controls.addEventListener("start", interactionStarted)
@@ -452,11 +480,17 @@ export default function RackViewer({
       )
       raycaster.setFromCamera(pointer, camera)
       const currentVisibleIds = filteredIds
-      const pickables = currentVisibleIds
-        ? model.pickables.filter((object) =>
-            currentVisibleIds.includes(object.name)
-          )
-        : model.pickables
+      const pickables = model.pickables.filter((object) => {
+        if (currentVisibleIds && !currentVisibleIds.includes(object.name))
+          return false
+        // Raycaster does not itself exclude invisible ancestors.
+        let ancestor: THREE.Object3D | null = object
+        while (ancestor) {
+          if (!ancestor.visible) return false
+          ancestor = ancestor.parent
+        }
+        return true
+      })
       const hit = raycaster.intersectObjects(pickables, false)[0]
       if (hit && partAnchors.has(hit.object.name))
         selectRef.current(hit.object.name)
@@ -464,8 +498,13 @@ export default function RackViewer({
     const contextLost = (event: Event) => {
       event.preventDefault()
       currentMode = "schematic"
+      hostDataset.assemblyMoving = "false"
       setUnavailable(true)
     }
+    const visibilityChanged = () => {
+      if (!document.hidden) invalidate()
+    }
+    document.addEventListener("visibilitychange", visibilityChanged)
     canvas.addEventListener("pointerdown", down)
     canvas.addEventListener("pointerup", up)
     canvas.addEventListener("webglcontextlost", contextLost)
@@ -491,7 +530,7 @@ export default function RackViewer({
                     : 0
           }
         }
-        dirty = true
+        invalidate()
       },
       focus,
       setMode(nextMode) {
@@ -501,35 +540,64 @@ export default function RackViewer({
         grid.visible = !draft
         draftingGrid.visible = draft
         floor.visible = !draft
-        dirty = true
+        invalidate()
       },
       setVisibleIds(ids) {
         filteredIds = ids
         model.setAppearance(currentMode === "wireframe", selected, filteredIds)
-        dirty = true
+        invalidate()
+      },
+      setAssemblyView(nextAssembly) {
+        if (currentAssembly === nextAssembly) return
+        currentAssembly = nextAssembly
+        hostDataset.assembly = nextAssembly
+        assemblyMoving = model.setAssemblyView(nextAssembly, reducedMotion)
+        if (!selected) home()
+        hostDataset.assemblyMoving = String(assemblyMoving || moving)
+        invalidate()
       },
       reset: home,
     }
+    let previousFrameTime = 0
     function animate() {
-      if (disposed) return
-      frame = requestAnimationFrame(animate)
-      if (document.hidden || currentMode === "schematic") return
+      const now = performance.now()
+      const elapsed = Math.min(
+        0.15,
+        previousFrameTime ? (now - previousFrameTime) / 1000 : 1 / 60
+      )
+      previousFrameTime = now
+      const transitionStep = reducedMotion ? 1 : 1 - Math.exp(-elapsed * 8)
+      frame = 0
+      if (disposed || document.hidden || currentMode === "schematic") return
       if (moving) {
-        camera.position.lerp(targetPosition, reducedMotion ? 1 : 0.095)
-        controls.target.lerp(targetLook, reducedMotion ? 1 : 0.095)
+        camera.position.lerp(targetPosition, transitionStep)
+        controls.target.lerp(targetLook, transitionStep)
         if (
           camera.position.distanceTo(targetPosition) < 0.02 &&
           controls.target.distanceTo(targetLook) < 0.02
-        )
+        ) {
+          camera.position.copy(targetPosition)
+          controls.target.copy(targetLook)
           moving = false
+        }
         dirty = true
       }
-      controls.update()
-      if (!dirty) return
-      renderer.render(scene, camera)
-      projectMarkers()
-      dirty = false
+      if (assemblyMoving) {
+        assemblyMoving = model.stepAssembly(transitionStep)
+        dirty = true
+      }
+      const controlsMoving = controls.update()
+      hostDataset.assemblyMoving = String(
+        moving || assemblyMoving || controlsMoving
+      )
+      if (dirty) {
+        renderer.render(scene, camera)
+        projectMarkers()
+        dirty = false
+      }
+      if (moving || assemblyMoving || controlsMoving) invalidate()
     }
+    sceneReady = true
     frame = requestAnimationFrame(() => {
       if (disposed) return
       setReady(true)
@@ -539,6 +607,7 @@ export default function RackViewer({
       disposed = true
       cancelAnimationFrame(frame)
       resizeObserver.disconnect()
+      document.removeEventListener("visibilitychange", visibilityChanged)
       canvas.removeEventListener("pointerdown", down)
       canvas.removeEventListener("pointerup", up)
       canvas.removeEventListener("webglcontextlost", contextLost)
@@ -561,6 +630,9 @@ export default function RackViewer({
   useEffect(() => {
     handleRef.current?.setParts(parts)
   }, [parts])
+  useEffect(() => {
+    handleRef.current?.setAssemblyView(assemblyView)
+  }, [assemblyView])
   useEffect(() => {
     handleRef.current?.focus(selectedId)
   }, [selectedId])
@@ -590,6 +662,8 @@ export default function RackViewer({
       data-testid="rack-viewer"
       data-renderer={unavailable ? "fallback" : ready ? "webgl" : "loading"}
       data-mode={mode}
+      data-assembly={assemblyView}
+      data-assembly-moving="false"
     >
       <canvas
         ref={canvasRef}

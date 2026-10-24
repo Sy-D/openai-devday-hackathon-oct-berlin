@@ -17,7 +17,9 @@ See [the supplied design references](DESIGN_REFERENCES.md) for the wireframe and
 5. Review and explicitly confirm. The snapshot records route, cost and ETA in versioned browser storage. The overview changes to the chosen route; this does not book a shipment or mark physical delivery.
 6. If a new incident changes a saved route, review returns. If the route changes while the confirmation dialog is open, its confirm button is disabled. An unchanged, explicitly reviewed delay that still meets the target clears the action.
 
-The labeled **Reset view** button clears the selected component and part filters, switches back to the solid 3D model, and returns the camera to the full-pod home position. It works after orbiting, panning, zooming, wireframe or 2D; on devices without WebGL, the selectable 2D fallback remains available.
+The **Cutaway**, **Enclosed** and **Exploded** controls follow the supplied video's assembly sequence: show the internal racks, close the modular white/green shell, or separate the panels and roof cooling deck to explain the layers. These views work with 3D and wireframe. Selecting a part opens the cutaway automatically. The fixed 2D elevation disables enclosure controls.
+
+The labeled **Reset view** button clears the selected component and part filters, switches back to the solid 3D cutaway, and returns the camera to the full-pod home position. It works after orbiting, panning, zooming, changing enclosure views, wireframe or 2D; on devices without WebGL, the selectable 2D fallback remains available.
 
 The original production planner is not silently applied to rack shipments. Its gripper-kit bill of materials is a separate manufacturing scenario.
 

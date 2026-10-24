@@ -6,17 +6,17 @@ Updated 24 October 2026.
 
 The new landing page at `/` shows a selectable 3D container with ten subsystems, wireframe and 2D views. Red/amber delivery markers lead to `/planning?component=ID`, which compares transport routes and stores explicit recovery confirmations. `/api/disruptions` streams simulated incidents via SSE; closed links invalidate routes, delays recalculate ETA, and changed confirmations require review. Simon's supplier dashboard is preserved at `/suppliers`; the original manufacturing demo remains at `/planning`.
 
-Simon’s frontend supplies the design template across overview, recovery and manufacturing screens. Shared theme tokens, buttons, panels, motion and light/dark mode replace the earlier separate design. **Reset view** clears filters and selection and restores solid 3D with full camera framing. Simon’s supplied screenshot and DSX video informed the blue technical wireframe, part/supplier search, delivery-state filters, roof framing and cable details. See [DESIGN_REFERENCES.md](DESIGN_REFERENCES.md).
+Simon’s frontend supplies the design template across overview, recovery and manufacturing screens. Shared theme tokens, buttons, panels, motion and light/dark mode replace the earlier separate design. **Reset view** clears filters and selection and restores the solid 3D cutaway with full camera framing. Simon’s supplied screenshot and DSX video informed the blue technical wireframe, part/supplier search, delivery-state filters, white/green modular shell, cable details and separate roof cooling deck. **Cutaway**, **Enclosed** and **Exploded** views animate the assembly layers; selecting a part reveals its interior again. See [DESIGN_REFERENCES.md](DESIGN_REFERENCES.md).
 
-Source branch: `codex/dsx-digital-twin`, based on main `9532785` after PR #2. Read [DSX_OVERVIEW.md](DSX_OVERVIEW.md) for the interaction, stream lifecycle and demo; [DSX_DATA.md](DSX_DATA.md) describes the fictional dataset. This extension adds no live incident provider, actual bookings or hardware telemetry. Vercel remains deferred.
+The DSX overview was merged into main through PR #3 at `b871c29`. The assembly-view follow-up is on `codex/dsx-assembly-views`; after its merge, teammates should use main. Read [DSX_OVERVIEW.md](DSX_OVERVIEW.md) for the interaction, stream lifecycle and demo; [DSX_DATA.md](DSX_DATA.md) describes the fictional dataset. This extension adds no live incident provider, actual bookings or hardware telemetry. Vercel remains deferred.
 
 ## Previous integrated application baseline
 
-The incoming supplier dashboard and FORMA production planner now share one Next.js application. The integration and first-draft branches are published. PR #2 consolidates the work for main; Vercel authorization is deferred.
+The incoming supplier dashboard and FORMA production planner now share one Next.js application. The integration and first-draft branches are published. PR #2 merged the integration into main; Vercel authorization is deferred.
 
 ## Start here
 
-In the existing checkout on `codex/dsx-digital-twin`, use Node.js 22.12 or later:
+Use the current main checkout after the assembly-view follow-up merges, with Node.js 22.12 or later:
 
 ```sh
 npm ci
@@ -57,7 +57,7 @@ After restoring capacity, apply 42 kits / 60h. Balanced exceeds Dresden's finger
 
 ## Verification status
 
-The DSX extension passes the production build with TypeScript checking, **68 unit/API tests** and **27 browser tests against the production server**. Browser coverage includes part search and delivery filters, camera reset, 3D/wireframe/2D and WebGL fallback, mobile navigation, actual SSE arrivals, recovery confirmation and stale-route review, supplier browsing and the existing planner. Desktop, dark mode and mobile renders were visually inspected. Supplier CSV and native DuckDB libraries remain included in the server trace.
+The DSX extension passes the production build with TypeScript checking, **68 unit/API tests** and **28 browser tests against the production server**. Browser coverage includes cutaway/enclosed/exploded assembly views, reduced-motion behavior, part search and delivery filters, camera reset, 3D/wireframe/2D and WebGL fallback, mobile navigation, actual SSE arrivals, recovery confirmation and stale-route review, supplier browsing and the existing planner. Desktop, dark mode and mobile renders were visually inspected. Supplier CSV and native DuckDB libraries remain included in the server trace.
 
 `npm run lint` passes with zero errors and two existing unused-code warnings in the supplier workspace panels. Small planning guidance text is checked at 4.5:1 contrast in both themes. The build still reports the existing dynamic Python path tracing warning; this does not establish deployment readiness for the Python backend.
 
@@ -96,18 +96,18 @@ Planning state stays in the current browser. Supplier research stays in local ou
 
 ## Publication
 
-The first FORMA draft remains on `codex/forma-first-draft` at `c89d43b`. Simon’s frontend (`baa6a5c`) and the original integration were merged into main at `9532785` through [PR #2](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/2). The current DSX extension and shared styling are on `codex/dsx-digital-twin`.
+The first FORMA draft remains on `codex/forma-first-draft` at `c89d43b`. Simon’s frontend (`baa6a5c`) and the original integration were merged into main at `9532785` through [PR #2](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/2). The DSX overview and shared styling were merged through [PR #3](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/3) at `b871c29`. The assembly-view follow-up is on `codex/dsx-assembly-views`.
 
-To continue this extension:
+After the assembly-view follow-up merges, start from main:
 
 ```sh
-git clone --branch codex/dsx-digital-twin https://github.com/Sy-D/openai-devday-hackathon-oct-berlin.git
+git clone --branch main https://github.com/Sy-D/openai-devday-hackathon-oct-berlin.git
 cd openai-devday-hackathon-oct-berlin
 npm ci
 npm run dev
 ```
 
-Earlier bundle files preserve the previous integration. Use the current branch for the DSX model, recovery workflow and shared frontend styles.
+Earlier bundle files preserve the previous integration. Use main after the follow-up merge for the DSX model, assembly views, recovery workflow and shared frontend styles.
 
 Hosting is requested at `forma-supply-chain.vercel.app`. Carl chose to authorize
 the Vercel workspace later, so deployment is deferred. No Vercel project

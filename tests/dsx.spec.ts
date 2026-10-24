@@ -1,5 +1,67 @@
 import { test, expect } from "@playwright/test"
 
+test("video-inspired enclosure views reveal layers and preserve inspection and reset", async ({
+  page,
+}) => {
+  const errors: string[] = []
+  page.on("pageerror", (error) => errors.push(error.message))
+  await page.goto("/")
+  await page.getByRole("button", { name: "Pause feed", exact: true }).click()
+  const viewer = page.getByTestId("rack-viewer")
+  const assembly = page.getByRole("group", { name: "Enclosure assembly view" })
+  await expect(viewer).toHaveAttribute("data-renderer", "webgl")
+  for (const [label, value] of [
+    ["Enclosed", "enclosed"],
+    ["Exploded", "exploded"],
+  ]) {
+    await assembly.getByRole("button", { name: label, exact: true }).click()
+    await expect(viewer).toHaveAttribute("data-assembly", value)
+    await expect(viewer).toHaveAttribute("data-assembly-moving", "false")
+    await expect(page.getByRole("button", { name: /^Inspect / })).toHaveCount(
+      10
+    )
+  }
+  await page.getByRole("button", { name: "Wireframe", exact: true }).click()
+  await expect(viewer).toHaveAttribute("data-mode", "wireframe")
+  await page.getByRole("button", { name: /^Inspect Compute rack A/ }).click()
+  await expect(viewer).toHaveAttribute("data-assembly", "cutaway")
+  await expect(
+    page.getByRole("dialog", { name: "Compute rack A" })
+  ).toBeVisible()
+  await assembly.getByRole("button", { name: "Exploded", exact: true }).click()
+  await expect(page.getByRole("dialog")).toHaveCount(0)
+  await page.getByRole("button", { name: "2D", exact: true }).click()
+  await expect(
+    assembly.getByRole("button", { name: "Enclosed", exact: true })
+  ).toBeDisabled()
+  await page.getByRole("button", { name: "Reset view", exact: true }).click()
+  await expect(viewer).toHaveAttribute("data-assembly", "cutaway")
+  await expect(viewer).toHaveAttribute("data-mode", "solid")
+  await expect(viewer).toHaveAttribute("data-assembly-moving", "false")
+  await expect(
+    assembly.getByRole("button", { name: "Cutaway", exact: true })
+  ).toHaveAttribute("aria-pressed", "true")
+  await page.emulateMedia({ reducedMotion: "reduce" })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.reload()
+  await page.getByRole("button", { name: "Pause feed", exact: true }).click()
+  await expect(viewer).toHaveAttribute("data-renderer", "webgl")
+  for (const label of ["Enclosed", "Exploded"]) {
+    await assembly.getByRole("button", { name: label, exact: true }).click()
+    await expect(viewer).toHaveAttribute("data-assembly", label.toLowerCase())
+    await expect(viewer).toHaveAttribute("data-assembly-moving", "false")
+    await expect(page.getByRole("button", { name: /^Inspect / })).toHaveCount(
+      10
+    )
+  }
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth
+    )
+  ).toBe(true)
+  expect(errors).toEqual([])
+})
+
 test("reference-style part search and status filters preserve global actions and reset", async ({
   page,
 }) => {
