@@ -1,5 +1,7 @@
 import * as THREE from "three"
 
+export type AssemblyView = "cutaway" | "enclosed" | "exploded"
+
 export type RackPart = {
   id: string
   name: string
@@ -40,6 +42,8 @@ export type RackModel = {
     selectedId: string | null,
     visibleIds?: readonly string[]
   ) => void
+  setAssemblyView: (view: AssemblyView, immediate: boolean) => boolean
+  stepAssembly: (alpha: number) => boolean
   dispose: () => void
 }
 
@@ -61,7 +65,7 @@ export function createRackModel(): RackModel {
     partId: string
   }[] = []
   const structural = new THREE.MeshStandardMaterial({
-    color: "#6e7f8e",
+    color: "#b7c3c8",
     metalness: 0.77,
     roughness: 0.36,
   })
@@ -87,7 +91,7 @@ export function createRackModel(): RackModel {
     roughness: 0.25,
   })
   const amber = new THREE.MeshStandardMaterial({
-    color: "#d89441",
+    color: "#d9ad59",
     metalness: 0.4,
     roughness: 0.38,
   })
@@ -185,7 +189,9 @@ export function createRackModel(): RackModel {
   }
 
   // A cutaway enclosure keeps every subsystem visible and independently selectable.
-  const enclosure = partMaterial("enclosure", "#566678")
+  const enclosure = partMaterial("enclosure", "#aebcc2")
+  const shell = partMaterial("enclosure", "#e2e7e4")
+  const lowerBand = partMaterial("enclosure", "#7ea943")
   box(10.1, 0.22, 3.45, 0.2, 0.05, 0, enclosure, "enclosure")
   box(9.8, 0.04, 3.12, 0.2, 0.18, 0, black, "enclosure")
   box(10.1, 0.16, 0.17, 0.2, 3.62, -1.65, structural, "enclosure")
@@ -208,7 +214,8 @@ export function createRackModel(): RackModel {
       structural,
       "enclosure"
     )
-  box(10.0, 2.82, 0.055, 0.2, 1.75, -1.57, enclosure, "enclosure")
+  box(10.0, 2.82, 0.055, 0.2, 1.75, -1.57, shell, "enclosure")
+  box(10.0, 0.62, 0.065, 0.2, 0.58, -1.61, lowerBand, "enclosure")
   for (let i = 0; i < 35; i++)
     box(
       0.035,
@@ -293,14 +300,14 @@ export function createRackModel(): RackModel {
     ["compute-a", -3.45],
     ["compute-b", -1.85],
   ] satisfies [string, number][]) {
-    for (let cable = 0; cable < 10; cable++) {
-      const y = 0.6 + cable * 0.245
+    for (let cable = 0; cable < 16; cable++) {
+      const y = 0.58 + cable * 0.156
       pipe(
         [
-          new THREE.Vector3(x + 0.36, y + 0.09, 0.79),
-          new THREE.Vector3(x + 0.59, y + 0.08, 0.94),
-          new THREE.Vector3(x + 0.59, y - 0.1, 0.96),
-          new THREE.Vector3(x + 0.34, y - 0.12, 0.8),
+          new THREE.Vector3(x - 0.3, y + 0.08, 0.8),
+          new THREE.Vector3(x - 0.2, y - 0.1, 0.98),
+          new THREE.Vector3(x + 0.36, y - 0.13, 1.0),
+          new THREE.Vector3(x + 0.49, y + 0.09, 0.81),
         ],
         amber,
         id,
@@ -500,6 +507,166 @@ export function createRackModel(): RackModel {
     0.04
   )
 
+  // The shell and dry-cooler deck are separate assembly layers, inspired by
+  // the reference video. Their dimensions and internal layout are illustrative.
+  type AssemblyPose = { position: THREE.Vector3; visible: boolean }
+  const assemblyLayers: {
+    object: THREE.Group
+    poses: Record<AssemblyView, AssemblyPose>
+    target: AssemblyPose
+  }[] = []
+  const hiddenPose = (x: number, y: number, z: number): AssemblyPose => ({
+    position: new THREE.Vector3(x, y, z),
+    visible: false,
+  })
+  const shownPose = (x: number, y: number, z: number): AssemblyPose => ({
+    position: new THREE.Vector3(x, y, z),
+    visible: true,
+  })
+  function finishLayer(
+    firstSurface: number,
+    cutaway: AssemblyPose,
+    exploded: AssemblyPose
+  ) {
+    const layer = new THREE.Group()
+    for (const { object } of surfaces.slice(firstSurface)) layer.add(object)
+    layer.position.copy(cutaway.position)
+    layer.visible = cutaway.visible
+    group.add(layer)
+    assemblyLayers.push({
+      object: layer,
+      poses: { cutaway, enclosed: shownPose(0, 0, 0), exploded },
+      target: cutaway,
+    })
+  }
+
+  // Two removable banks of service doors reveal the front rack aisle.
+  for (const bank of [-1, 1]) {
+    const firstSurface = surfaces.length
+    for (let panel = 0; panel < 5; panel++) {
+      const x = -4.3 + panel * 1.0 + (bank === 1 ? 5.0 : 0)
+      box(0.97, 3.37, 0.075, x, 1.86, 1.72, shell, "enclosure")
+      box(0.97, 0.68, 0.085, x, 0.51, 1.73, lowerBand, "enclosure")
+      box(0.09, 0.045, 0.055, x + 0.27, 1.67, 1.79, chassis, "enclosure")
+      for (const y of [0.96, 2.72])
+        box(0.045, 0.14, 0.045, x - 0.41, y, 1.78, structural, "enclosure")
+    }
+    finishLayer(
+      firstSurface,
+      hiddenPose(bank * 0.9, -0.5, 2.25),
+      shownPose(bank * 1.25, -0.38, 3.0)
+    )
+  }
+  for (const side of [-1, 1]) {
+    const firstSurface = surfaces.length
+    const x = side === -1 ? -4.86 : 5.26
+    box(0.075, 3.37, 3.37, x, 1.86, 0.02, shell, "enclosure")
+    box(0.085, 0.68, 3.37, x, 0.51, 0.02, lowerBand, "enclosure")
+    for (let vent = 0; vent < 7; vent++)
+      box(
+        0.025,
+        0.035,
+        1.55,
+        x + side * 0.055,
+        2.4 + vent * 0.105,
+        0,
+        chassis,
+        "enclosure"
+      )
+    finishLayer(
+      firstSurface,
+      hiddenPose(side * 1.1, 0, 0),
+      shownPose(side * 1.75, 0.2, -0.45)
+    )
+  }
+
+  const deckStart = surfaces.length
+  const coolerShell = partMaterial("cooling", "#dce5e4")
+  box(10.15, 0.2, 3.43, 0.2, 3.87, 0, coolerShell, "cooling")
+  for (const z of [-1.66, 1.66]) {
+    box(10.15, 0.7, 0.09, 0.2, 4.3, z, coolerShell, "cooling")
+    box(10.18, 0.08, 0.13, 0.2, 4.69, z, structural, "cooling")
+    for (let bay = 0; bay < 9; bay++) {
+      const x = -4.22 + bay * 1.1
+      box(0.91, 0.43, 0.03, x, 4.3, z + Math.sign(z) * 0.06, black, "cooling")
+      for (let louver = 0; louver < 5; louver++)
+        box(
+          0.91,
+          0.026,
+          0.035,
+          x,
+          4.13 + louver * 0.083,
+          z + Math.sign(z) * 0.08,
+          structural,
+          "cooling"
+        )
+    }
+  }
+  for (const x of [-4.87, 5.27])
+    box(0.09, 0.7, 3.4, x, 4.3, 0, coolerShell, "cooling")
+  for (let bay = 0; bay < 6; bay++) {
+    const x = -3.97 + bay * 1.67
+    for (const z of [-0.79, 0.79]) {
+      mesh(
+        new THREE.CylinderGeometry(0.64, 0.64, 0.06, 32),
+        dark,
+        x,
+        4.59,
+        z,
+        "cooling"
+      )
+      const ring = mesh(
+        new THREE.TorusGeometry(0.64, 0.035, 8, 40),
+        structural,
+        x,
+        4.66,
+        z,
+        "cooling"
+      )
+      ring.rotation.x = -Math.PI / 2
+      for (let blade = 0; blade < 5; blade++) {
+        const angle = (blade * Math.PI * 2) / 5
+        const paddle = box(
+          0.21,
+          0.03,
+          0.47,
+          x + Math.sin(angle) * 0.28,
+          4.65,
+          z + Math.cos(angle) * 0.28,
+          chassis,
+          "cooling"
+        )
+        paddle.rotation.y = angle + 0.43
+      }
+      mesh(
+        new THREE.CylinderGeometry(0.11, 0.11, 0.075, 16),
+        structural,
+        x,
+        4.69,
+        z,
+        "cooling"
+      )
+    }
+    box(0.06, 0.06, 3.35, x - 0.8, 4.73, 0, structural, "cooling")
+  }
+  box(10.1, 0.06, 0.055, 0.2, 4.73, 0, structural, "cooling")
+  finishLayer(deckStart, hiddenPose(0, 2.45, -0.5), shownPose(0, 2.45, -0.5))
+
+  let assemblyMoving = false
+  function stepAssembly(alpha: number) {
+    assemblyMoving = false
+    for (const layer of assemblyLayers) {
+      layer.object.position.lerp(layer.target.position, alpha)
+      if (layer.object.position.distanceTo(layer.target.position) < 0.004) {
+        layer.object.position.copy(layer.target.position)
+        layer.object.visible = layer.target.visible
+      } else {
+        assemblyMoving = true
+      }
+    }
+    return assemblyMoving
+  }
+
   const plaqueCanvas = document.createElement("canvas")
   plaqueCanvas.width = 768
   plaqueCanvas.height = 96
@@ -536,9 +703,7 @@ export function createRackModel(): RackModel {
   }
 
   // CAD-style edges deliberately omit small vents, LEDs and triangle diagonals.
-  const drafting = new THREE.Group()
-  drafting.visible = false
-  group.add(drafting)
+  const outlines: THREE.Object3D[] = []
   const lineMaterials = new Map<string, THREE.LineBasicMaterial>()
   const draftSurface = new THREE.MeshBasicMaterial({
     color: "#d8e5f2",
@@ -606,10 +771,10 @@ export function createRackModel(): RackModel {
     const outline = isPath
       ? new THREE.Line(outlineGeometry, material)
       : new THREE.LineSegments(outlineGeometry, material)
-    outline.position.copy(object.position)
-    outline.rotation.copy(object.rotation)
-    outline.scale.copy(object.scale)
-    drafting.add(outline)
+    // Local edges inherit the exact transform and visibility of their surface.
+    outline.visible = false
+    object.add(outline)
+    outlines.push(outline)
   }
 
   return {
@@ -620,7 +785,7 @@ export function createRackModel(): RackModel {
     surfaceMaterials,
     setAppearance(draft, selectedId, visibleIds) {
       const visible = visibleIds ? new Set(visibleIds) : undefined
-      drafting.visible = draft
+      for (const outline of outlines) outline.visible = draft
       for (const { object, solid, partId } of surfaces) {
         const matches = !visible || visible.has(partId)
         object.material = !matches ? ghostSurface : draft ? draftSurface : solid
@@ -646,6 +811,14 @@ export function createRackModel(): RackModel {
       for (const [id, marker] of markers)
         marker.visible = !visible || visible.has(id)
     },
+    setAssemblyView(view, immediate) {
+      for (const layer of assemblyLayers) {
+        layer.target = layer.poses[view]
+        if (layer.target.visible) layer.object.visible = true
+      }
+      return stepAssembly(immediate ? 1 : 0)
+    },
+    stepAssembly,
     dispose() {
       for (const geometry of geometries) geometry.dispose()
       for (const material of materials) material.dispose()

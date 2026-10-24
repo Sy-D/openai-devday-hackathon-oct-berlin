@@ -21,6 +21,7 @@ import { AppShell } from "@/components/dashboard/app-shell"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import type { AssemblyView } from "./rack-geometry"
 import { dsxParts, disruptionEvents } from "@/src/data/dsx"
 import {
   getPartStatus,
@@ -61,6 +62,7 @@ export default function DsxDashboard() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [mode, setMode] = useState<"solid" | "wireframe" | "schematic">("solid")
   const [resetKey, setResetKey] = useState(0)
+  const [assemblyView, setAssemblyView] = useState<AssemblyView>("cutaway")
   const [partQuery, setPartQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const assessed = useMemo(
@@ -97,6 +99,11 @@ export default function DsxDashboard() {
   function inspectPart(id: string) {
     setPartQuery("")
     setStatusFilter("all")
+    setAssemblyView("cutaway")
+    setSelectedId(id)
+  }
+  function selectPart(id: string) {
+    setAssemblyView("cutaway")
     setSelectedId(id)
   }
   const alternative = selected
@@ -218,9 +225,10 @@ export default function DsxDashboard() {
                 <Button
                   size="xs"
                   variant="outline"
-                  title="Restore the full 3D model and clear the selected part"
+                  title="Restore the full 3D cutaway and clear selection and filters"
                   onClick={() => {
                     setMode("solid")
+                    setAssemblyView("cutaway")
                     setSelectedId(null)
                     setPartQuery("")
                     setStatusFilter("all")
@@ -231,6 +239,44 @@ export default function DsxDashboard() {
                   Reset view
                 </Button>
               </div>
+            </div>
+            <div className={styles.assemblyToolbar}>
+              <div
+                className={styles.viewControls}
+                role="group"
+                aria-label="Enclosure assembly view"
+              >
+                {(
+                  [
+                    ["cutaway", "Cutaway"],
+                    ["enclosed", "Enclosed"],
+                    ["exploded", "Exploded"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <Button
+                    key={value}
+                    size="xs"
+                    variant={assemblyView === value ? "secondary" : "ghost"}
+                    aria-pressed={assemblyView === value}
+                    disabled={mode === "schematic"}
+                    onClick={() => {
+                      setSelectedId(null)
+                      setAssemblyView(value)
+                    }}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+              <span aria-live="polite">
+                {mode === "schematic"
+                  ? "Choose 3D or wireframe to explore the enclosure."
+                  : assemblyView === "exploded"
+                    ? "Panels and cooling deck separate to reveal the layers."
+                    : assemblyView === "enclosed"
+                      ? "The complete shell. Select a part to see inside."
+                      : "Open shell. Inspect the racks and service connections."}
+              </span>
             </div>
             <div
               className={styles.modelSearch}
@@ -268,9 +314,10 @@ export default function DsxDashboard() {
                 parts={viewerParts}
                 visibleIds={visibleIds}
                 selectedId={selected?.part.id ?? null}
-                onSelect={setSelectedId}
+                onSelect={selectPart}
                 mode={mode}
                 resetKey={resetKey}
+                assemblyView={assemblyView}
               />
             </div>
             <div className={styles.modelFooter}>
@@ -460,7 +507,7 @@ export default function DsxDashboard() {
               <button
                 key={item.part.id}
                 aria-pressed={selectedId === item.part.id}
-                onClick={() => setSelectedId(item.part.id)}
+                onClick={() => selectPart(item.part.id)}
               >
                 <span className={styles.partNumber}>
                   {String(

@@ -2,7 +2,7 @@
 
 A shared hackathon workspace for infrastructure delivery, supplier intelligence and recovery planning:
 
-- **POD overview at `/`**: inspect a DSX POD inspired 3D container, switch to wireframe or 2D, and select ten tracked subsystems. Red and amber markers identify disrupted deliveries.
+- **POD overview at `/`**: inspect a DSX POD inspired 3D container, switch to wireframe or 2D, and select ten tracked subsystems. Cutaway, Enclosed and Exploded views reveal the racks, modular outer panels and roof cooling deck. Red and amber markers identify disrupted deliveries.
 - **Component recovery at `/planning?component=compute-a`**: inspect the affected supplier shipment, compare transport alternatives, and explicitly confirm a recovery route. Incoming simulated incidents update availability and ETA without refreshing.
 - **Supplier intelligence at `/suppliers`**: Simon's existing dashboard, with 10,000 anonymized suppliers, maps, profiles, comparison and optional research agents.
 - **Manufacturing planning at `/planning`**: the original FORMA order and manufacturing demo remains available.

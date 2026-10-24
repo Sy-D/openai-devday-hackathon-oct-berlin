@@ -17,3 +17,20 @@ These are visual references, not editable application source or a CAD/GLB model.
 - Simon's shared theme, controls, typography, motion and light/dark support remain the application's design system.
 
 Delivery states remain derived from the simulated route dataset. The reference's procurement stages, owners and awards are not fabricated as operational data in this demo.
+
+## Video analysis and second visual pass
+
+The 61-second clip was sampled across its full duration, then the assembly and cooling shots were inspected individually:
+
+| Approximate time | Visible design cue | Application change |
+| --- | --- | --- |
+| 0–5 seconds | Dark rack faces with dense, warm gold cable runs | More distinct cable detail against the dark rack surfaces |
+| 6–14 seconds | Open structural frame, overhead services and enclosure pieces moving into position | User-controlled Cutaway, Enclosed and Exploded views with a short transition |
+| 15–22 seconds | White modular outer panels and a green band along the base | Repeated panel seams, pale shell material and green lower trim |
+| 24–30 seconds | Separate cooling deck with circular fans above the container | A roof cooling layer that lifts away in the exploded view |
+| 33–52 seconds | Repeated pods expanding to a campus | Kept as a future scale reference; the current dataset tracks one pod |
+| 55–60 seconds | Final assembly view separates roof and enclosure layers | Clear layer separation with full-model camera framing |
+
+The layer views explain how the enclosure surrounds the tracked components. Selecting a part returns to the cutaway so the physical part is visible. Reset view also restores the cutaway. The controls are unavailable in the fixed 2D elevation. Reduced-motion preferences remove the animated transition.
+
+The clip is treated as a visual reference. Its hardware specifications and performance claims are not copied into the simulated delivery dataset, and the model is not an engineering reconstruction.
