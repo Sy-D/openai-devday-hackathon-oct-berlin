@@ -666,7 +666,7 @@
   height: 384px;
 }
 .mapCanvas {
-  height: 360px;
+  height: 384px;
 }
 .mapLoading {
   background: var(--muted);
@@ -688,24 +688,13 @@
 .mapStatus {
   position: absolute;
   inset-inline: 0;
-  bottom: 24px;
+  bottom: 0;
   z-index: 1;
   padding: 10px 20px;
   background: var(--muted);
   color: var(--muted-foreground);
   font-size: 12px;
   line-height: 1.5;
-}
-.mapAttribution {
-  height: 24px;
-  padding: 4px 20px;
-  line-height: 16px;
-  color: var(--muted-foreground);
-  font-size: 10px;
-}
-.mapAttribution a {
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 .routeNumbers {
   display: grid;

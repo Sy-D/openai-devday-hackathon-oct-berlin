@@ -978,7 +978,7 @@ function MapZoomControl({
                 {...props}>
                 <Button
                     type="button"
-                    size="icon-sm"
+                    size="icon-lg"
                     variant="secondary"
                     aria-label="Zoom in"
                     title="Zoom in"
@@ -989,7 +989,7 @@ function MapZoomControl({
                 </Button>
                 <Button
                     type="button"
-                    size="icon-sm"
+                    size="icon-lg"
                     variant="secondary"
                     aria-label="Zoom out"
                     title="Zoom out"
@@ -1041,7 +1041,7 @@ function MapFullscreenControl({
         <MapControlContainer className={cn(position, className)}>
             <Button
                 type="button"
-                size="icon-sm"
+                size="icon-lg"
                 variant="secondary"
                 onClick={() => map.toggleFullscreen()}
                 aria-label={

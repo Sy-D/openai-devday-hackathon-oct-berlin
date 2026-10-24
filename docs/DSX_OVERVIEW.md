@@ -4,7 +4,7 @@ The initial view is a procedural, selectable 3D container inspired by NVIDIA DSX
 
 ## Shared frontend design
 
-Simon’s frontend provides the theme tokens, typography, rounded panels, Button/Checkbox/Dialog controls, light/dark mode and motion for the DSX screens and the existing production planner. Supplier intelligence remains a separate workflow, using the same design template.
+Simon’s frontend provides the theme tokens, typography, rounded panels, Button, Card, Select, Checkbox, Dialog and Sheet controls, light/dark mode and motion for the DSX screens and the existing production planner. Supplier intelligence remains a separate workflow, using the same design template.
 
 See [the supplied design references](DESIGN_REFERENCES.md) for the wireframe and NVIDIA video patterns incorporated into the model and inspection workflow. Search and delivery-state filters affect the displayed parts, not the whole-pod action count.
 
@@ -12,7 +12,7 @@ See [the supplied design references](DESIGN_REFERENCES.md) for the wireframe and
 
 1. Open `/`. Red means the current delivery route is unavailable; amber means delayed or a saved decision needs review. Green means on track; teal is an explicitly delivered seed shipment.
 2. Drag to orbit, scroll to zoom, and right-drag or shift-drag to pan. Select a marker or physical component to focus the camera and inspect the part. Use the component inventory for keyboard access. Reset restores the full model. Wireframe exposes structure; 2D gives a fixed schematic and also serves as the no-WebGL fallback.
-3. Choose **Open recovery plan**. The URL carries the exact component ID. The page shows the supplier, incident, route stops, transport cost, ETA and target buffer.
+3. Choose **Open recovery plan**. The URL carries the exact component ID. The page shows the supplier, incident, geographic route map, transport stops, cost, ETA and target buffer. The map supports zoom, pan and location popups. Transport lines connect scenario locations, not calculated road or flight paths.
 4. Compare the three qualified alternatives. Closed links cannot be recommended; a route that misses the deadline cannot be confirmed. Missing supplier stock can block every transport alternative.
 5. Review and explicitly confirm. The snapshot records route, cost and ETA in versioned browser storage. The overview changes to the chosen route; this does not book a shipment or mark physical delivery.
 6. If a new incident changes a saved route, review returns. If the route changes while the confirmation dialog is open, its confirm button is disabled. An unchanged, explicitly reviewed delay that still meets the target clears the action.

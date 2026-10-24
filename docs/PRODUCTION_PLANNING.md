@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Open **http://localhost:3000/planning**. The supplier dashboard is at **http://localhost:3000**. Both run inside one Next.js application with shared navigation. The planning assistant uses native `/api/assistant` and `/api/health` routes on the same server. Stop the server with Ctrl+C. The planner needs no database, Python setup or map API.
+Open **http://localhost:3000/planning**. The supplier dashboard is at **http://localhost:3000/suppliers**. Both run inside one Next.js application with shared navigation. The planning assistant uses native `/api/assistant` and `/api/health` routes on the same server. Stop the server with Ctrl+C. Planning needs no database, Python setup or map API key. Geographic map tiles require network access.
 
 The application works with synthetic data immediately. To enable live OpenAI responses, create the ignored root `.env` from `.env.example` if it does not already exist, set `OPENAI_API_KEY`, and restart `npm run dev`. Preserve any existing provider settings. Do not put the key in frontend code or a variable beginning with `NEXT_PUBLIC_` or `VITE_`. Supplier AI uses separate Nebius/Tavily settings; those are not needed for planning. See [assistant setup](AI.md) for the exact API contract and fallback behaviour.
 
@@ -33,7 +33,7 @@ See [the three-minute presentation script](DEMO.md), [research and assumptions](
 - Responsive dashboard with order-level actions above metrics, clear reasons and next steps, searchable/filterable orders, network and activity views.
 - Editable simulated quantity and deadline, with recomputed eligibility, costs, assembly time and recommendations.
 - Confirmation snapshots that flag changed inputs, late delivery, infeasible capacity or changed estimates for review.
-- Interactive schematic European map with factory details and route comparison.
+- Interactive geographic European map using shadcn-map, with factory details, zoom, pan and route comparison.
 - Process, material, qualification and batch-capacity checks.
 - Parallel component preparation, purchased-part lead time, transport, assembly and final delivery calculations.
 - Full-order cost breakdown and explicit acknowledgement before accepting a late plan.
@@ -62,7 +62,7 @@ After `npm run build`, use `npm start` to serve the production build on port 300
 
 The demo clock is 27 October 2026 at 08:00 CET. The urgent order's deadline is 60 hours later. Each kit contains one SLS PA12 housing, two LPBF AlSi10Mg fingers, and one purchased actuator. The first version compares three predefined production combinations; it does not search every possible route.
 
-Every factory, order, cost, capacity and transport input is synthetic. Map borders and routes are schematic. Ready times bundle print/purchase preparation and assumed finishing; finishing steps and inspections are not independently scheduled. Assembly begins when all components arrive; assembly slots are assumed available. Print time is fixed for one capacity-limited batch. Assembly hours scale with kit quantity from the 12-kit reference order; transport costs remain fixed per leg. Quantity is limited to whole kits from 1 to 500; deadline is 1 to 336 hours from the fixed demo clock. Forecast confidence is an illustrative heuristic, and emissions are placeholder scenario values. No real factory is contacted, no capacity is reserved, and no real order is placed.
+Every factory, order, cost, capacity and transport input is synthetic. The geographic basemap comes from OpenFreeMap. Transport lines connect scenario locations and do not represent calculated road or rail paths. Ready times bundle print/purchase preparation and assumed finishing; finishing steps and inspections are not independently scheduled. Assembly begins when all components arrive; assembly slots are assumed available. Print time is fixed for one capacity-limited batch. Assembly hours scale with kit quantity from the 12-kit reference order; transport costs remain fixed per leg. Quantity is limited to whole kits from 1 to 500; deadline is 1 to 336 hours from the fixed demo clock. Forecast confidence is an illustrative heuristic, and emissions are placeholder scenario values. No real factory is contacted, no capacity is reserved, and no real order is placed.
 
 State is stored in this browser, not shared across teammates. An API key is required to verify actual OpenAI responses. Existing platform capabilities are documented in the research notes; this prototype does not claim Siemens or Schaeffler lack solutions.
 
@@ -78,7 +78,7 @@ State is stored in this browser, not shared across teammates. An API key is requ
 | `src/lib/scenario.ts`, `src/lib/demo-state.ts` | Simulated inputs and saved-state validation |
 | `src/App.tsx` | Dashboard views and confirmation state |
 | `src/components/NeedsAction.tsx`, `ScenarioControls.tsx` | Replaceable action and input interfaces |
-| `src/components/NetworkMap.tsx` | Schematic map and factory inspection |
+| `src/components/NetworkMap.tsx`, `NetworkMapCanvas.tsx` | Geographic production map and factory inspection |
 | `src/components/AssistantDrawer.tsx` | Copilot conversation and reviewed suggestion |
 | `server/assistant.ts` | Validated model context, Responses request and fallback |
 | `server/production-api.ts` | Shared native request handling, limits and process-local readiness |

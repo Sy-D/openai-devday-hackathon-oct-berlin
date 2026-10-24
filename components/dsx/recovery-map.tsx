@@ -166,19 +166,6 @@ export default function RecoveryMap({ route }: { route: RouteAssessment }) {
             : "Loading geographic tiles…"}
         </p>
       )}
-      <p className={styles.mapAttribution}>
-        <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">
-          OpenFreeMap
-        </a>{" "}
-        ·{" "}
-        <a
-          href="https://www.openstreetmap.org/copyright"
-          target="_blank"
-          rel="noreferrer"
-        >
-          © OpenStreetMap contributors
-        </a>
-      </p>
     </div>
   )
 }

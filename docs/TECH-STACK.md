@@ -13,7 +13,7 @@ installation path. Exact resolved JavaScript versions belong to the npm lockfile
 | [Nebius Token Factory](https://tokenfactory.nebius.com) | `deep-research-agent` | OpenAI-compatible inference API hosting the reasoning model **`MiniMaxAI/MiniMax-M3`**, which plans the research, reads search results and produces scores, reasons and reports. Endpoint `https://api.tokenfactory.nebius.com/v1`, key `NEBIUS_API_KEY`. |
 | [Tavily Search API](https://tavily.com) | `deep-research-agent` | Web search built for LLM agents. Called with `search_depth="advanced"` and `max_results=5`; returns the pages and URLs that the reports cite. Key `TAVILY_API_KEY`. |
 | [OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses) | `server/assistant.ts` | Optional production-planning explanations and suggestions; `OPENAI_API_KEY` and `OPENAI_MODEL`, independently configured from supplier AI. |
-| [OpenFreeMap](https://openfreemap.org) | Supplier map proxy | Public map styles, fonts and tiles; requires network access. |
+| [OpenFreeMap](https://openfreemap.org) | Shared map proxy | Public map styles, fonts and tiles for supplier, production and recovery maps; requires network access. |
 | [Open-Meteo](https://open-meteo.com) | `/api/climate` | Public historical weather data for climate summaries. |
 | Redis | `lib/cache.ts` | Optional cache via `REDIS_URL`; otherwise memory in the current server process. |
 
@@ -40,10 +40,13 @@ only their own provider configuration.
 | [next-themes](https://github.com/pacocoursey/next-themes) | 0.4.6 | Light/dark mode |
 | [Geist](https://vercel.com/font) | via `next/font` | Sans and mono typefaces |
 
-Supplier maps use `maplibre-gl`, Leaflet, React Leaflet and related plugins.
-The planning map is a schematic SVG inside `src/components/NetworkMap.tsx`;
-it needs no map provider. The shared shell preserves the incoming dashboard
-components; the planner keeps its scoped styles in `src/styles.css`.
+Supplier, production and recovery maps use the shared
+[shadcn-map component](https://shadcn-map.vercel.app/docs), backed by Leaflet,
+React Leaflet and MapLibre GL. OpenFreeMap provides theme-aware geographic
+tiles through `/api/map-proxy`. No map API key is required. Transport lines
+connect scenario locations; they are not calculated road, rail or flight paths.
+The shared Base UI/shadcn controls provide forms, dialogs, sheets and surfaces.
+Specialized planning layout styles remain scoped in `src/styles.css`.
 
 ## Data layer
 
