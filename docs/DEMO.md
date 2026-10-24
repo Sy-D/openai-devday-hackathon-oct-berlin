@@ -6,7 +6,7 @@
 
 ## Story
 
-An urgent order needs twelve robotic gripper kits in Berlin. Each kit combines two printed components with a purchased actuator. A production queue has slipped. The fastest individual printer is not necessarily the fastest complete delivery, because assembly must wait for every component.
+An urgent order needs twelve robotic gripper kits in Berlin and is forecast to arrive late. Each kit combines two printed component types with a purchased actuator. The fastest individual printer is not necessarily the fastest complete delivery, because assembly must wait for every component.
 
 ## Demonstration sequence
 
@@ -41,10 +41,10 @@ Use the [shared editable Excalidraw board](https://link.excalidraw.com/l/44SXhWF
 The diagram shows parallel component jobs converging at assembly. Its central rule is:
 
 ```text
-delivery ETA = latest component arrival + assembly and QA + final transport
+delivery ETA = latest component arrival + assembly duration + final transport
 ```
 
-If an assembly queue is modelled, also wait for that assembly slot. The sketch uses a 60-hour deadline solely to communicate the scenario. No live supplier data or engineering approval is implied.
+The prototype scales assembly duration with quantity. It does not independently schedule QA, finishing or assembly queues. The original drawing includes those conceptual stages; explain the implemented calculation above when describing the app. The scenario deadline is 60 hours. No live supplier data or engineering approval is implied.
 
 ## Before presenting
 
@@ -53,6 +53,8 @@ If an assembly queue is modelled, also wait for that assembly slot. The sketch u
 - Check whether the assistant is in live or demo mode.
 - Keep the local demo available if venue connectivity fails.
 - Use the research notes for problem framing; do not claim the prototype replaces an existing industrial platform.
+
+For the technical setup, work lanes and incoming template handoff, use [team startup](TEAM_START.md). A passing automated rehearsal verifies the product path; the presenter still needs to practise the spoken three-minute story.
 
 ## Optional what-if extension
 

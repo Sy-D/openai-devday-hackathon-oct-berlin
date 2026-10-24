@@ -26,7 +26,7 @@ The application works with synthetic data immediately. To enable live OpenAI res
 7. Restore capacity, then change the quantity to **42** and apply the scenario. Balanced exceeds capacity; Fastest can deliver 42 kits in 49h for €13,081. The old confirmation remains a snapshot until you review and reconfirm. Try **49** kits to see the explicit no-capacity state.
 8. Resolve all three affected orders through their action cards to see **No actions required**. Reset for the next presentation.
 
-See [the three-minute presentation script](docs/DEMO.md), [research and assumptions](docs/RESEARCH.md), and [team handoff](docs/HANDOFF.md).
+See [the three-minute presentation script](docs/DEMO.md), [research and assumptions](docs/RESEARCH.md), [team startup and work lanes](docs/TEAM_START.md), and [team handoff](docs/HANDOFF.md).
 
 ## What is implemented
 
@@ -52,6 +52,8 @@ npm run test:e2e
 `npm run build` checks frontend and server types and creates the frontend in `dist/`. `npm test` runs planner and assistant tests. Playwright checks action navigation and the empty state, changed quantity/deadline, capacity failures, confirmation snapshots, persistence, disruption, current copilot context, provider status, capability inspection, search and mobile layout.
 
 For an existing compatible Chromium installation, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to its executable before running browser tests. This is optional; normal installations use Playwright's downloaded Chromium.
+
+After configuring the server-side key, `npm run test:live` makes one bounded real provider request and verifies the current planning recommendation. It fails clearly if credentials are missing or the API falls back to demo mode. Passing mocked tests does not establish live provider access.
 
 `npm run preview` previews only the built frontend. For the complete copilot workflow, use `npm run dev`; production hosting and an authenticated hosted API are not configured.
 

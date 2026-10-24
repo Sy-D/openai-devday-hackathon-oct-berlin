@@ -53,6 +53,26 @@ The UI should render `reply` as text, show the returned `mode`, and offer a sepa
 
 A configured key is not proof of network access, valid billing or model availability. Use `ready` and `status` for that distinction. Health does not send a paid API request.
 
+## Verify a real connection
+
+After setting the server-side key and optional model in the project's ignored `.env`, run:
+
+```sh
+npm run test:live
+```
+
+This command starts a temporary loopback API on a free port, uses the repository's current FM-2048 data and planner, and sends **one real OpenAI request** through the same HTTP endpoint as the app. It verifies that the response is live, suggests the cheapest feasible on-time plan, and changes the temporary server's health from unverified to verified. It does not change orders or browser state, print credentials, or expose the provider's raw response. The request uses the server's 25-second timeout; the temporary server closes when the check finishes.
+
+- Exit **0**: the live response and planning suggestion passed verification.
+- Exit **1**: the request failed, fell back to demo mode or returned an unsuitable suggestion. Live planning advice is not verified.
+- Exit **2**: the key is missing or the local environment file cannot be loaded; no provider request was sent.
+
+The temporary process verifies this invocation only. Restarted app servers begin unverified and become verified after their own validated live response. Missing credentials remain an external setup task; passing the mocked test below does not close it.
+
+```sh
+npx tsx --test scripts/live-smoke.test.ts
+```
+
 ## Implementation and validation
 
 `server/assistant.ts` calls `POST https://api.openai.com/v1/responses` using native `fetch`. Structured Outputs constrain the reply to a text field and a nullable plan ID selected from the current feasible plans. The server validates the returned ID again. Requests set `store: false`, send no tool definitions, and contain no key in the JSON body. The server binds to loopback and rejects remote browser origins; this is a local hackathon service, not a publicly hosted authenticated API.
