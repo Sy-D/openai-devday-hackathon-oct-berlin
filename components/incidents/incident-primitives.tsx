@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowUpRight, Radio, WifiOff } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import type { LiveIncident, LiveSourceStatus } from "@/src/lib/live-incidents"
 import {
@@ -10,31 +10,7 @@ import {
   sourceNames,
   statusLabels,
 } from "./incident-data"
-import type { LiveIncidentState } from "./use-live-incidents"
 import styles from "./incidents.module.css"
-
-export function ConnectionStatus({
-  connection,
-}: Pick<LiveIncidentState, "connection">) {
-  const connected = connection === "connected"
-  const label = connected
-    ? "Stream connected"
-    : connection === "connecting"
-      ? "Connecting to updates"
-      : connection === "reconnecting"
-        ? "Reconnecting · saved records"
-        : "Waiting for connection"
-  return (
-    <span className={styles.connection} data-connected={connected}>
-      {connected ? (
-        <Radio size={14} aria-hidden />
-      ) : (
-        <WifiOff size={14} aria-hidden />
-      )}
-      {label}
-    </span>
-  )
-}
 
 export function SourceState({ state }: { state: LiveSourceStatus["state"] }) {
   const labels = {

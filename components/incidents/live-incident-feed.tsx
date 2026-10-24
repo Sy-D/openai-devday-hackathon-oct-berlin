@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { ArrowRight, ArrowUpRight, CircleAlert } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
 import {
   formatIncidentTime,
   isCurrentIncident,
@@ -11,7 +11,6 @@ import {
   sourceNames,
   statusLabels,
 } from "./incident-data"
-import { ConnectionStatus } from "./incident-primitives"
 import { useLiveIncidents } from "./use-live-incidents"
 import styles from "./incidents.module.css"
 
@@ -38,20 +37,11 @@ export function LiveIncidentFeed({
     >
       <div className={styles.compactHeader}>
         <div>
-          <p className={styles.eyebrow}>Source-reported events</p>
           <h2>Live incident watch</h2>
         </div>
         <Link className={styles.sourceLink} href="/incidents">
           All incidents <ArrowRight size={15} aria-hidden />
         </Link>
-      </div>
-      <div className={styles.compactStatus}>
-        <ConnectionStatus connection={connection} />
-        <span>
-          {snapshot
-            ? `${current.length.toLocaleString()} current records`
-            : "Loading providers…"}
-        </span>
       </div>
       {(error ||
         attention.length > 0 ||
@@ -67,18 +57,17 @@ export function LiveIncidentFeed({
       )}
       <div className={styles.compactRecords}>
         {current.slice(0, Math.max(1, limit)).map((incident) => (
-          <article
+          <Card
+            size="sm"
             key={incident.id}
             className={styles.compactRecord}
             data-severity={incident.severity}
           >
-            <span className={styles.compactDot} aria-hidden />
             <div>
               <div className={styles.compactMeta}>
-                <span>
-                  {sourceNames[incident.sourceId]} · {kindLabels[incident.kind]}
-                </span>
-                <Badge variant="outline">{statusLabels[incident.status]}</Badge>
+                <span>{sourceNames[incident.sourceId]}</span>
+                <span>{kindLabels[incident.kind]}</span>
+                <span>{statusLabels[incident.status]}</span>
               </div>
               <a href={incident.url} target="_blank" rel="noopener noreferrer">
                 {incident.title}
@@ -87,11 +76,11 @@ export function LiveIncidentFeed({
               <p>
                 {incident.location ||
                   incident.country ||
-                  "Location not supplied"}{" "}
-                · Source updated {formatIncidentTime(incident.updatedAt)}
+                  "Location not supplied"}
               </p>
+              <p>Source updated {formatIncidentTime(incident.updatedAt)}</p>
             </div>
-          </article>
+          </Card>
         ))}
         {!current.length && (
           <p className={styles.compactEmpty}>

@@ -7,11 +7,9 @@ import {
   ArrowRight,
   AlertTriangle,
   CheckCircle2,
-  BookOpen,
   Cuboid,
   Layers3,
   PackageSearch,
-  Radio,
   RotateCcw,
   Search,
   X,
@@ -19,6 +17,7 @@ import {
 import { AppShell } from "@/components/dashboard/app-shell"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LiveIncidentFeed } from "@/components/incidents/live-incident-feed"
 import { useLiveIncidents } from "@/components/incidents/use-live-incidents"
 import { isCurrentIncident } from "@/components/incidents/incident-data"
@@ -112,7 +111,7 @@ export default function LiveDsxDashboard({
   const [mode, setMode] = useState<"solid" | "wireframe" | "schematic">("solid")
   const [assemblyView, setAssemblyView] = useState<AssemblyView>("cutaway")
   const [resetKey, setResetKey] = useState(0)
-  const inspectionRef = useRef<HTMLElement>(null)
+  const inspectionRef = useRef<HTMLDivElement>(null)
   const inspectionTrigger = useRef<HTMLElement | null>(null)
   const selected = getPartReference(selectedId ?? "")
   const filtered = references.filter((part) =>
@@ -121,9 +120,6 @@ export default function LiveDsxDashboard({
       .includes(query.trim().toLowerCase())
   )
   const current = snapshot?.incidents.filter(isCurrentIncident).length
-  const healthy = snapshot?.sources.filter(
-    (source) => source.state === "live"
-  ).length
   function inspect(id: string) {
     inspectionTrigger.current =
       document.activeElement instanceof HTMLElement
@@ -158,26 +154,9 @@ export default function LiveDsxDashboard({
   return (
     <AppShell breadcrumb={["Workspace", "Overview"]}>
       <main id="main" className={styles.workspace} tabIndex={-1}>
-        <header className={styles.hero}>
-          <div>
-            <div className={styles.eyebrow}>
-              FORMA / INFRASTRUCTURE WORKSPACE
-            </div>
-            <h1>A modular AI data center.</h1>
-            <p>
-              Server racks, networking, power and cooling in one assembly.
-              Select a component to inspect products, seller offers and delivery
-              routes.
-            </p>
-          </div>
-          <div className={`${styles.heroActions} ${live.heroActions}`}>
-            <Link href="/planning?component=optics" className={live.subtleLink}>
-              Plan a delivery <ArrowRight size={13} />
-            </Link>
-          </div>
-        </header>
+        <h1 className="sr-only">Infrastructure overview</h1>
         <section className={live.actionArea} aria-label="Delivery actions">
-          <div
+          <Card
             className={live.nextAction}
             data-status={
               needsReview.some((item) => item.status === "changed")
@@ -216,88 +195,78 @@ export default function LiveDsxDashboard({
               {needsReview.length ? "Review deliveries" : "Open delivery plan"}{" "}
               <ArrowRight size={14} />
             </Link>
-          </div>
+          </Card>
           <div className={live.actionRail}>
             {actions.map((item) => (
-              <Link
+              <Card
                 key={item.componentId}
-                href={`/planning?component=${item.componentId}`}
-                className={live.actionCard}
-                data-status={item.status}
+                size="sm"
+                className={live.actionTile}
               >
-                <span className={live.actionIndicator}>
-                  {item.status === "reviewed" ? (
-                    <CheckCircle2 size={17} />
-                  ) : item.status === "changed" || item.status === "exposed" ? (
-                    <AlertTriangle size={17} />
-                  ) : (
-                    <ArrowRight size={17} />
-                  )}
-                </span>
-                <span>
-                  <strong>{componentNames[item.componentId]}</strong>
-                  <small>{item.label}</small>
-                </span>
-                <ArrowRight size={15} aria-hidden />
-              </Link>
+                <Link
+                  href={`/planning?component=${item.componentId}`}
+                  className={live.actionCard}
+                  data-status={item.status}
+                >
+                  <span className={live.actionIndicator}>
+                    {item.status === "reviewed" ? (
+                      <CheckCircle2 size={17} />
+                    ) : item.status === "changed" ||
+                      item.status === "exposed" ? (
+                      <AlertTriangle size={17} />
+                    ) : (
+                      <ArrowRight size={17} />
+                    )}
+                  </span>
+                  <span>
+                    <strong>{componentNames[item.componentId]}</strong>
+                    <small>{item.label}</small>
+                  </span>
+                  <ArrowRight size={15} aria-hidden />
+                </Link>
+              </Card>
             ))}
           </div>
         </section>
-        <section className={styles.readiness} aria-label="Workspace evidence">
-          <div>
-            <span className={styles.metricIcon}>
-              <Cuboid size={20} />
-            </span>
-            <div>
-              <small>HARDWARE REFERENCES</small>
+        <section className={live.metrics} aria-label="Workspace evidence">
+          <Card size="sm">
+            <CardHeader>
+              <CardTitle>Components</CardTitle>
+            </CardHeader>
+            <CardContent className={live.metricContent}>
+              <strong>{references.length}</strong>
+              <span>Hardware references with manufacturer documentation</span>
+            </CardContent>
+          </Card>
+          <Card size="sm">
+            <CardHeader>
+              <CardTitle>Current incidents</CardTitle>
+            </CardHeader>
+            <CardContent className={live.metricContent}>
               <strong>
-                {references.length} <em>subsystems</em>
+                {current === undefined ? "—" : current.toLocaleString()}
               </strong>
-              <span>Manufacturer documentation linked</span>
-            </div>
-          </div>
-          <div>
-            <span className={styles.metricIcon}>
-              <Radio size={20} />
-            </span>
-            <div>
-              <small>CURRENT INCIDENT RECORDS</small>
-              <strong>
-                {current === undefined
-                  ? "Connecting…"
-                  : current.toLocaleString()}
-              </strong>
-              <span>
-                {healthy === undefined
-                  ? "Checking sources"
-                  : `${healthy} sources healthy at last update`}{" "}
-                · coverage is limited
-              </span>
-            </div>
-          </div>
-          <div>
-            <span className={styles.metricIcon}>
-              <PackageSearch size={20} />
-            </span>
-            <div>
-              <small>DELIVERY WORKSPACE</small>
-              <strong>
-                {plannedCount} <em>routes planned</em>
-              </strong>
+              <span>Source-reported hazards and transport restrictions</span>
+            </CardContent>
+          </Card>
+          <Card size="sm">
+            <CardHeader>
+              <CardTitle>Delivery plans</CardTitle>
+            </CardHeader>
+            <CardContent className={live.metricContent}>
+              <strong>{plannedCount}</strong>
               <span>{needsReview.length} decisions need review</span>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </section>
         <div className={`${styles.overviewGrid} ${live.overview}`}>
-          <section
-            className={styles.modelCard}
+          <Card
+            role="region"
+            className={`${styles.modelCard} ${live.modelSurface}`}
             aria-label="Interactive DSX POD model"
           >
             <div className={styles.modelToolbar}>
-              <span className={styles.modelTitle}>
-                <Cuboid size={15} /> AI data center pod{" "}
-                <small>/ HARDWARE MAP</small>
-              </span>
+              <span className={styles.modelTitle}>AI data center pod</span>
               <div className={styles.modelActions}>
                 <div
                   className={styles.viewControls}
@@ -414,8 +383,9 @@ export default function LiveDsxDashboard({
                 Red: review delivery · Amber: plan delivery · Green: reviewed
               </span>
             </div>
-          </section>
-          <aside
+          </Card>
+          <Card
+            role="complementary"
             ref={inspectionRef}
             tabIndex={-1}
             className={live.inspection}
@@ -463,7 +433,6 @@ export default function LiveDsxDashboard({
               </section>
             ) : (
               <div className={live.emptyInspection}>
-                <BookOpen size={26} />
                 <h2>Inspect a dependency</h2>
                 <p>
                   Select a marker or a component below to see real product
@@ -483,11 +452,11 @@ export default function LiveDsxDashboard({
                 </p>
               </div>
             )}
-          </aside>
+          </Card>
         </div>
-        <section className={live.inventory} aria-label="Hardware references">
+        <section className={live.inventory} aria-label="Component inventory">
           <div className={live.sectionHeading}>
-            <h2>Hardware references</h2>
+            <h2>Component inventory</h2>
             <span>{filtered.length} components</span>
           </div>
           <div className={live.cards}>
@@ -496,7 +465,8 @@ export default function LiveDsxDashboard({
                 (item) => item.componentId === part.componentId
               )
               return (
-                <article
+                <Card
+                  size="sm"
                   key={part.componentId}
                   className={live.part}
                   data-status={delivery?.status}
@@ -521,7 +491,7 @@ export default function LiveDsxDashboard({
                     {delivery?.label ?? "Plan delivery"}{" "}
                     <ArrowRight size={13} />
                   </Link>
-                </article>
+                </Card>
               )
             })}
           </div>

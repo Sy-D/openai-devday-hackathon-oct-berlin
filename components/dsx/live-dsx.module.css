@@ -1,27 +1,56 @@
 @reference "../../app/globals.css";
-.heroActions {
+/* Shared Card surfaces keep the overview consistent with the Base UI template. */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.metricContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   min-width: 0;
-  flex-wrap: wrap;
 }
-.heroActions > span {
-  height: auto;
-  min-height: 28px;
-  max-width: 100%;
-  line-height: 1.4;
-  padding-block: 5px;
-  white-space: normal;
-  text-align: center;
+.metricContent strong {
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: -0.04em;
 }
-.heroActions a {
-  overflow-wrap: anywhere;
+.metricContent > span {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.actionTile {
+  padding: 0;
+  gap: 0;
+  min-width: 0;
+}
+.actionTile:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.modelSurface {
+  padding: 8px 0 0;
+  gap: 0;
+  border: 0;
+}
+.modelSurface > div {
+  border: 0;
+}
+.modelSurface [role="group"] {
+  border: 0;
 }
 .nextAction {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 16px;
   padding: 20px;
   margin-bottom: 0;
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-2xl);
   background: var(--card);
 }
@@ -78,7 +107,7 @@
   align-items: center;
   min-width: 0;
   padding: 16px;
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-xl);
   background: var(--card);
   transition: background 150ms ease-out;
@@ -113,9 +142,7 @@
   flex-shrink: 0;
   width: 34px;
   height: 34px;
-  border-radius: 50%;
   color: var(--action-color);
-  background: color-mix(in oklab, var(--action-color) 10%, transparent);
 }
 .actionCard[data-status="changed"],
 .part[data-status="changed"] {
@@ -159,7 +186,7 @@
   align-items: flex-start;
   gap: 8px;
   width: 100%;
-  min-height: 100px;
+  min-height: 112px;
   text-align: left;
   cursor: pointer;
 }
@@ -172,7 +199,6 @@
   font-size: 11px;
   min-height: 44px;
   color: var(--action-color);
-  border-top: 1px solid var(--border);
   padding-top: 10px;
 }
 .part[data-status="changed"] .partState {
@@ -209,7 +235,7 @@
 }
 .inspection {
   min-width: 0;
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-2xl);
   padding: 18px;
   background: var(--card);
@@ -246,7 +272,6 @@
   line-height: 1.7;
 }
 .evidenceNote {
-  border-top: 1px solid var(--border);
   padding: 16px 0;
   margin-top: 16px;
 }
@@ -294,8 +319,8 @@
 }
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 16px;
 }
 .part {
   display: flex;
@@ -305,10 +330,9 @@
   min-width: 0;
   padding: 16px;
   text-align: left;
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-xl);
   background: var(--card);
-  cursor: pointer;
   transition:
     background 0.18s,
     border-color 0.18s;
@@ -332,8 +356,7 @@
   color: var(--muted-foreground);
 }
 .partCategory {
-  text-transform: uppercase;
-  letter-spacing: 0.7px;
+  font-weight: 500;
 }
 .partState {
   display: flex;
@@ -353,6 +376,7 @@
   }
 }
 @media (max-width: 650px) {
+  .metrics,
   .actionRail {
     grid-template-columns: 1fr;
   }

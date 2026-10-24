@@ -34,7 +34,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useLiveIncidents } from "@/components/incidents/use-live-incidents"
-import { ConnectionStatus } from "@/components/incidents/incident-primitives"
 import {
   formatIncidentTime,
   sourceNames,
@@ -320,7 +319,7 @@ function ReadyProcurementWorkbench({
   const [selectedIncident, setSelectedIncident] = useState<string | null>(null)
   const requestRef = useRef<AbortController | null>(null)
   const routeSection = useRef<HTMLElement>(null)
-  const { snapshot, connection } = useLiveIncidents()
+  const { snapshot } = useLiveIncidents()
   useEffect(() => () => requestRef.current?.abort(), [])
   useEffect(() => {
     try {
@@ -657,7 +656,6 @@ function ReadyProcurementWorkbench({
               reported incidents.
             </p>
           </div>
-          <ConnectionStatus connection={connection} />
         </header>
         <section
           className={styles.actionBanner}
@@ -1301,7 +1299,6 @@ function ReadyProcurementWorkbench({
                   <Radio size={16} />
                   {exposures.length} nearby reports on selected route
                 </h3>
-                <ConnectionStatus connection={connection} />
               </div>
               {(!snapshot || incompleteSources.length > 0) && (
                 <p className={styles.warning}>

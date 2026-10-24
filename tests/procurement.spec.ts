@@ -298,7 +298,7 @@ test("delivery workspace fits320px and legacy mode cannot expose simulated contr
   ).toBe(true)
   await page.goto("/?mode=demo")
   await expect(
-    page.getByRole("heading", { name: "A modular AI data center." })
+    page.getByRole("region", { name: "Delivery actions" })
   ).toBeVisible()
   await expect(
     page.getByRole("button", {
