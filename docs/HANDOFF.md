@@ -1,55 +1,66 @@
-# FORMA: team alignment handoff
+# FORMA: application handoff
 
-Status checked 24 October 2026. This is a first implementation for review, not an agreed final product specification.
-
-## Current direction
-
-Carl first asked for research, an Excalidraw sketch and a visually polished mock-data application for a six-hour hackathon. He then explicitly asked for the dashboard and live assistant to be built in parallel. In the coordinating chat, Carl subsequently prioritised putting the full context and plan in the shared Space so several people can align before extending the build.
-
-This repository preserves the first version. New feature scope is paused for team alignment. The coordinating chat owns the [Planning Supply Chain Tool Page](https://chatgpt.com/space/page_d8c7928de5848191a983913da6ed1e4c). Do not overwrite that Page from this code task.
+Updated 24 October 2026. The app is ready for local team review. Operational data is synthetic.
 
 ## Start here
 
-- Run `npm run dev` and open `http://127.0.0.1:5173`.
-- Local branch: `codex/hackathon-work`.
-- Origin: `https://github.com/Sy-D/openai-devday-hackathon-oct-berlin.git`.
-- No remote push has been made. The connected account reported read-only access during initial setup; verify current access before publication.
-- Read `README.md` for startup and the source map, `docs/DEMO.md` for the pitch, and `docs/RESEARCH.md` for problem evidence.
+```sh
+git clone --branch codex/hackathon-work https://github.com/Sy-D/openai-devday-hackathon-oct-berlin.git
+cd openai-devday-hackathon-oct-berlin
+npm ci
+npm run dev
+```
 
-## First demo story
+Requires Node 22 or later. Open http://127.0.0.1:5173 on the computer running the application. The local assistant API uses port 8789. No map service or database is required. The clone command becomes usable when the branch is published; publication status is recorded below.
 
-Order FM-2048 contains 12 robotic gripper kits delivered to Berlin: 12 polymer housings, 24 metal fingers and 12 purchased actuators. Assembly waits for the last arriving component.
+The [planning Page](https://chatgpt.com/space/page_d8c7928de5848191a983913da6ed1e4c) owns the unified team checklist. The [shared Excalidraw board](https://link.excalidraw.com/l/44SXhWFHIar/5fLHSSwDGK8) explains the system and component boundaries. The planning chat owns both documents; the application chat owns this code and publication. Keep milestones aligned without overlapping edits.
 
-| Plan | Cost | Arrival from demo start | Deadline buffer | Assembly |
+## Current implementation
+
+The top **Needs action** section lists affected orders, a concrete reason and the next decision. It covers baseline late delivery, changed confirmations, newly infeasible routes, insufficient capacity and impossible deadlines. Actions open the correct order and relevant input or plan controls. Valid confirmations remove cards; resolving every affected order displays **No actions required**. Late confirmations remain flagged.
+
+The dashboard includes metrics, a schematic Europe map, three route alternatives, factory capability inspection, component routing, assembly timing, order search and filters, activity, export and local persistence.
+
+**What if the order changes?** accepts whole quantities from 1 to 500 kits and deadlines from 1 to 336 hours from the fixed demo clock. Explicitly applying inputs recomputes capacity, cost, assembly hours, delivery buffer and recommendation. Draft fields do not alter the plan. Confirmation snapshots retain their original quantity and deadline. Changed inputs or estimates require review; restoring the exact original inputs can restore an unchanged valid confirmation. The saved-state parser preserves compatible earlier confirmations and ignores malformed entries.
+
+The assistant uses the current order, recomputed plans and current factory queues. Suggestions cannot confirm a plan. The UI distinguishes missing credentials, configured but unverified credentials, verified live replies and fallback. A configured key alone is never labelled as a verified connection. No real OpenAI response was verified in this run because no API key is configured. Configure `.env` as described in `docs/AI.md`, restart, and verify a real response separately.
+
+## Concrete demo
+
+FM-2048 needs 12 gripper kits in Berlin within 60 hours of 27 October 2026, 08:00 CET. Each kit contains one SLS PA12 housing, two LPBF AlSi10Mg fingers and one purchased actuator. Assembly starts after the last component arrives.
+
+| Plan | Cost | Delivery | Deadline buffer | Assembly |
 | --- | ---: | ---: | ---: | --- |
 | Lowest cost | €2,596 | 72h | 12h late | Prague |
 | Balanced | €3,222 | 49h | 11h early | Leipzig |
 | Fastest | €4,423 | 34h | 26h early | Leipzig |
 
-A simulated 24-hour Dresden delay changes Balanced from 49h to 73h, missing the 60h target. Fastest uses Munich for the metal fingers and remains available. Confirming an on-time plan clears that order's action state; a late plan requires explicit acknowledgement and remains flagged.
+Confirm Balanced, then simulate the 24-hour Dresden delay. Balanced becomes 73h, and its action card returns. Fastest uses Munich and remains 34h.
 
-## What the current code implements
+After restoring capacity, apply 42 kits / 60h. Balanced exceeds Dresden's finger capacity. Fastest costs €13,081 and delivers at 49h after 21h of assembly. At 49 kits every route is infeasible. At 12 kits / 33h every feasible route is late. See `docs/DEMO.md` for the presentation script.
 
-The dashboard has order and volume metrics, on-time forecast, actionable orders, an interactive map, a three-plan comparison, component routing, a delivery timeline, confirmation and cost breakdown, order search/filters, network capabilities, activity history, JSON export and browser-local persistence. All inputs and forecasts are mock data.
+## Verification
 
-The assistant server exposes `POST /api/assistant` and `GET /api/health` on loopback port 8789. The frontend uses Vite's `/api` proxy. It supports the OpenAI Responses API with server-side credentials, validates the current plan context and suggestion ID, and cannot assign orders. Missing credentials or provider failures produce disclosed demo advice. There is no OpenAI API key configured in this run, so no real model response has been verified.
+- `npm run build`: frontend and server TypeScript plus production Vite build.
+- `npm test`: 34 planner, action, persistence and API checks.
+- `npm run test:e2e`: 15 browser scenarios covering the actual local API, action navigation, the no-action state, scenarios, outdated confirmations, capacity/deadline failures, recovery, persistence, reset, current copilot context and honest provider status.
+- Desktop and mobile screenshots in `outputs/`; the action section and its first next step are visible in the first viewport at 390 × 844 and 1440 × 1000.
+- Live OpenAI behaviour has unit tests with a mocked provider; a successful real provider call is still unverified.
 
-## Verification and limits
+## Model limits
 
-- Production build checks frontend and server TypeScript.
-- 18 planner/API tests cover capability exclusions, batch limits, assembly joins, purchased parts, route selection, changed queues, output validation and API failure handling.
-- Five browser tests cover recovery, persistence, a second recovery after disruption, late-plan acknowledgement, copilot through the actual local API, capability inspection, search, timeline and narrow-screen overflow.
-- Desktop and mobile screenshots are in `outputs/`.
-- The Excalidraw connector created private scene `5fLHSSwDGK8`, **FORMA · Production network and demo journey**. The scene was rendered and visually checked. An editable `.excalidraw` export and PNG preview are in `outputs/`.
+The planner compares three predefined alternatives. It does not search the whole network. Printing assumes one fixed-duration batch per site within capacity; per-unit production and assembly costs scale with quantity. Assembly duration scales from the 12-kit reference; transport cost stays fixed per leg. The same illustrative BOM is reused for every mock product name.
 
-The prototype is local only. No hosted multiuser state, authentication, real bookings, CAD printability analysis, calibrated delivery probabilities, live carrier quotes or deployment are implemented. The three options are predefined alternatives, not a global optimisation algorithm. Working calendars, independent finishing/QA steps and assembly slot queues remain simplified. Emissions are illustrative scenario constants.
+Factory capabilities, prices, reliability, capacities, queues, orders and emissions are synthetic. Confidence is a heuristic, not a calibrated probability. The on-time headline counts orders with no current action; it is not historical delivery performance. Working calendars, independent finishing/QA steps, assembly queues and cross-order capacity reservations are not modelled. State is local to this browser; there is no shared operational backend, authentication, real booking or public deployment.
 
-## Team decisions still open
+## Continue without overlapping work
 
-1. Confirm the target operator and the exact judging story.
-2. Agree which capabilities and assembly constraints need to be visible in this six-hour demo.
-3. Choose the live assistant credentials/model and verify one real response.
-4. Decide who owns UI, planning logic, assistant and deployment without overlapping edits.
-5. Resolve repository write access and choose the shared development and deployment workflow.
+- Interface: `src/components/NeedsAction.tsx`, `ScenarioControls.tsx`, `NetworkMap.tsx` and `src/styles.css`. A team UI template is expected but has not been supplied. Preserve action visibility and behaviour when integrating it.
+- Planning: `src/lib/planner.ts`, `actions.ts`, `scenario.ts`, `demo-state.ts`, and `src/data/network.ts`.
+- AI: `src/components/AssistantDrawer.tsx`, `server/assistant.ts`, `server/index.ts`, and `docs/AI.md`.
+- Product and rehearsal: shared Page, Excalidraw and `docs/DEMO.md`. Team ownership and final demo scope remain open.
+- Verify teammate setup on a second machine after publication. Local checks here do not prove another machine's setup.
 
-FORMA, the robotic-gripper example, the factory network and the visual direction are implementation choices proposed by this chat. Carl has not approved them as the final team concept. Research supports the problem category; it does not prove the proposed distinction is commercially unique.
+## Publication
+
+Carl authorized pushing the existing branch without overwriting remote work. The remote was empty at the pre-push check; the GitHub connector reported read-only access. The normal Git push outcome is recorded in the final handoff. No deployment was requested.

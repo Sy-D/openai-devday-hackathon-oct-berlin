@@ -1,4 +1,5 @@
-import { factories, parts, type Factory, type Order, type Part } from '../data/network';
+import { factories, orders, parts, type Factory, type Order, type Part } from '../data/network';
+import { scenarioChanged, validScenario } from './scenario';
 
 export type PlanId = 'economy'|'balanced'|'express';
 export type Leg = { partId:string; factoryId:string; destinationId:string; quantity:number; readyHours:number; transportHours:number; arrivalHours:number; cost:number; transportCost:number; distanceKm:number; };
@@ -23,6 +24,7 @@ export function distance(a:Factory,b:Factory) {
   return Math.round(6371*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))*1.2);
 }
 export function createPlans(order:Order,disrupted=false):Plan[] {
+  if(!validScenario(order))throw new RangeError('Order quantity and deadline must be whole numbers within the simulated scenario limits.');
   return (Object.keys(configurations) as PlanId[]).map(id=>{
     const config=configurations[id],assembly=siteById(config.assembly),issues:string[]=[];
     const legs=parts.map((part,i)=>{
@@ -32,21 +34,32 @@ export function createPlans(order:Order,disrupted=false):Plan[] {
       return {partId:part.id,factoryId:factory.id,destinationId:assembly.id,quantity,readyHours,transportHours:config.shipping[i],arrivalHours:readyHours+config.shipping[i],cost:factory.unitCost*quantity,transportCost:config.shippingCosts[i],distanceKm:distance(factory,assembly)};
     });
     if(order.quantity>assembly.capacity)issues.push(`${assembly.city}: insufficient assembly capacity`);
-    const assemblyStart=Math.max(...legs.map(l=>l.arrivalHours)),etaHours=assemblyStart+config.assemblyHours+config.finalHours;
+    // Printing is one capacity-limited batch; hands-on assembly scales from a 12-kit reference order.
+    const assemblyHours=Math.max(1,Math.ceil(config.assemblyHours*order.quantity/12));
+    const assemblyStart=Math.max(...legs.map(l=>l.arrivalHours)),etaHours=assemblyStart+assemblyHours+config.finalHours;
     const productionCost=legs.reduce((s,l)=>s+l.cost,0),transportCost=legs.reduce((s,l)=>s+l.transportCost,config.finalCost);
     const assemblyCost=order.quantity*assembly.unitCost*(id==='express'?1.4:1);
     const bufferHours=order.dueHours-etaHours;
     const confidence=Math.round(100*legs.reduce((p,l)=>p*siteById(l.factoryId).reliability,assembly.reliability)*(bufferHours<0?.66:bufferHours<6?.93:1));
-    return {id,name:config.name,description:config.description,assemblyId:assembly.id,legs,finalTransportHours:config.finalHours,assemblyHours:config.assemblyHours,assemblyStart,totalCost:Math.round(productionCost+transportCost+assemblyCost),productionCost,transportCost,assemblyCost:Math.round(assemblyCost),etaHours,deadlineHours:order.dueHours,bufferHours,confidence,co2Kg:config.co2,distanceKm:legs.reduce((s,l)=>s+l.distanceKm,distance(assembly,siteById('berlin'))),feasible:issues.length===0,issues};
+    return {id,name:config.name,description:config.description,assemblyId:assembly.id,legs,finalTransportHours:config.finalHours,assemblyHours,assemblyStart,totalCost:Math.round(productionCost+transportCost+assemblyCost),productionCost,transportCost,assemblyCost:Math.round(assemblyCost),etaHours,deadlineHours:order.dueHours,bufferHours,confidence,co2Kg:config.co2,distanceKm:legs.reduce((s,l)=>s+l.distanceKm,distance(assembly,siteById('berlin'))),feasible:issues.length===0,issues};
   });
 }
 export function recommendedPlan(plans:Plan[]):Plan|undefined {
   return [...plans].filter(p=>p.feasible&&p.bufferHours>=0).sort((a,b)=>a.totalCost-b.totalCost)[0];
 }
-export type Assignment = {orderId:string;planId:PlanId;cost:number;etaHours:number;assignedAt:string;};
+export type Assignment = {orderId:string;planId:PlanId;cost:number;etaHours:number;assignedAt:string;quantity?:number;dueHours?:number;};
+export function assignmentReview(order:Order,assigned:Assignment,disrupted=false):string[] {
+  const plan=createPlans(order,disrupted).find(p=>p.id===assigned.planId)!;
+  const original=orders.find(item=>item.id===order.id);
+  const reasons:string[]=[];
+  if(!plan.feasible)reasons.push(`The confirmed ${plan.name} plan is no longer feasible. ${plan.issues.join('. ')}.`);
+  else if(plan.bufferHours<0)reasons.push(`The confirmed ${plan.name} plan misses the current deadline by ${-plan.bufferHours}h.`);
+  if(order.quantity!==(assigned.quantity??original?.quantity)||order.dueHours!==(assigned.dueHours??original?.dueHours))reasons.push('Order inputs changed since confirmation. Review the new costs and reconfirm a plan.');
+  else if(!reasons.length&&(plan.totalCost!==assigned.cost||plan.etaHours!==assigned.etaHours))reasons.push('Production estimates changed since confirmation. Review and reconfirm the updated plan.');
+  return reasons;
+}
 export function orderStatus(order:Order,assignments:Record<string,Assignment>,disrupted=false):Order['state'] {
   const assigned=assignments[order.id];
-  if(!assigned)return order.state;
-  const plan=createPlans(order,disrupted).find(p=>p.id===assigned.planId)!;
-  return !plan.feasible||plan.bufferHours<0?'action':'planned';
+  if(!assigned)return scenarioChanged(order)?'action':order.state;
+  return assignmentReview(order,assigned,disrupted).length?'action':'planned';
 }

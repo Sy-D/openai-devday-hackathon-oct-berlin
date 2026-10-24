@@ -6,6 +6,7 @@ export type Plan = {
   bufferHours: number; confidence: number; feasible: boolean;
   issues: string[]; transportCost?: number; productionCost?: number;
   assemblyCost?: number; co2Kg?: number; assemblyId?: string;
+  assemblyStart?: number; assemblyHours?: number; finalTransportHours?: number;
   legs: Record<string, string | number>[];
 };
 export type AssistantRequest = {
@@ -61,6 +62,7 @@ export function validateRequest(input: unknown): AssistantRequest {
       }),
     };
     for (const key of ['transportCost', 'productionCost', 'assemblyCost', 'co2Kg'] as const) if (plan[key] !== undefined) parsed[key] = number(plan[key], key);
+    for (const key of ['assemblyStart', 'assemblyHours', 'finalTransportHours'] as const) if (plan[key] !== undefined) parsed[key] = number(plan[key], key, 0, 8760);
     if (plan.assemblyId !== undefined) parsed.assemblyId = text(plan.assemblyId, 'assemblyId', 80);
     return parsed;
   });
@@ -80,6 +82,7 @@ export function validateRequest(input: unknown): AssistantRequest {
     },
   };
   if (order.customer !== undefined) parsed.context.order.customer = text(order.customer, 'customer');
+  if (!Number.isInteger(parsed.context.order.quantity)) throw new InputError('Order quantity must be a whole number.');
   if (context.selectedPlanId !== undefined) {
     const selected = text(context.selectedPlanId, 'selectedPlanId', 80);
     if (!plans.some(plan => plan.id === selected)) throw new InputError('selectedPlanId must be one of the supplied plans.');

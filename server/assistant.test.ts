@@ -4,6 +4,8 @@ import { once } from 'node:events';
 import type { AddressInfo } from 'node:net';
 import { answerRequest, createResponsePayload, demoReply, InputError, validateRequest, type AssistantOptions, type AssistantRequest } from './assistant';
 import { createAssistantServer } from './index';
+import { orders, factories } from '../src/data/network';
+import { createPlans } from '../src/lib/planner';
 
 const fixture = (): AssistantRequest => ({
   message: 'Find the cheapest plan that delivers on time',
@@ -168,5 +170,42 @@ test('HTTP endpoint rejects remote browser origins and oversized requests', asyn
     assert.equal(remote.status, 403);
     const large = await post(base, { message: 'x'.repeat(100_000) });
     assert.equal(large.status, 413);
+  });
+});
+
+test('actual changed order context retains assembly timing and excludes exhausted capacity', async () => {
+  const order={...orders[0],quantity:42,dueHours:60};
+  const request=validateRequest({message:'Find the cheapest on-time route',context:{order,plans:createPlans(order),factories,selectedPlanId:'balanced'}});
+  const fastest=request.context.plans.find(plan=>plan.id==='express')!;
+  assert.equal(fastest.assemblyHours,21);
+  assert.equal(fastest.assemblyStart,26);
+  assert.equal(fastest.finalTransportHours,2);
+  assert.equal(fastest.totalCost,13081);
+  assert.deepEqual(createResponsePayload(request).text.format.schema.properties.suggestedPlanId.enum,['express',null]);
+  await withServer({},async base=>{
+    const result=await (await post(base,request)).json();
+    assert.equal(result.suggestedPlanId,'express');
+    assert.match(result.reply,/€13,081/);assert.match(result.reply,/49h/);
+  });
+  const lateOrder={...order,dueHours:40};
+  const late=demoReply(validateRequest({message:request.message,context:{order:lateOrder,plans:createPlans(lateOrder),factories}}));
+  assert.match(late.reply,/9h after the deadline/);
+  const oversized={...order,quantity:49};
+  assert.equal(demoReply(validateRequest({message:request.message,context:{order:oversized,plans:createPlans(oversized),factories}})).suggestedPlanId,undefined);
+});
+
+test('fractional kit quantities are rejected before reaching the provider',()=>{
+  const request=fixture();request.context.order.quantity=12.5;
+  assert.throws(()=>validateRequest(request),/whole number/);
+});
+
+test('provider failure clears verified readiness while retaining configured status',async()=>{
+  let calls=0;
+  await withServer({apiKey:'test-key',fetchImpl:mockFetch(async()=>++calls===1?output({reply:'Choose Balanced.',suggestedPlanId:'balanced'}):new Response('unavailable',{status:503}))},async base=>{
+    await post(base,fixture());
+    assert.equal((await (await fetch(`${base}/api/health`)).json()).ready,true);
+    assert.equal((await (await post(base,fixture())).json()).mode,'demo');
+    const health=await (await fetch(`${base}/api/health`)).json();
+    assert.equal(health.mode,'live');assert.equal(health.ready,false);assert.equal(health.status,'unavailable');
   });
 });

@@ -12,7 +12,7 @@ An urgent order needs twelve robotic gripper kits in Berlin. Each kit combines t
 
 | Time | Action | What the audience should understand |
 | --- | --- | --- |
-| 0:00–0:25 | Show the dashboard and the order requiring action. | The planner sees order volume and delivery risk, then has a concrete next action. |
+| 0:00–0:25 | Show Needs action at the top; click Compare routes for FM-2048. | The planner sees order volume and delivery risk, then has a concrete next action. |
 | 0:25–0:55 | Open the urgent order and inspect its components and factory capabilities. | A polymer printer cannot manufacture the metal part, and the purchased actuator still belongs in the schedule. |
 | 0:55–1:35 | Compare cost, balanced and fast alternatives on the map. | The route includes production, transport to assembly, assembly and final delivery. Cost and deadline buffer update together. |
 | 1:35–2:10 | Ask the assistant: "Which plan meets the deadline at the lowest cost, and why?" | The assistant explains the existing feasible options from the same data used by the interface. Its suggestion does not assign a plan. |
@@ -36,7 +36,7 @@ The interface, route comparisons, eligibility rules, schedule calculations, stat
 
 ## Drawing
 
-Excalidraw private scene: `5fLHSSwDGK8`, named **FORMA · Production network and demo journey**. The editable export is `outputs/forma-production-workflow.excalidraw`; the verified preview is `outputs/forma-production-workflow.png`.
+Use the [shared editable Excalidraw board](https://link.excalidraw.com/l/44SXhWFHIar/5fLHSSwDGK8). The files `outputs/forma-production-workflow.excalidraw` and `outputs/forma-production-workflow.png` preserve the original workflow snapshot; the shared board is maintained separately as the build evolves.
 
 The diagram shows parallel component jobs converging at assembly. Its central rule is:
 
@@ -53,3 +53,11 @@ If an assembly queue is modelled, also wait for that assembly slot. The sketch u
 - Check whether the assistant is in live or demo mode.
 - Keep the local demo available if venue connectivity fails.
 - Use the research notes for problem framing; do not claim the prototype replaces an existing industrial platform.
+
+## Optional what-if extension
+
+After confirming Balanced, apply **42 kits / 60 hours**. The previous confirmation is now infeasible because Dresden can make 80 fingers per batch but the order needs 84. Fastest uses Munich and delivers in 49 hours for €13,081. Its 21 hours of assembly follow the last component arrival at hour 26. Show the warning, then review and confirm Fastest.
+
+Try **49 kits** to show that all predefined routes exceed capacity. Confirm is disabled and the top action points to quantity adjustment. At **12 kits / 33 hours**, capacity is available but every route is late. A late plan needs explicit acknowledgement and never clears the warning.
+
+The deadline is a duration from the fixed demo clock, not a live countdown. Confirming all three original action orders produces the real empty action state. Reset before the next demo.
