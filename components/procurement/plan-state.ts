@@ -51,7 +51,10 @@ const metricsSchema = z.object({
   arrival: z.string().nullable(),
   bufferMinutes: z.number().nullable(),
 })
+export const REVIEW_VERSION = 2
+
 const savedSchema = z.object({
+  reviewVersion: z.number().int().positive().optional(),
   savedAt: timestamp,
   route: roadRoute,
   baseline: roadRoute,
@@ -81,6 +84,7 @@ const draftSchema = z.object({
 })
 
 export type SavedAction = {
+  reviewVersion?: number
   savedAt: string
   route: RoadRoute
   baseline: RoadRoute

@@ -234,14 +234,5 @@ for (const width of [320, 390, 768, 1440]) {
         viewport: innerWidth,
       }))
     ).toEqual({ document: width, viewport: width })
-    const evidenceBadge = page.getByText(
-      "Live observations · researched hardware",
-      { exact: true }
-    )
-    expect(
-      await evidenceBadge.evaluate(
-        (element) => element.scrollHeight <= element.clientHeight + 1
-      )
-    ).toBe(true)
   })
 }

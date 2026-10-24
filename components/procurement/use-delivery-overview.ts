@@ -10,6 +10,7 @@ import {
 } from "@/src/lib/procurement-impact"
 import {
   draftKey,
+  REVIEW_VERSION,
   endpointSignature,
   inputSignature,
   parseSavedDraft,
@@ -81,7 +82,8 @@ export function useDeliveryOverview(snapshot: IncidentSnapshot | null) {
           : []
         const changed =
           !!draft?.saved &&
-          (draft.saved.inputSignature !== inputSignature(draft) ||
+          (draft.saved.reviewVersion !== REVIEW_VERSION ||
+            draft.saved.inputSignature !== inputSignature(draft) ||
             draft.saved.route.id !== route?.id ||
             draft.saved.offerObservedAt !== offer?.observedAt ||
             (snapshot !== null &&
@@ -106,7 +108,7 @@ export function useDeliveryOverview(snapshot: IncidentSnapshot | null) {
               : status === "reviewed"
                 ? "Decision reviewed"
                 : status === "ready"
-                  ? "Review and save route"
+                  ? "Review and apply route"
                   : "Calculate delivery route"
         return {
           componentId,

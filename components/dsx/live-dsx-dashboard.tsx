@@ -17,7 +17,6 @@ import {
   X,
 } from "lucide-react"
 import { AppShell } from "@/components/dashboard/app-shell"
-import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { LiveIncidentFeed } from "@/components/incidents/live-incident-feed"
@@ -172,9 +171,6 @@ export default function LiveDsxDashboard({
             </p>
           </div>
           <div className={`${styles.heroActions} ${live.heroActions}`}>
-            <Badge variant="outline">
-              Live observations · researched hardware
-            </Badge>
             <Link href="/planning?component=optics" className={live.subtleLink}>
               Plan a delivery <ArrowRight size={13} />
             </Link>
