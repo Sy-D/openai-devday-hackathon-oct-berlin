@@ -261,6 +261,11 @@ export function parseAutobahn(
       blocked = bool(p.isBlocked),
       startedAt = date(p.startTimestamp)
     const future = bool(p.future) || Boolean(startedAt && startedAt > fetchedAt)
+    const delayRaw = text(p.delayTimeValue)
+    const reportedDelayMinutes =
+      /^\d+(\.\d+)?$/.test(delayRaw) && Number(delayRaw) <= 1440
+        ? Number(delayRaw)
+        : undefined
     const scope = ramp
       ? "Entry/exit ramp restriction; not a whole-motorway closure."
       : blocked
@@ -291,10 +296,22 @@ export function parseAutobahn(
         geometry: roadGeometry(p.geometry),
         roadImpact: {
           road,
-          scope: ramp ? "ramp" as const : service === "warning" ? "traffic-warning" as const : blocked ? "road" as const : "unknown" as const,
-          restriction: service === "warning" ? "warning" as const : blocked || ramp ? "closed" as const : "restricted" as const,
+          scope: ramp
+            ? ("ramp" as const)
+            : service === "warning"
+              ? ("traffic-warning" as const)
+              : blocked
+                ? ("road" as const)
+                : ("unknown" as const),
+          restriction:
+            service === "warning"
+              ? ("warning" as const)
+              : blocked || ramp
+                ? ("closed" as const)
+                : ("restricted" as const),
           direction: plain(p.subtitle) || undefined,
         },
+        reportedDelayMinutes,
         startedAt,
         fetchedAt,
         url: `https://verkehr.autobahn.de/o/autobahn/${road}/services/${service}`,
@@ -308,16 +325,28 @@ export function parseAutobahn(
 
 function roadGeometry(value: unknown): LiveIncident["geometry"] {
   const geo = object(value)
-  if (geo.type !== "LineString" || !Array.isArray(geo.coordinates) || geo.coordinates.length < 2 || geo.coordinates.length > 2000) return undefined
-  const points = geo.coordinates.map(value => Array.isArray(value) ? coordinate(value[0], value[1]) : undefined)
-  if (points.some(value => value === undefined)) return undefined
-  return { type: "LineString", coordinates: points.filter(value => value !== undefined) }
+  if (
+    geo.type !== "LineString" ||
+    !Array.isArray(geo.coordinates) ||
+    geo.coordinates.length < 2 ||
+    geo.coordinates.length > 2000
+  )
+    return undefined
+  const points = geo.coordinates.map((value) =>
+    Array.isArray(value) ? coordinate(value[0], value[1]) : undefined
+  )
+  if (points.some((value) => value === undefined)) return undefined
+  return {
+    type: "LineString",
+    coordinates: points.filter((value) => value !== undefined),
+  }
 }
 
 function ndwGeometry(record: unknown): LiveIncident["geometry"] {
-  const lines = descendants(record, "posList").flatMap(value => {
+  const lines = descendants(record, "posList").flatMap((value) => {
     const values = text(value, 200_000).split(/\s+/).map(Number)
-    if (values.length < 4 || values.length > 4000 || values.length % 2) return []
+    if (values.length < 4 || values.length > 4000 || values.length % 2)
+      return []
     const points: [number, number][] = []
     for (let i = 0; i < values.length; i += 2) {
       const point = coordinate(values[i + 1], values[i])
@@ -326,7 +355,11 @@ function ndwGeometry(record: unknown): LiveIncident["geometry"] {
     }
     return [points]
   })
-  return lines.length === 1 ? { type: "LineString", coordinates: lines[0] } : lines.length ? { type: "MultiLineString", coordinates: lines } : undefined
+  return lines.length === 1
+    ? { type: "LineString", coordinates: lines[0] }
+    : lines.length
+      ? { type: "MultiLineString", coordinates: lines }
+      : undefined
 }
 
 // DATEX II has nested, namespaced location variants. Walk only the parsed tree,
@@ -422,8 +455,24 @@ export function parseNdw(xml: string, fetchedAt: string): ProviderBatch {
       const carriageway = firstText(record, "carriageway")
       const roadImpact: NonNullable<LiveIncident["roadImpact"]> = {
         road: road || undefined,
-        scope: /sliproad/i.test(carriageway) ? "ramp" : managementType === "roadClosed" ? "road" : managementType === "carriagewayClosures" ? "carriageway" : managementType === "laneClosures" ? "lane" : "unknown",
-        restriction: ["roadClosed", "carriagewayClosures", "laneClosures"].includes(managementType ?? "") ? "closed" : managementType ? "restricted" : "unknown",
+        scope: /sliproad/i.test(carriageway)
+          ? "ramp"
+          : managementType === "roadClosed"
+            ? "road"
+            : managementType === "carriagewayClosures"
+              ? "carriageway"
+              : managementType === "laneClosures"
+                ? "lane"
+                : "unknown",
+        restriction: [
+          "roadClosed",
+          "carriagewayClosures",
+          "laneClosures",
+        ].includes(managementType ?? "")
+          ? "closed"
+          : managementType
+            ? "restricted"
+            : "unknown",
         direction: firstText(record, "alertCDirectionCoded") || undefined,
       }
       const location =

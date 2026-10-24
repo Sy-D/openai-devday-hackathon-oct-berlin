@@ -5,10 +5,9 @@ import { useTheme } from "next-themes"
 import {
   Building2,
   ChevronRight,
-  Factory,
+  Truck,
   LayoutDashboard,
   Radio,
-  FlaskConical,
   Moon,
   Sun,
 } from "lucide-react"
@@ -94,22 +93,12 @@ export function AppShell({
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton
-                      isActive={breadcrumb.at(-1) === "Recovery rehearsal"}
-                      tooltip="Recovery rehearsal"
-                      render={<Link href="/?mode=demo" />}
-                    >
-                      <FlaskConical />
-                      <span>Recovery rehearsal</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      isActive={breadcrumb.at(-1) === "Production planning"}
-                      tooltip="Production planning"
+                      isActive={breadcrumb.at(-1) === "Delivery planning"}
+                      tooltip="Delivery planning"
                       render={<Link href="/planning" />}
                     >
-                      <Factory />
-                      <span>Production planning</span>
+                      <Truck />
+                      <span>Delivery planning</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -135,9 +124,12 @@ export function AppShell({
               <SidebarTrigger className="size-10" />
               <Separator orientation="vertical" className="mr-1 h-4" />
               {breadcrumb.map((crumb, i) => (
-                <span key={i} className="flex items-center gap-3">
+                <span
+                  key={i}
+                  className={`${i < breadcrumb.length - 1 ? "hidden sm:flex" : "flex"} items-center gap-3`}
+                >
                   {i > 0 && (
-                    <ChevronRight className="size-3 text-muted-foreground" />
+                    <ChevronRight className="hidden size-3 text-muted-foreground sm:block" />
                   )}
                   <span
                     className={`text-sm ${i < breadcrumb.length - 1 ? "text-muted-foreground" : ""}`}

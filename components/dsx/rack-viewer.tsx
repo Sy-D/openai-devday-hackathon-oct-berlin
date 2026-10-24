@@ -200,7 +200,7 @@ function RackSchematic() {
         fontFamily="monospace"
         letterSpacing="3"
       >
-        DSX POD 01 / FRONT ELEVATION
+        AI DATA CENTER / FRONT VIEW
       </text>
       <text
         x="96"
@@ -683,9 +683,11 @@ export default function RackViewer({
       <div className={styles.modelLabel}>
         <span className={styles.crosshair}>+</span>
         <span>
-          POD 01
+          AI DATA CENTER
           <span>
-            {mode === "wireframe" ? "TECHNICAL VIEW" : "INTEGRATION VIEW"}
+            {mode === "wireframe"
+              ? "STRUCTURAL WIREFRAME"
+              : "MODULAR INFRASTRUCTURE"}
           </span>
         </span>
       </div>

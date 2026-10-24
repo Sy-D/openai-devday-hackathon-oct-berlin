@@ -114,13 +114,22 @@ export const incidentProviders: IncidentProvider[] = [
     intervalSeconds: 60,
     async load(now) {
       // All corridor endpoints must succeed before replacing the complete snapshot.
-      const batches = await Promise.all((["A2", "A24", "A10"] as const).flatMap(road =>
-        (["closure", "warning"] as const).map(async service => parseAutobahn(
-          await json(`https://verkehr.autobahn.de/o/autobahn/${road}/services/${service}`), service, now.toISOString(), road
-        ))
-      ))
+      const batches = await Promise.all(
+        (["A2", "A24", "A10"] as const).flatMap((road) =>
+          (["closure", "warning"] as const).map(async (service) =>
+            parseAutobahn(
+              await json(
+                `https://verkehr.autobahn.de/o/autobahn/${road}/services/${service}`
+              ),
+              service,
+              now.toISOString(),
+              road
+            )
+          )
+        )
+      )
       return {
-        incidents: batches.flatMap(batch => batch.incidents),
+        incidents: batches.flatMap((batch) => batch.incidents),
         message:
           "Germany A2, A24 and A10 corridors: closure notices and traffic warnings. Many closures affect entry/exit ramps. Provider geometries and restriction scope are preserved; proximity does not establish a blocked route.",
       }

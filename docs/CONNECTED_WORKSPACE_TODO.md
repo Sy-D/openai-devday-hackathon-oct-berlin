@@ -1,16 +1,35 @@
-# Connected procurement workspace
+# Connected procurement workspace — remaining work
 
-User objective: one two-minute path from a selectable real product to a sourced offer, current incident exposure, alternate delivery routes and a quantified decision.
+This is the active implementation checklist. The shared planning Page will be reconciled after implementation, as requested.
 
-## Plan and verification
+## Verified milestones
 
-- [ ] **In progress — Product and transport evidence:** verify exact SKU offers, price/VAT/availability wording, timestamp and ordering links for all ten categories; distinguish verified dispatch or pickup sites from company addresses. Use quote-required states wherever no public price is available. Check sources directly.
-- [ ] **Pending — Routing and impact:** connect a live road-routing service, retain actual geometry and compute incident proximity plus validity windows. Show route distance/driving time, deadline buffer and cost/emissions only from explicit inputs and cited factors. Test geometry, units, stale sources and unavailable-provider behavior.
-- [ ] **Pending — Connected interface:** model → offer → delivery inputs → incident evidence → alternatives → saved decision and measured change. Preserve the selected part across pages; live updates reopen affected decisions. Keep the old simulated planner clearly separated. Verify the path in a browser on desktop and mobile.
-- [ ] **Pending — Test and publish:** run unit/API checks, production build, lint, relevant browser flows and a live source/routing smoke. Refresh localhost, commit/push/PR/merge after checks. Update Page, Notion and Excalidraw after implementation.
+- [x] Sourced exact seller offers: NVIDIA optics (€1,483.28 net observed), refurbished optics (€475 with tax treatment unknown) and APC monitoring (€582.99 net observed). All ten model categories link to real manufacturer product references.
+- [x] Live routing API and incident geometry: Valhalla road alternatives and whole-section avoidance, A24/A10/A2 reports, time windows, road/ramp distinction, direction checks and reported traffic delays. Live requests and 27 backend checks passed.
+- [x] Publish a checkpoint for collaboration: `codex/connected-procurement` at `6873cda`; normal push and remote SHA verified.
+- [x] Apply only reviewed frontend improvements from Simon: shared elevation, transitions, focus and 44px touch targets. No simulated backend or broad branch merge adopted. Scoped lint and Tailwind compilation passed.
+- [x] Remove accessible scripted planners/alerts and pause/reset-feed controls. Default overview and old `?mode=demo` both use the connected overview; legacy supplier pages redirect to planning. Scripted disruption and old simulated assistant endpoints return 410. First production build passed and localhost was refreshed.
 
-## Boundaries
+## Finish and verify
 
-No purchasing or carrier booking. Seller listings do not prove reserved inventory, and company addresses do not prove shipment origins. Calculated routes are plans; driving-time models and emissions factors are estimates, not observed shipment outcomes. Real arrival guarantees and freight prices require a carrier quote. Missing evidence stays unknown.
+- [x] **Verified — Usable location search and map:** explicit city/address/facility search selects named locations; coordinates are collapsed under Advanced. Real Photon lookup succeeded for Berlin. Styled component picker, OpenFreeMap light/dark tiles, endpoint labels, legend, fit and loading state are implemented. Actual desktop and 390px controls/map screenshots were inspected; browser regression checks lookup-to-route payload and component navigation.
 
-Destination/deadline clarification requested; Berlin is the proposed editable default destination. Do not invent a required arrival time.
+- [x] **Verified — Connected decision flow:** model part → offer → origin/destination/timing → live reports → actual road alternatives → saved decision. Production browser checks cover save/reload, relevant-update review, changed route/location guards and in-flight response races. Actual provider smoke also preserved a saved decision across incident-page navigation.
+- [x] **Verified — Fill missing data:** all ten components have a planning-ready priced option. Three seller offers retain observed prices; eight category estimates fill missing prices. Origins and timing are editable; freight/emissions assumptions and sources are expandable. No supplier quote, stock confirmation or scripted incident is invented. This implements the latest permission to use assumptions for missing values.
+- [x] **Verified — Visual repairs:** modular AI data-center labels, stronger action colors, compact part cards and unclipped badge are visible. Rendered desktop/mobile screenshots inspected; 320/390/768/1440px browser layout checks pass.
+- [x] **Verified — Local checks:** 112 unit/API tests and all 22 production browser tests pass. Production build/TypeScript pass; lint has zero errors and two existing legacy warnings. Actual Photon, Valhalla and incident-provider workflow passed, including saved decisions and live reported-delay changes. Retired simulation-only suites were replaced with current flow coverage.
+- [ ] **In progress — Final publication:** push the complete connected application, open a PR, verify CI and merge when checks allow. Do not merge Simon's full branch; only adopt verified frontend improvements.
+- [x] **Verified — Two-minute demo script:** [DEMO.md](DEMO.md) traces the optical module, Glinde/Berlin route, current traffic evidence, alternatives and saved decision. Actual browser clicks and calculations passed; human spoken timing remains below. The script uses the displayed result even when keeping the baseline is best.
+- [ ] **Pending — Documentation and cleanup after implementation:** update shared Page, Notion and Excalidraw; stop extra preview/test servers while retaining localhost:3000; preserve teammate work and the current branch.
+
+## External follow-ups
+
+- [ ] **Blocked — Hosting:** Vercel workspace authorization is deferred by Carl. No deployment to forma-supply-chain.vercel.app is claimed.
+- [ ] **Team verification:** teammates pull the published branch/main and rehearse on another machine; agree presenter and final two-minute timing.
+- [ ] **Separate removal PR:** Simon's non-design supplier code removal remains teammate-owned. Preserve that work; check the incoming PR before integration. Its old UI entry points are now retired locally.
+
+## Superseded or intentionally excluded
+
+- No purchases, supplier outreach or carrier booking were requested. A saved route is a browser-local planning decision.
+- The old simulated manufacturing/AI assistant is retired; configuring its OpenAI key is no longer needed for this workflow.
+- Initial all-real-only direction is superseded by explicit permission to use assumptions for missing data. Actual reports and sourced prices remain authoritative; calculated forecasts do not become confirmed shipment outcomes.

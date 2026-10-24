@@ -105,7 +105,7 @@ const pricedOffers: ProcurementOffer[] = [
   },
 ]
 
-const quoteSkus: Record<PartComponentId, string> = {
+const quoteSkus = {
   "compute-a": "SRS-GB300-NVL72 (configuration requires quotation)",
   "compute-b": "S7K95A (HPE GB300 NVL72 base system code)",
   fabric: "SN5600 (ordering configuration required)",
@@ -116,9 +116,9 @@ const quoteSkus: Record<PartComponentId, string> = {
   optics: "MMA4Z00-NS400",
   controls: "NBRK0250A",
   enclosure: "SmartMod (enclosure configuration required)",
-}
+} satisfies Record<PartComponentId, string>
 
-const quoteNotes: Partial<Record<PartComponentId, string>> = {
+const quoteNotes = {
   "compute-a":
     "Rack configuration, cooling scope, regional supply and site services need a written quote. No verified public EUR offer or allocated rack stock is recorded.",
   "compute-b":
@@ -135,12 +135,33 @@ const quoteNotes: Partial<Record<PartComponentId, string>> = {
     "Exact RCM42001 is documented. A US distributor advertises a non-stock order path, but no fresh EUR offer or European dispatch point is verified here.",
   enclosure:
     "SmartMod is a configurable enclosure family, not a single selected orderable SKU. Dimensions, power, cooling, transport and price require a supplier quotation.",
-}
+} satisfies Partial<Record<PartComponentId, string>>
+
+// Fresh source checks: direct HTTP for seven distinct sources; web retrieval for
+// HPE and Supermicro after the direct requests timed out or returned HTTP 403.
+// These are documentation observations, never observations of price or stock.
+const documentationObservedAt = {
+  "compute-a": "2026-10-24T13:06:47Z",
+  "compute-b": "2026-10-24T13:06:47Z",
+  fabric: "2026-10-24T13:06:09Z",
+  storage: "2026-10-24T13:06:09Z",
+  power: "2026-10-24T13:06:47Z",
+  cooling: "2026-10-24T13:06:09Z",
+  manifold: "2026-10-24T13:06:09Z",
+  optics: "2026-10-24T13:06:10Z",
+  controls: "2026-10-24T13:06:10Z",
+  enclosure: "2026-10-24T13:06:10Z",
+} satisfies Record<PartComponentId, string>
 
 /** Manufacturer-source fallbacks show gaps; they do not claim a purchasable quote exists. */
 const quoteOffers: ProcurementOffer[] = Object.values(partCatalog).map(
   (part) => {
     const source = part.sources.find((item) => item.scope === "product")!
+    // SAFETY: the membership check narrows this fixed component ID to a key in quoteNotes.
+    const quoteNote =
+      part.componentId in quoteNotes
+        ? quoteNotes[part.componentId as keyof typeof quoteNotes]
+        : undefined
     return {
       id: `manufacturer-${part.componentId}`,
       componentId: part.componentId,
@@ -151,17 +172,15 @@ const quoteOffers: ProcurementOffer[] = Object.values(partCatalog).map(
       orderUrl: source.url,
       orderMode: "quote-required",
       availability: "Price, stock and dispatch need a supplier quote.",
-      observedAt: "2026-10-24T13:03:00Z",
+      observedAt: documentationObservedAt[part.componentId],
       sources: [
         {
           title: source.title,
           url: source.url,
-          observedAt: "2026-10-24T13:03:00Z",
+          observedAt: documentationObservedAt[part.componentId],
         },
       ],
-      note:
-        quoteNotes[part.componentId] ??
-        "Manufacturer documentation confirms the product identity only. This source link is not an order, a stock allocation or a delivery commitment.",
+      note: `${quoteNote ?? "Manufacturer documentation confirms the product identity only. This source link is not an order, a stock allocation or a delivery commitment."} Timestamp records a manufacturer-document review, not a price or stock check.`,
     }
   }
 )

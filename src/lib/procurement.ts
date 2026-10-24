@@ -12,6 +12,8 @@ export type ProcurementOffer = {
   condition: "new" | "refurbished" | "not-specified"
   orderUrl: string
   orderMode: "purchase" | "inquiry" | "quote-required"
+  dataMode?: "observed" | "assumed"
+  assumptions?: string[]
   price?: {
     amount: number
     currency: "EUR"
@@ -23,7 +25,7 @@ export type ProcurementOffer = {
     label: string
     coordinates: Coordinate
     precision: "city" | "address"
-    status: "warehouse-city" | "confirmed-pickup" | "unverified"
+    status: "warehouse-city" | "confirmed-pickup" | "unverified" | "assumed"
     note: string
     source: EvidenceSource
   }
@@ -51,6 +53,7 @@ export type RoadRouteRequest = {
   origin: Coordinate
   destination: Coordinate
   exclude: Coordinate[]
+  excludePaths?: Coordinate[][]
 }
 
 export type RoadRouteResponse = {
@@ -61,6 +64,7 @@ export type RoadRouteResponse = {
   attribution: string
   sourceUrl: string
   exclusions: Coordinate[]
+  exclusionPaths?: Coordinate[][]
   warnings: string[]
 }
 
@@ -73,6 +77,7 @@ export type RouteExposure = {
 
 export type CostBasis = {
   label: string
+  appliesTo?: "small-parcel" | "planning-freight"
   perKmEur: number
   fixedEur: number
   includedKm: number
@@ -80,6 +85,16 @@ export type CostBasis = {
   firstKmRateEur?: number
   minEur?: number
   multiplier?: number
+  rounding?: "whole-euro"
+  timingSurcharge?: {
+    timeZone: string
+    nightStartHour: number
+    nightEndHour: number
+    sunday: boolean
+    dates: readonly string[]
+    year: number
+    multiplier: number
+  }
   source: EvidenceSource
   note: string
 }
@@ -101,6 +116,7 @@ export type DeliveryInputs = {
 export type RouteMetrics = {
   distanceKm: number
   drivingMinutes: number
+  reportedDelayMinutes: number
   transportEstimateEur: number | null
   productSubtotalEur: number | null
   totalEstimateEur: number | null

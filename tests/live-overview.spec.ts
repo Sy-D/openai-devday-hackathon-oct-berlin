@@ -60,7 +60,7 @@ test("default overview shows documented product candidates and neutral shipment 
 }) => {
   await page.goto("/")
   await expect(
-    page.getByRole("heading", { name: "One pod. Every dependency." })
+    page.getByRole("heading", { name: "A modular AI data center." })
   ).toBeVisible()
   const hardware = page.getByRole("region", {
     name: "Hardware references",
@@ -77,7 +77,10 @@ test("default overview shows documented product candidates and neutral shipment 
     hardware.getByText("RackChiller Rack Manifold (RCM42001)", { exact: true })
   ).toBeVisible()
   await expect(
-    hardware.getByText("Shipment not verified", { exact: false })
+    hardware.getByRole("link", {
+      name: "Calculate delivery route",
+      exact: true,
+    })
   ).toHaveCount(10)
   const viewer = page.getByTestId("rack-viewer")
   await expect(viewer).toHaveAttribute("data-renderer", /webgl|fallback/)
@@ -88,7 +91,7 @@ test("default overview shows documented product candidates and neutral shipment 
     )
   ).toHaveCount(0)
   await expect(
-    page.getByText("No order or carrier data connected", { exact: true })
+    page.getByText("Neutral markers = shipment not verified", { exact: true })
   ).toBeVisible()
   await expect(
     page.getByRole("link", { name: /Source-reported flood observation/ })
@@ -102,8 +105,8 @@ test("default overview shows documented product candidates and neutral shipment 
     page.getByRole("combobox", { name: "Filter parts by delivery state" })
   ).toHaveCount(0)
   await expect(
-    page.getByRole("link", { name: "Try the recovery rehearsal" })
-  ).toHaveAttribute("href", "/?mode=demo")
+    page.getByRole("link", { name: "Plan a delivery" })
+  ).toHaveAttribute("href", "/planning?component=optics")
 })
 
 test("component query opens the exact researched hardware with source evidence", async ({
@@ -117,9 +120,20 @@ test("component query opens the exact researched hardware with source evidence",
   await expect(
     dialog.getByRole("heading", { name: "LinkX MMA4Z00-NS400", exact: true })
   ).toBeVisible()
+  await dialog
+    .getByText("Origin and delivery evidence", { exact: true })
+    .click()
   await expect(
-    dialog.getByText("Delivery impact not established", { exact: true })
+    dialog.getByText(
+      /A manufacturer's country footprint is not the origin of this order/
+    )
   ).toBeVisible()
+  await expect(
+    dialog.getByText("Manufacturing origin unverified", { exact: true })
+  ).toBeVisible()
+  await expect(
+    dialog.getByRole("link", { name: "Review source reports" })
+  ).toHaveAttribute("href", "/incidents?component=optics")
   await expect(
     dialog.getByText(
       "Reference research. No confirmed purchase, allocation or shipment.",
@@ -132,10 +146,10 @@ test("component query opens the exact researched hardware with source evidence",
   const sources = dialog.getByRole("list", { name: "Manufacturer sources" })
   await expect(sources.getByRole("link").first()).toHaveAttribute(
     "href",
-    /^https:\/\//
+    /^https:\/\/docs\.nvidia\.com\/mma4z00-ns400/
   )
   await expect(
-    dialog.getByRole("link", { name: "Rehearse a recovery decision" })
+    dialog.getByRole("link", { name: "Plan this delivery" })
   ).toHaveAttribute("href", "/planning?component=optics")
 })
 
@@ -201,7 +215,7 @@ for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 })
     await page.goto("/")
     await expect(
-      page.getByRole("heading", { name: "One pod. Every dependency." })
+      page.getByRole("heading", { name: "A modular AI data center." })
     ).toBeVisible()
     await expect(page.getByTestId("rack-viewer")).toHaveAttribute(
       "data-renderer",
@@ -216,56 +230,14 @@ for (const width of [320, 390, 768, 1440]) {
         viewport: innerWidth,
       }))
     ).toEqual({ document: width, viewport: width })
+    const evidenceBadge = page.getByText(
+      "Live observations · researched hardware",
+      { exact: true }
+    )
+    expect(
+      await evidenceBadge.evaluate(
+        (element) => element.scrollHeight <= element.clientHeight + 1
+      )
+    ).toBe(true)
   })
 }
-
-test("recovery banner selects the suggested route and focuses options without confirming", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto("/planning?component=manifold")
-  await page.getByRole("button", { name: "Pause feed", exact: true }).click()
-  await page.locator("summary").filter({ hasText: "Scenario controls" }).click()
-  await page
-    .getByRole("checkbox", { name: /Berlin integration-site road diversion/ })
-    .check()
-  const options = page.getByRole("region", {
-    name: "Recovery route options",
-    exact: true,
-  })
-  const recommended = options
-    .getByTestId(/^dsx-route-/)
-    .filter({ hasText: "Recommended" })
-  await expect(recommended).toHaveCount(1)
-  const alternative = options
-    .getByTestId(/^dsx-route-/)
-    .filter({ hasNotText: "Recommended" })
-    .first()
-  await alternative.click()
-  await expect(alternative).toHaveAttribute("aria-pressed", "true")
-  await expect(recommended).toHaveAttribute("aria-pressed", "false")
-  const savedBefore = await page.evaluate(() =>
-    localStorage.getItem("forma.dsx.routes.v1")
-  )
-  const banner = page.getByRole("link", {
-    name: "View suggested recovery plan",
-    exact: true,
-  })
-  await expect(banner).toHaveAttribute("href", "#suggested-recovery")
-  await banner.click()
-  await expect(recommended).toHaveAttribute("aria-pressed", "true")
-  await expect(alternative).toHaveAttribute("aria-pressed", "false")
-  await expect(options).toBeFocused()
-  await expect(
-    options.getByRole("heading", { name: "A better way through." })
-  ).toBeInViewport()
-  await expect(
-    page.getByRole("dialog", { name: "Confirm recovery route" })
-  ).toHaveCount(0)
-  expect(
-    await page.evaluate(() => localStorage.getItem("forma.dsx.routes.v1"))
-  ).toBe(savedBefore)
-  await expect(
-    page.getByRole("heading", { name: "Recovery route confirmed", exact: true })
-  ).toHaveCount(0)
-})

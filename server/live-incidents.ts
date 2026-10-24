@@ -171,7 +171,7 @@ export type IncidentHub = ReturnType<typeof createIncidentHub>
 // Each hosted process has its own bounded cache; this is not a durable event store.
 // SAFETY: this module owns this optional global property and only assigns createIncidentHub() results.
 const globalIncidentState = globalThis as typeof globalThis & {
-  formaIncidentHubV1?: IncidentHub
+  formaIncidentHubV2?: IncidentHub
 }
-export const liveIncidentHub = (globalIncidentState.formaIncidentHubV1 ??=
+export const liveIncidentHub = (globalIncidentState.formaIncidentHubV2 ??=
   createIncidentHub())

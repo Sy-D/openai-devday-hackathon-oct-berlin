@@ -4,6 +4,11 @@
   flex-wrap: wrap;
 }
 .heroActions > span {
+  height: auto;
+  min-height: 28px;
+  max-width: 100%;
+  line-height: 1.4;
+  padding-block: 5px;
   white-space: normal;
   text-align: center;
 }
@@ -15,10 +20,169 @@
   align-items: center;
   gap: 16px;
   padding: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-2xl);
   background: var(--card);
+}
+.actionArea {
+  margin-bottom: 24px;
+  font-variant-numeric: tabular-nums;
+}
+.nextAction[data-status="ready"] {
+  border-color: color-mix(in oklab, #4f7fee 35%, var(--border));
+  background: color-mix(in oklab, #4f7fee 7%, var(--card));
+}
+.nextAction[data-status="changed"] {
+  border-color: color-mix(in oklab, var(--risk-critical) 40%, var(--border));
+  background: color-mix(in oklab, var(--risk-critical) 7%, var(--card));
+}
+.nextAction[data-status="ready"] > svg {
+  color: #4f7fee;
+}
+.nextAction[data-status="changed"] > svg {
+  color: var(--risk-critical);
+}
+.nextAction[data-status="exposed"] {
+  border-color: color-mix(in oklab, var(--risk-medium) 40%, var(--border));
+  background: color-mix(in oklab, var(--risk-medium) 7%, var(--card));
+}
+.nextAction[data-status="exposed"] > svg {
+  color: var(--risk-medium);
+}
+.actionEyebrow {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  color: var(--muted-foreground);
+  margin-bottom: 5px;
+}
+.actionArea .nextAction h2 {
+  font-size: 18px;
+  letter-spacing: -0.025em;
+}
+.nextAction > a {
+  min-height: 44px;
+}
+.actionRail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.actionCard {
+  --action-color: #4f7fee;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  transition: background 150ms ease-out;
+}
+.actionCard:hover {
+  background: var(--muted);
+}
+.actionCard > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.actionCard > svg {
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+.actionCard strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.actionCard small {
+  display: block;
+  font-size: 11px;
+  color: var(--action-color);
+  line-height: 1.5;
+  margin-top: 3px;
+}
+.actionIndicator {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: var(--action-color);
+  background: color-mix(in oklab, var(--action-color) 10%, transparent);
+}
+.actionCard[data-status="changed"],
+.part[data-status="changed"] {
+  --action-color: var(--risk-critical);
+}
+.actionCard[data-status="exposed"],
+.part[data-status="exposed"] {
+  --action-color: var(--risk-medium);
+}
+.actionCard[data-status="reviewed"],
+.part[data-status="reviewed"] {
+  --action-color: var(--risk-low);
+}
+.actionCard:focus-visible,
+.partInspect:focus-visible,
+.partState:focus-visible,
+.geometryNote summary:focus-visible,
+.evidenceNote summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.geometryNote {
+  max-width: 330px;
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.geometryNote summary,
+.evidenceNote summary {
+  cursor: pointer;
+  min-height: 32px;
+  display: list-item;
+  align-content: center;
+}
+.geometryNote p {
+  line-height: 1.5;
+  padding-bottom: 6px;
+}
+.partInspect {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-height: 100px;
+  text-align: left;
+  cursor: pointer;
+}
+.partInspect > span {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.partState {
+  --action-color: #4f7fee;
+  font-size: 11px;
+  min-height: 44px;
+  color: var(--action-color);
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.part[data-status="changed"] .partState {
+  color: var(--risk-critical);
+}
+.part[data-status="exposed"] .partState {
+  color: var(--risk-medium);
+}
+.part[data-status="reviewed"] .partState {
+  color: var(--risk-low);
 }
 .nextAction > svg {
   flex-shrink: 0;
@@ -150,7 +314,7 @@
     border-color 0.18s;
 }
 .part:hover,
-.part[aria-pressed="true"] {
+.part:has(.partInspect[aria-pressed="true"]) {
   background: var(--muted);
   border-color: var(--muted-foreground);
 }
@@ -189,6 +353,9 @@
   }
 }
 @media (max-width: 650px) {
+  .actionRail {
+    grid-template-columns: 1fr;
+  }
   .nextAction {
     align-items: flex-start;
     flex-wrap: wrap;
