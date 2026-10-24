@@ -48,3 +48,10 @@ next-env.d.ts
 
 scripts/__pycache__
 data/suppliers.duckdb
+
+# Production-planning demo outputs and local verification
+dist/
+work/
+test-results/
+playwright-report/
+outputs/*.bundle

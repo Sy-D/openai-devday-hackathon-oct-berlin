@@ -1,6 +1,7 @@
 import "server-only"
 
 import { spawn } from "node:child_process"
+import { accessSync, constants } from "node:fs"
 import path from "node:path"
 
 const AGENT_DIR = path.join(process.cwd(), "deep-research-agent")
@@ -11,6 +12,29 @@ const PYTHON_BIN = path.resolve(
   process.env.ANALYST_PYTHON ?? path.join(AGENT_DIR, ".venv/bin/python")
 )
 const TIMEOUT_MS = 5 * 60 * 1000
+
+/** The hosted Next build has no managed Python environment or durable output. */
+export function researchUnavailableReason(): string | null {
+  if (process.env.VERCEL === "1") {
+    return "Supplier AI research is unavailable in this hosted demo. A hosted Python research service has not been connected. The supplier dataset and production planner remain available."
+  }
+  try {
+    accessSync(PYTHON_BIN, constants.X_OK)
+    return null
+  } catch {
+    return "Supplier AI research is unavailable because the local Python environment is not installed. Follow deep-research-agent/README.md to configure Python and the optional research credentials."
+  }
+}
+
+export function researchUnavailableResponse(): Response | null {
+  const error = researchUnavailableReason()
+  return error
+    ? Response.json(
+        { error, code: "research_unavailable" },
+        { status: 503, headers: { "Cache-Control": "no-store" } }
+      )
+    : null
+}
 
 export type JsonValue =
   | string
@@ -41,6 +65,8 @@ export function agentEventStream(
   mapResult: (stdout: string) => JsonValue,
   { cwd = AGENT_DIR, stdin = "" }: StreamOptions = {}
 ): Response {
+  const unavailable = researchUnavailableResponse()
+  if (unavailable) return unavailable
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     start(controller) {

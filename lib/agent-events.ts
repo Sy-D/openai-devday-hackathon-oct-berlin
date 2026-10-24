@@ -1,3 +1,7 @@
+import { z } from "zod"
+
+const errorResponse = z.object({ error: z.string().min(1).max(1000) })
+
 export type AgentEvent =
   | { type: "progress"; text: string }
   | { type: "result"; payload: unknown }
@@ -22,7 +26,12 @@ export async function* streamAgent(
     body: JSON.stringify(body),
   })
   if (!response.ok || !response.body) {
-    throw new Error(`Request failed: ${response.status}`)
+    const detail = errorResponse.safeParse(
+      await response.json().catch(() => null)
+    )
+    throw new Error(
+      detail.success ? detail.data.error : `Request failed: ${response.status}`
+    )
   }
   const reader = response.body.getReader()
   const decoder = new TextDecoder()

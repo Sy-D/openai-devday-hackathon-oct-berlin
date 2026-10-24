@@ -6,6 +6,7 @@ import {
   Building2,
   ChevronRight,
   FileText,
+  Factory,
   GitCompareArrows,
   LayoutDashboard,
   Moon,
@@ -88,6 +89,16 @@ export function AppShell({
                     >
                       <LayoutDashboard />
                       <span>Overview</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={breadcrumb.at(-1) === "Production planning"}
+                      tooltip="Production planning"
+                      render={<Link href="/planning" />}
+                    >
+                      <Factory />
+                      <span>Production planning</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>

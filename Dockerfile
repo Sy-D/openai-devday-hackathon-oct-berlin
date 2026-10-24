@@ -1,20 +1,18 @@
 # syntax=docker/dockerfile:1
 
-# Full dependency install (dev deps needed for `next build`), using the bun
-# lockfile for reproducibility.
-FROM oven/bun:1 AS deps
+# Full dependency install, using the same npm lockfile as local development.
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
-COPY package.json bun.lock ./
-# patchedDependencies (patches/) must be present before install.
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
+COPY package.json package-lock.json ./
 COPY patches ./patches
-RUN bun install --frozen-lockfile
+COPY scripts/apply-patches.mjs ./scripts/
+RUN npm ci
 
 # Production-only node_modules for the runtime image.
-FROM oven/bun:1 AS prod-deps
-WORKDIR /app
-COPY package.json bun.lock ./
-COPY patches ./patches
-RUN bun install --frozen-lockfile --production
+FROM deps AS prod-deps
+RUN npm prune --omit=dev --ignore-scripts
 
 FROM node:22-bookworm-slim AS build
 WORKDIR /app
@@ -38,6 +36,7 @@ RUN pip install --no-cache-dir -r deep-research-agent/requirements.txt
 
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
 COPY package.json next.config.ts ./
 # data/supplier_risk_dataset.csv is read at request time via DuckDB.
 COPY data ./data

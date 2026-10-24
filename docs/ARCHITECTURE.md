@@ -1,7 +1,6 @@
 # Architecture
 
-This document describes how the dashboard, the API routes and the Python deep
-research agent fit together. For the agent's internal pipeline (criteria
+The Next.js application serves the supplier dashboard at `/` and FORMA production planning at `/planning`. This document describes their separate data models, native API routes and optional AI providers. For the agent's internal pipeline (criteria
 sub-agents, prompts, failure handling) see
 [deep-research-agent/OVERVIEW.md](../deep-research-agent/OVERVIEW.md); for its
 CLI options see [deep-research-agent/README.md](../deep-research-agent/README.md).
@@ -11,55 +10,52 @@ CLI options see [deep-research-agent/README.md](../deep-research-agent/README.md
 ```mermaid
 flowchart TB
   subgraph Browser
-    UI[SupplierDashboard<br>client components]
-    Chat["ChatDock<br>lib/analyst/compose.ts"]
+    UI[Supplier dashboard]
+    Chat[Supplier analyst chat]
+    Planner[Production planner /planning]
   end
-
-  subgraph Next["Next.js 16 server"]
-    Page["app/page.tsx, app/compare/page.tsx<br>Server Components"]
-    Data["lib/supplier-data.ts<br>DuckDB + zod"]
-    R0["app/api/resolve/route.ts"]
-    R1["app/api/research/route.ts"]
-    R2["app/api/analyst/route.ts"]
-    Stream["lib/agent-stream.ts<br>child process → SSE"]
+  subgraph Next[Next.js Node server]
+    Data[lib/supplier-data.ts]
+    Research[Native resolve and research routes]
+    Analyst[Native /api/analyst]
+    Assistant[Native /api/assistant and /api/health]
+    Core[server/assistant.ts]
   end
-
-  subgraph Agent["deep-research-agent/ (Python)"]
-    App["app.py --json &lt;name&gt;<br>8 criteria sub-agents in parallel"]
-    Resolve["app.py --resolve &lt;name&gt;<br>canonical company name"]
-    Analyst["analyst.py &lt;question&gt;<br>free-text answer"]
-    Schema["schema.py<br>score schema, levels, CSV rows"]
+  subgraph Python
+    Agent[deep-research-agent/app.py]
+    SQL[scripts/ask.py]
   end
-
-  subgraph Files
-    CSV[(data/supplier_risk_dataset.csv<br>10,000 anonymized rows)]
-    Out[(deep-research-agent/output/<br>suppliers.csv + reasoning.jsonl)]
-  end
-
-  Nebius[Nebius Token Factory<br>MiniMax-M3]
-  Tavily[Tavily Search API]
-
-  UI -- "GET / , /compare" --> Page --> Data
-  UI -- "question" --> Chat
-  Data -- read_csv --> CSV
-  Data -- "read_csv (if present)" --> Out
-  UI -- "POST {name}" --> R0 -- "child process" --> Resolve
-  UI -- "POST {name}" --> R1 --> Stream
-  R2 --> Stream
-  Stream -- "child process" --> App
-  Stream -- "child process" --> Analyst
-  App --> Schema
-  App -- appends --> Out
-  Resolve & App & Analyst --> Nebius
-  App & Analyst --> Tavily
+  CSV[(Supplier CSVs)]
+  DB[(data/suppliers.duckdb)]
+  Local[(Browser planning state)]
+  UI --> Data --> CSV
+  UI --> Research --> Agent
+  Agent --> Nebius[Nebius Token Factory]
+  Agent --> Tavily[Tavily search]
+  Agent --> CSV
+  Chat --> Analyst --> SQL
+  SQL --> DB
+  SQL --> Nebius
+  Planner --> Rules[src/lib/planner.ts]
+  Planner --> Local
+  Planner --> Assistant --> Core
+  Core --> OpenAI[Optional OpenAI Responses API]
 ```
 
-There is no separate backend service and no database server. Next.js serves
-the UI and the API routes; the routes start the Python agent as a child
-process per request, stream its progress to the browser and return its
-stdout as the result. Supplier data lives in CSV files that
-DuckDB queries in-process. The Docker image (`Dockerfile`, `compose.yml`)
-packages Node.js and Python together for exactly this reason.
+One Next.js process serves both views and their native API routes. Supplier
+research and analyst routes start Python child processes and stream progress.
+Supplier pages query CSV files with embedded DuckDB; the text-to-SQL analyst
+uses a separately generated DuckDB file. No database server is required.
+
+The production assistant runs directly in Node through
+`server/production-api.ts` and `server/assistant.ts`. It needs no Python
+process, local proxy or separately running API server. `server/index.ts`
+remains available for standalone HTTP tests and the bounded live check.
+The Docker configuration packages Node.js and Python together.
+
+Supplier records are not yet joined to the production planner's synthetic
+factory and order data. Shared navigation connects the views, not their
+operational data.
 
 ## Data flow
 
@@ -121,29 +117,60 @@ packages Node.js and Python together for exactly this reason.
    right away and selects it for comparison. After a reload it comes from the
    CSV as an `RSCH_` row.
 
-### Asking the analyst
+### Asking the supplier analyst
 
-There are two analyst paths:
+The visible chat dock uses `components/analyst/use-analyst-chat.ts` to call
+`POST /api/analyst`. The route runs `scripts/ask.py` from the repository root.
+The script asks Nebius for SQL, executes it against `data/suppliers.duckdb`
+in read-only mode with external access disabled, then asks Nebius to explain
+the results. Optional structured blocks are validated before rendering.
+Follow-up requests include the last successful question, SQL and answer.
 
-- **Chat dock (in the UI).** The type-anywhere search hands questions to the
-  chat dock. `lib/analyst/compose.ts` answers them in the browser from the
-  loaded supplier data. It handles two question types: financial-risk
-  comparisons (ranking the selected suppliers or the `SUPP_` ids named in the
-  question) and risk profiles of named supplier ids; anything else gets a
-  hint with example questions. Answers follow the block schema in `lib/analyst/schema.ts` (text, tables, callouts) and are
-  rendered by `components/analyst/`. No model or network call is involved.
-- **`POST /api/analyst` (web research).** The route streams
-  `analyst.py <question>`, which asks a `deepagents` Deep Agent for a sourced
-  answer about any company or risk topic and returns it as Markdown. The
-  route and its client (`AnalystSheet`) exist, but the dashboard currently
-  does not render the sheet.
+Create that database with `scripts/create_duckdb.py` after installing the
+Python requirements. It is a snapshot of the tabular files in `data/`;
+new company research in `deep-research-agent/output/` is not automatically
+added to that analyst database. The dashboard reads those research CSV rows
+directly. The older deterministic composer in `lib/analyst/compose.ts` is
+not the active chat path. The standalone `deep-research-agent/analyst.py`
+provides a separate web-research CLI.
+
+### Planning and confirming production
+
+`app/planning/` mounts the FORMA client UI inside the shared shell. The
+planner computes three alternatives from `src/data/network.ts`. It checks
+process, material, qualification and capacity, then calculates parallel
+component timing, transport, assembly, delivery and cost.
+
+`src/lib/actions.ts` turns current plans and confirmation snapshots into the
+prominent Needs action list. Applying quantity or deadline changes recomputes
+the plans; stale confirmations require review. State persists in this
+browser's local storage. It is not shared across teammates.
+
+The copilot receives bounded, validated current context through
+`POST /api/assistant`. It can explain or suggest an existing plan, but cannot
+confirm or book it. Without an OpenAI key, or on provider failure, the API
+returns an explicitly labelled deterministic fallback. Readiness distinguishes
+configured credentials from a successful live reply. See [AI.md](AI.md) for
+the exact request and response contract.
 
 ## API reference
 
-All routes are Next.js Route Handlers that accept a JSON body. They need the
-agent's virtual environment at `deep-research-agent/.venv` (or
-`ANALYST_PYTHON` pointing to another interpreter, as in the Docker image) and
-valid keys in `.env` at the repository root.
+All endpoints below are native Next.js Route Handlers. Python and provider
+keys are needed only for the optional supplier AI features; bundled data and
+the planning demo work without them.
+
+| Route | Purpose | Runtime or service |
+| --- | --- | --- |
+| `POST /api/resolve` | Resolve official company name | Python + Nebius |
+| `POST /api/research` | Research and score a company | Python + Nebius + Tavily |
+| `POST /api/analyst` | Query supplier dataset and explain results | Python + local DuckDB + Nebius |
+| `POST /api/assistant` | Explain or suggest existing production plans | Node; optional OpenAI |
+| `GET /api/health` | Production assistant configuration/readiness | Node; no provider call |
+| `GET /api/climate` | Location climate summaries | Open-Meteo archive API |
+| `GET /api/map-proxy/[...path]` | Supplier map assets | OpenFreeMap |
+
+Supplier Python routes default to `deep-research-agent/.venv/bin/python`.
+`ANALYST_PYTHON` can select another interpreter; prefer an absolute path.
 
 ### Streaming format
 
@@ -238,13 +265,30 @@ web research.
 
 ### `POST /api/analyst`
 
-Answers a free-text supplier-risk question with web research; streamed as
-described above.
+Answers a question about the local supplier dataset, streamed as above.
 
-Request `{"question": "What are the biggest current risk signals for
-Continental AG?"}` (required, cut to 2,000 characters; empty returns `400`
-`{"error": "Missing question"}`). `payload` of the `result` event:
-`{"answer": "Markdown text with inline source links …"}`.
+Request: `{"question":"Which suppliers have the highest financial risk?"}`.
+Questions are trimmed and cut to 500 characters. An empty question returns
+`400` with `{"error":"Missing question"}`. Optional `previous` contains
+`question`, `sql` and `answer` from the prior successful turn.
+
+The final payload contains `sql`, `answer` and nullable `render`. A non-null
+`render` contains validated answer blocks; invalid blocks are dropped while
+the textual answer is retained. This route does not invoke the standalone
+web-research analyst.
+
+### Production assistant routes
+
+`POST /api/assistant` and `GET /api/health` use a shared request handler.
+The assistant checks same-origin browser requests, caps the streamed body at
+96 KiB, limits active requests and bounds provider time. A missing Origin
+header permits command-line clients; this is not authentication. Responses
+are uncached and provider errors are redacted.
+
+Readiness is process-local. A successful live reply verifies the current
+process; restarts and separate serverless instances begin unverified. The
+health route does not itself contact OpenAI. [AI.md](AI.md) documents the
+full contract, fallback and live-verification command.
 
 ## Risk scores
 
@@ -260,18 +304,26 @@ derived identically.
 
 ## Configuration
 
-| Variable | Where | Default | Purpose |
-|---|---|---|---|
-| `NEBIUS_API_KEY` | `.env` (repo root) | — (required) | Token Factory API key |
-| `TAVILY_API_KEY` | `.env` (repo root) | — (required) | Tavily API key |
-| `NEBIUS_MODEL` | `.env` (repo root) | `MiniMaxAI/MiniMax-M3` | Model id |
-| `NEBIUS_BASE_URL` | `.env` (repo root) | `https://api.tokenfactory.nebius.com/v1` | Token Factory endpoint |
-| `ANALYST_PYTHON` | Next.js environment | `.venv/bin/python` | Interpreter the API routes run, relative to `deep-research-agent/`; the Docker image sets `/usr/local/bin/python3` |
+Use the ignored root `.env` or the server environment. Never expose keys
+with a `NEXT_PUBLIC_` or `VITE_` prefix. The two AI providers are independent.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `NEBIUS_API_KEY` | Unset | Optional supplier analyst and research inference |
+| `TAVILY_API_KEY` | Unset | Optional company web research |
+| `NEBIUS_MODEL` | `MiniMaxAI/MiniMax-M3` | Supplier model |
+| `NEBIUS_BASE_URL` | `https://api.tokenfactory.nebius.com/v1` | Supplier inference endpoint |
+| `ANALYST_PYTHON` | Project agent virtual environment | Python interpreter; Docker uses `/usr/local/bin/python3` |
+| `ANALYST_SCRIPT` | `scripts/ask.py` | Dataset analyst entry point |
+| `OPENAI_API_KEY` | Unset | Optional production-planning copilot |
+| `OPENAI_MODEL` | `gpt-6-astra` | Production-planning model |
+| `API_PORT` | `8789` | Retained standalone Node HTTP adapter only; Next uses port 3000 |
+| `REDIS_URL` | Unset | Optional cache; otherwise process-local memory |
 
 ## Design decisions
 
 - **Child process instead of an agent service.** The routes spawn the Python
-  agent directly. That keeps the setup to one `bun run dev` (or one
+  agent directly. That keeps the setup to one `npm run dev` (or one
   container) with no second server to start, at the cost of a Python start-up
   per request. Progress is streamed from the child process's stderr, so the
   user still sees what the agent is doing.
@@ -280,9 +332,9 @@ derived identically.
   (one Deep Agent plus one large extraction call) to roughly 30 seconds, and
   a failing group falls back to documented middle-range defaults instead of
   failing the whole supplier.
-- **Dataset questions answered without a model.** The chat dock computes its
-  answers from the loaded data, so they are instant, deterministic and work
-  offline; web research is reserved for real companies.
+- **Separate AI contexts.** Supplier questions use the local dataset and
+  Nebius. Production suggestions use the current synthetic plans and OpenAI.
+  The planning rules and confirmation decisions remain deterministic.
 - **CSV + DuckDB instead of a database.** The dataset ships as CSV; DuckDB
   queries it in-process with SQL, and researched rows are just another CSV
   in the same query.
@@ -302,8 +354,12 @@ derived identically.
   `agent-output` volume), so they exist only where the research ran.
 - ERP columns (purchase-order volume, delivery rating, order change and
   confirmation rate) stay empty for researched companies.
-- The chat dock understands only the two question types above; open-ended
-  questions need `POST /api/analyst`, which the dashboard does not show yet.
-- `Last Modified` was added to the agent's CSV schema; an
-  `output/suppliers.csv` written by an older version has one column fewer
-  and should be deleted.
+- The dataset analyst requires a generated database and a Nebius key; live
+  supplier AI has not been verified during this integration.
+- Older research CSVs may lack the `Last Modified` column. Back up and migrate
+  those records before using the new schema; preserve existing research.
+- Planning uses synthetic data and three fixed alternatives. It has no real
+  bookings, shared capacity reservations or operational database. See
+  [PRODUCTION_PLANNING.md](PRODUCTION_PLANNING.md) for model assumptions.
+- Live OpenAI access remains unverified until a configured key passes the
+  bounded live check. The app has no user authentication or public deployment.

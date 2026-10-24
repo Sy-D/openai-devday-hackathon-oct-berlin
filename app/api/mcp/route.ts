@@ -5,6 +5,7 @@ import { z } from "zod"
 import { getSuppliers } from "@/lib/supplier-data"
 import { concentrationWarnings } from "@/lib/concentration"
 import { regionForSupplier } from "@/lib/geo"
+import { researchUnavailableReason } from "@/lib/agent-stream"
 
 const text = <T extends object>(data: T) => {
   // SAFETY: MCP tool responses are content blocks typed as "text".
@@ -129,6 +130,13 @@ const handler = createMcpHandler(
         inputSchema: { name: z.string().min(1).max(200) },
       },
       async ({ name }) => {
+        const unavailable = researchUnavailableReason()
+        if (unavailable) {
+          return {
+            ...text({ error: unavailable, code: "research_unavailable" }),
+            isError: true,
+          }
+        }
         try {
           const result = await research(name)
           return text({ supplier: JSON.parse(result) })

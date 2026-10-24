@@ -1,0 +1,71 @@
+# FORMA: three-minute demonstration
+
+## Open the production planner
+
+Start Next with `npm run dev -- --hostname 127.0.0.1`, then open **http://127.0.0.1:3000/planning** or choose **Production planning** in the shared sidebar. The supplier-risk dashboard lives at `/`. Both routes share `AppShell`; the production demo still uses its own synthetic orders and factories.
+
+The production copilot uses `/api/assistant` and `/api/health` on the same Next server. No separate port 8789 API is needed. Live OpenAI responses require optional server-side configuration and a successful real response; otherwise present the explicitly labelled demo fallback.
+
+## Promise
+
+"FORMA helps a planner recover an urgent order by choosing where its parts are made, where they come together, and how the complete product reaches the customer."
+
+## Story
+
+An urgent order needs twelve robotic gripper kits in Berlin and is forecast to arrive late. Each kit combines two printed component types with a purchased actuator. The fastest individual printer is not necessarily the fastest complete delivery, because assembly must wait for every component.
+
+## Demonstration sequence
+
+| Time | Action | What the audience should understand |
+| --- | --- | --- |
+| 0:00–0:25 | On `/planning`, show Needs action at the top; click Compare routes for FM-2048. | The planner sees order volume and delivery risk, then has a concrete next action. |
+| 0:25–0:55 | Open the urgent order and inspect its components and factory capabilities. | A polymer printer cannot manufacture the metal part, and the purchased actuator still belongs in the schedule. |
+| 0:55–1:35 | Compare cost, balanced and fast alternatives on the map. | The route includes production, transport to assembly, assembly and final delivery. Cost and deadline buffer update together. |
+| 1:35–2:10 | Ask the assistant: "Which plan meets the deadline at the lowest cost, and why?" | The assistant explains the existing feasible options from the same data used by the interface. Its suggestion does not assign a plan. |
+| 2:10–2:40 | Select a suitable plan and confirm it. | An operational decision changes the order's plan and the dashboard's action state. |
+| 2:40–3:00 | Show the updated route and metrics. | The result is an explainable recovery action with a visible cost and delivery trade-off. |
+
+Use the values shown by the running application rather than memorising illustrative prices or hours from a sketch. The app's dataset and planning calculation are the authoritative demo values.
+
+## Useful assistant prompts
+
+- "Which plan meets the deadline at the lowest cost, and why?"
+- "Why can't we send every part to the nearest factory?"
+- "Which component controls the assembly start time?"
+- "What extra cost buys the biggest delivery buffer?"
+
+When no OpenAI API key is configured, the interface must label the assistant's deterministic responses as demo mode. Do not describe those responses as a live model call.
+
+## What is real in this prototype
+
+The interface, route comparisons, eligibility rules, schedule calculations, state changes and confirmation path are implemented product behaviour. The production inputs are synthetic. The supplier dashboard uses the supplied risk dataset, which is not automatically linked to the production routes. There are no real factory bookings or carrier reservations.
+
+## Drawing
+
+Use the [shared editable Excalidraw board](https://link.excalidraw.com/l/44SXhWFHIar/5fLHSSwDGK8). The files `outputs/forma-production-workflow.excalidraw` and `outputs/forma-production-workflow.png` preserve the original workflow snapshot; the shared board is maintained separately as the build evolves.
+
+The diagram shows parallel component jobs converging at assembly. Its central rule is:
+
+```text
+delivery ETA = latest component arrival + assembly duration + final transport
+```
+
+The prototype scales assembly duration with quantity. It does not independently schedule QA, finishing or assembly queues. The original drawing includes those conceptual stages; explain the implemented calculation above when describing the app. The scenario deadline is 60 hours. No live supplier data or engineering approval is implied.
+
+## Before presenting
+
+- Run the application, open `/planning` and exercise the entire confirmation path once. Verify navigation back to the supplier dashboard at `/`.
+- Reset to the at-risk scenario so the audience sees the before/after change.
+- Check whether the assistant is in live or demo mode.
+- Keep the local demo available if venue connectivity fails.
+- Use the research notes for problem framing; do not claim the prototype replaces an existing industrial platform.
+
+For the npm setup, work lanes and merged-template boundaries, use [team startup](TEAM_START.md). The browser suite runs Next on port 5174; the default manual demo uses port 3000. The earlier Vite rehearsal does not establish that the merged app is ready: check the final integration evidence in `docs/HANDOFF.md`. A passing automated rehearsal verifies the product path; the presenter still needs to practise the spoken three-minute story.
+
+## Optional what-if extension
+
+After confirming Balanced, apply **42 kits / 60 hours**. The previous confirmation is now infeasible because Dresden can make 80 fingers per batch but the order needs 84. Fastest uses Munich and delivers in 49 hours for €13,081. Its 21 hours of assembly follow the last component arrival at hour 26. Show the warning, then review and confirm Fastest.
+
+Try **49 kits** to show that all predefined routes exceed capacity. Confirm is disabled and the top action points to quantity adjustment. At **12 kits / 33 hours**, capacity is available but every route is late. A late plan needs explicit acknowledgement and never clears the warning.
+
+The deadline is a duration from the fixed demo clock, not a live countdown. Confirming all three original action orders produces the real empty action state. Reset before the next demo.

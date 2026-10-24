@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process"
 import path from "node:path"
+import { researchUnavailableResponse } from "@/lib/agent-stream"
 
 const AGENT_DIR = path.join(process.cwd(), "deep-research-agent")
 const PYTHON_BIN = process.env.ANALYST_PYTHON ?? ".venv/bin/python"
@@ -35,6 +36,8 @@ export async function POST(request: Request) {
   if (!name) {
     return Response.json({ error: "Missing name" }, { status: 400 })
   }
+  const unavailable = researchUnavailableResponse()
+  if (unavailable) return unavailable
   try {
     return Response.json({ canonical: await resolve(name) })
   } catch {
