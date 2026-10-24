@@ -2,6 +2,9 @@ import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
   turbopack: { root: process.cwd() },
+  experimental: {
+    agentUpgrade: "security",
+  },
   serverExternalPackages: ["@duckdb/node-api"],
   outputFileTracingIncludes: {
     "/suppliers": ["./data/supplier_risk_dataset.csv", "./node_modules/@duckdb/node-bindings-*/**/*"],
