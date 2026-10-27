@@ -15,13 +15,16 @@ export async function GET(
   const hasHost = path[0].includes(".")
   const host = hasHost ? path[0] : "tiles.openfreemap.org"
   const upstreamPath = hasHost ? path.slice(1).join("/") : path.join("/")
+  if (!/^(?:[a-z0-9-]+\.)*openfreemap\.org$/.test(host) || upstreamPath.length > 2000)
+    return new Response("Unsupported map source", { status: 400 })
 
   try {
     // Cache the raw upstream payload — URL rewriting happens per request so a
     // style cached under one origin never leaks it to another deployment.
     const payload = await cached(`tile2:${host}/${upstreamPath}`, TTL, async () => {
       const response = await fetch(`https://${host}/${upstreamPath}`, {
-        headers: { "User-Agent": "supplier-risk-dashboard" },
+        headers: { "User-Agent": "FORMA-DeliveryPlanner/1.0" },
+        signal: AbortSignal.timeout(10_000),
       })
       if (!response.ok) throw new Error(`upstream ${response.status}`)
       const type = response.headers.get("content-type") ?? ""

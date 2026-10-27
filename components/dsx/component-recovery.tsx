@@ -1,17 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import dynamic from "next/dynamic"
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import {
   ArrowLeft,
   ArrowRight,
@@ -44,15 +35,6 @@ import { deliveryStatus, needsRouteReview } from "@/src/lib/dsx-confirmation"
 import { DisruptionFeed, FeedStatus, IncomingAlert } from "./disruption-feed"
 import styles from "./dsx.module.css"
 
-const RecoveryMap = dynamic(() => import("./recovery-map"), {
-  ssr: false,
-  loading: () => (
-    <div className={styles.mapLoading} role="status">
-      Loading route map…
-    </div>
-  ),
-})
-
 const money = (value: number) =>
   new Intl.NumberFormat("en-IE", {
     style: "currency",
@@ -75,6 +57,7 @@ export default function ComponentRecovery({
   const [chosenId, setChosenId] = useState<string | null>(null)
   const [reviewing, setReviewing] = useState<RouteAssessment | null>(null)
   const [notice, setNotice] = useState("")
+  const optionsRef = useRef<HTMLElement>(null)
   const selected =
     routes.find((route) => route.id === chosenId) ?? recommended ?? routes[0]
   const reviewRequired =
@@ -103,15 +86,18 @@ export default function ComponentRecovery({
   }
   return (
     <main id="main" className={styles.workspace} tabIndex={-1}>
-      <Link href="/" className={styles.back}>
+      <Link href="/?mode=demo" className={styles.back}>
         <ArrowLeft size={15} />
         Back to pod overview
       </Link>
       <header className={styles.hero}>
         <div>
-          <div className={styles.eyebrow}>POD 01 / COMPONENT RECOVERY</div>
+          <div className={styles.eyebrow}>POD 01 / RECOVERY REHEARSAL</div>
           <h1>{part.name}</h1>
-          <p>Review delivery routes from {part.supplierLocation} to Berlin.</p>
+          <p>
+            Illustrative shipments, prices and disruptions. Compare a recovery
+            decision here without changing real incident reports.
+          </p>
         </div>
         <FeedStatus />
       </header>
@@ -121,6 +107,33 @@ export default function ComponentRecovery({
         data-status={needsAction ? "blocked" : "on-track"}
         aria-label="Component required action"
       >
+        {needsAction && (
+          <a
+            className={styles.bannerAction}
+            href="#suggested-recovery"
+            aria-label={
+              recommended
+                ? "View suggested recovery plan"
+                : "Review recovery options"
+            }
+            onClick={(event) => {
+              event.preventDefault()
+              if (recommended) setChosenId(recommended.id)
+              setNotice("")
+              optionsRef.current?.focus({ preventScroll: true })
+              optionsRef.current?.scrollIntoView({
+                behavior: "instant",
+                block: "start",
+              })
+            }}
+          >
+            <span className="sr-only">
+              {recommended
+                ? "View suggested recovery plan"
+                : "Review recovery options"}
+            </span>
+          </a>
+        )}
         {needsAction ? <TriangleAlert size={23} /> : <CheckCircle2 size={23} />}
         <div>
           <h2>
@@ -140,23 +153,24 @@ export default function ComponentRecovery({
               : assessment.reason}
           </p>
         </div>
-        <Badge
-          variant="secondary"
+        <span
           className={styles.pill}
           data-status={needsAction ? "blocked" : "on-track"}
         >
           {needsAction
-            ? "Action required"
+            ? recommended
+              ? "View suggested recovery →"
+              : "Review options →"
             : assessment.status === "delivered"
               ? "Delivered"
               : "On track"}
-        </Badge>
+        </span>
       </section>
       {notice && (
         <div role="status" className={styles.savedNotice}>
           <Check size={17} />
           {notice}
-          <Link href="/">
+          <Link href="/?mode=demo">
             View updated pod <ArrowRight size={14} />
           </Link>
         </div>
@@ -201,22 +215,19 @@ export default function ComponentRecovery({
         </div>
       </section>
       <div className={styles.recoveryGrid}>
-        <Card
-          className={`gap-0 py-0 ${styles.routeNetwork}`}
+        <section
+          className={styles.routeNetwork}
           aria-label="Selected delivery route"
         >
-          <CardHeader className={styles.sectionHeading}>
+          <div className={styles.sectionHeading}>
             <div>
               <span className={styles.eyebrow}>SUPPLIER TO SITE</span>
-              <CardTitle>
-                <h2>{selected.name}</h2>
-              </CardTitle>
+              <h2>{selected.name}</h2>
               <p>
                 {selected.modeLabel} · {selected.edgeIds.length} transport links
               </p>
             </div>
-            <Badge
-              variant="secondary"
+            <span
               className={styles.pill}
               data-status={
                 !selected.available
@@ -231,24 +242,38 @@ export default function ComponentRecovery({
                 : selected.bufferHours < 0
                   ? "Misses target"
                   : "Meets target"}
-            </Badge>
-          </CardHeader>
-          <CardContent className="px-0">
-            <RecoveryMap key={selected.id} route={selected} />
-            <ol className={styles.routeStops} aria-label="Route stops">
-              {selected.nodeNames.map((name, index) => (
-                <li key={`${name}-${index}`}>
-                  <span>{index + 1}</span>
-                  {name}
-                </li>
+            </span>
+          </div>
+          <div className={styles.routeDrawing}>
+            <div className={styles.routeGrid} />
+            <div className={styles.routePath}>
+              {selected.nodeNames.map((name, i) => (
+                <div key={`${name}-${i}`} className={styles.routeStop}>
+                  <span>
+                    {i === 0 ? (
+                      <Package size={20} />
+                    ) : i === selected.nodeNames.length - 1 ? (
+                      <MapPin size={20} />
+                    ) : (
+                      <span className={styles.stopDot} />
+                    )}
+                  </span>
+                  <strong>{name}</strong>
+                  <small>
+                    {i === 0
+                      ? "Supplier dispatch"
+                      : i === selected.nodeNames.length - 1
+                        ? "POD 01 · destination"
+                        : "Transfer point"}
+                  </small>
+                </div>
               ))}
-            </ol>
-            <p className={styles.mapNote}>
-              Transport links between scenario locations. Lines do not show
-              exact road, rail, sea or flight paths.
-            </p>
-          </CardContent>
-          <CardContent className={styles.routeNumbers}>
+            </div>
+            <span className={styles.routeCaption}>
+              Schematic route · not a geographic map
+            </span>
+          </div>
+          <div className={styles.routeNumbers}>
             <div>
               <small>FORECAST</small>
               <strong>
@@ -267,8 +292,8 @@ export default function ComponentRecovery({
                   : "Blocked"}
               </strong>
             </div>
-          </CardContent>
-          <CardContent className={styles.routeIssues}>
+          </div>
+          <div className={styles.routeIssues}>
             {selected.eventIds.length ? (
               selected.eventIds.map((id) => {
                 const event = disruptionEvents.find((item) => item.id === id)!
@@ -295,62 +320,59 @@ export default function ComponentRecovery({
                 </span>
               </div>
             )}
-          </CardContent>
-        </Card>
-        <Card
+          </div>
+        </section>
+        <section
+          id="suggested-recovery"
+          ref={optionsRef}
+          tabIndex={-1}
           className={styles.routeChoices}
           aria-label="Recovery route options"
         >
-          <CardHeader className="px-0">
-            <CardTitle>
-              <h2>Recovery options</h2>
-            </CardTitle>
-            <CardDescription>
-              Only available routes that meet the delivery target can be
-              confirmed.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="px-0">
-            <div className={styles.routeOptions}>
-              {routes.map((route) => (
-                <Button
-                  variant="outline"
-                  key={route.id}
-                  data-testid={`dsx-route-${route.id}`}
-                  className={styles.routeOption}
-                  aria-pressed={route.id === selected.id}
-                  onClick={() => {
-                    setChosenId(route.id)
-                    setNotice("")
-                  }}
-                >
-                  <div>
-                    <span className={styles.radio}>
-                      {route.id === selected.id && <i />}
-                    </span>
-                    <strong>{route.name}</strong>
-                    {recommended?.id === route.id && (
-                      <span className={styles.recommended}>Recommended</span>
-                    )}
-                  </div>
-                  <small>{route.modeLabel}</small>
-                  <div className={styles.optionMetrics}>
-                    <b>{money(route.cost)}</b>
-                    <span>
-                      {route.available ? `${route.etaHours}h` : "Blocked"}
-                    </span>
-                    <em data-late={!route.available || route.bufferHours < 0}>
-                      {!route.available
-                        ? "Unavailable"
-                        : route.bufferHours < 0
-                          ? `${-route.bufferHours}h late`
-                          : `${route.bufferHours}h spare`}
-                    </em>
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
+          <span className={styles.eyebrow}>COMPARE YOUR OPTIONS</span>
+          <h2>A better way through.</h2>
+          <p>
+            Only available routes that meet the delivery target can be
+            confirmed.
+          </p>
+          <div className={styles.routeOptions}>
+            {routes.map((route) => (
+              <button
+                key={route.id}
+                data-testid={`dsx-route-${route.id}`}
+                className={styles.routeOption}
+                aria-pressed={route.id === selected.id}
+                onClick={() => {
+                  setChosenId(route.id)
+                  setNotice("")
+                }}
+              >
+                <div>
+                  <span className={styles.radio}>
+                    {route.id === selected.id && <i />}
+                  </span>
+                  <strong>{route.name}</strong>
+                  {recommended?.id === route.id && (
+                    <span className={styles.recommended}>Recommended</span>
+                  )}
+                </div>
+                <small>{route.modeLabel}</small>
+                <div className={styles.optionMetrics}>
+                  <b>{money(route.cost)}</b>
+                  <span>
+                    {route.available ? `${route.etaHours}h` : "Blocked"}
+                  </span>
+                  <em data-late={!route.available || route.bufferHours < 0}>
+                    {!route.available
+                      ? "Unavailable"
+                      : route.bufferHours < 0
+                        ? `${-route.bufferHours}h late`
+                        : `${route.bufferHours}h spare`}
+                  </em>
+                </div>
+              </button>
+            ))}
+          </div>
           {!recommended && (
             <p className={styles.noRoute} role="status">
               No available route meets the target. Resolve the incident or
@@ -365,10 +387,10 @@ export default function ComponentRecovery({
             Saves a planning decision in this browser. It does not book
             transport or mark the shipment delivered.
           </p>
-          <Link className={styles.textLink} href="/suppliers">
-            Open supplier intelligence <ArrowRight size={14} />
+          <Link className={styles.textLink} href={`/?component=${part.id}`}>
+            View researched hardware <ArrowRight size={14} />
           </Link>
-        </Card>
+        </section>
       </div>
       <DisruptionFeed />
       <Dialog
@@ -425,6 +447,9 @@ export default function ComponentRecovery({
         </DialogContent>
       </Dialog>
       <footer className={styles.pageFooter}>
+        <span>
+          <strong>forma.</strong> Make the connection.
+        </span>
         <p>
           Fictional supplier shipments and simulated incidents. Times are
           measured from the fixed scenario dispatch clock.

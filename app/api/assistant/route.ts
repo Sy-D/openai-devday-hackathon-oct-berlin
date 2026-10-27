@@ -1,7 +1,11 @@
-import { productionApi } from '@/server/production-api';
+export const runtime = "nodejs"
 
-export const runtime = 'nodejs';
-
-export async function POST(request: Request) {
-  return productionApi().assistant(request);
+export async function POST() {
+  return Response.json(
+    {
+      error:
+        "The simulated production assistant has been retired. Use the sourced delivery workflow at /planning.",
+    },
+    { status: 410 }
+  )
 }

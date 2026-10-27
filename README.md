@@ -1,55 +1,50 @@
-# FORMA: supplier risk and production planning
+# FORMA: infrastructure delivery decisions
 
-A shared hackathon workspace for infrastructure delivery, supplier intelligence and recovery planning:
+Select a physical part of a modular AI data center, inspect its product and seller evidence, calculate road alternatives and compare the consequences of live incidents.
 
-- **POD overview at `/`**: inspect a DSX POD inspired 3D container, switch to wireframe or 2D, and select ten tracked subsystems. Red and amber markers identify disrupted deliveries.
-- **Component recovery at `/planning?component=compute-a`**: inspect the affected supplier shipment, compare transport alternatives, and explicitly confirm a recovery route. Incoming simulated incidents update availability and ETA without refreshing.
-- **Supplier intelligence at `/suppliers`**: Simon's existing dashboard, with 10,000 anonymized suppliers, maps, profiles and optional analyst chat.
-- **Manufacturing planning at `/planning`**: the original FORMA order and manufacturing demo remains available.
+- `/`: interactive hardware model, ten component references and a direct path into delivery planning.
+- `/planning?component=optics`: exact NVIDIA optical-module offers, editable origin/destination/timing, live road geometry, relevant reports, cost/time/emissions comparison and saved decisions.
+- `/incidents`: automatically updated reports from GDACS, NASA EONET, Autobahn A2/A24/A10 and NDW; PortWatch remains explicitly historical.
 
-Simon’s frontend is the design template for every view: shared controls, theme colors, typography, rounded surfaces and animations. **Reset view** restores the full 3D model after switching modes or moving the camera. The new pod's supplier assignments, geometry, transport costs and incident scenarios are illustrative. They are not actual NVIDIA supplier reports, live flight/rail data or an official CAD model. The supplier directory and manufacturing demo keep their separate datasets.
+**Two-minute walkthrough:** [demo script](docs/DEMO.md). **Current delivery checklist:** [remaining work](docs/CONNECTED_WORKSPACE_TODO.md).
 
-```mermaid
-flowchart LR
-  Events[Simulated incident catalog] --> SSE[Server-sent event stream]
-  SSE --> State[Shared incident state]
-  State --> Routes[Assess transport routes]
-  Routes --> Model[3D pod overview]
-  Model --> Detail[Component recovery]
-  Detail --> Decision[Reviewed local confirmation]
-  Model --> Suppliers[Existing supplier dashboard]
-```
+## What the numbers mean
 
-See [the overview and push workflow](docs/DSX_OVERVIEW.md) and [dataset assumptions](docs/DSX_DATA.md).
+Public seller prices, availability wording and source timestamps are preserved. Missing prices or dispatch information use planning inputs whose provenance is available in the evidence panel. Manufacturer links establish product identity; they do not validate estimated commercial terms or mixed-vendor compatibility.
 
-## Start locally
+Valhalla supplies actual road geometry and modeled driving time. Current Autobahn delays are applied only to fresh direction-aligned road overlap; overlapping queues use the largest report, not a sum. Avoidance samples the full reported road section and the resulting route is checked again. A nearby report or ramp closure never establishes that an entire delivery is blocked.
 
-Use **Node.js 22.12 or later** and npm. In an existing checkout:
+Small-part transport uses HanseSprint's published tariff, including its bands, service multiplier, pickup-time surcharges and rounding. Its cost is an estimate pending carrier confirmation. Diesel-car emissions use the UK 2026 average-car factor. Large-part freight and emissions use explicit planning assumptions; car routing does not establish heavy-vehicle clearance. The comparison may recommend retaining the original route when alternatives are slower or costlier.
+
+Decisions are saved in this browser, with original evidence retained. Changed inputs, route selection or relevant reports require review. There is no purchase, carrier booking, shared order database or guaranteed arrival promise. Incident records cannot be paused, reset or cleared by users. The previous scripted planners are no longer accessible, including through `?mode=demo`; legacy supplier routes redirect to planning, and scripted disruption/assistant endpoints return 410.
+
+## Run locally
+
+Use Node.js 22.12 or later:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open **http://localhost:3000** for the pod overview, **http://localhost:3000/suppliers** for supplier intelligence and **http://localhost:3000/planning** for the manufacturing demo. Stop the server with Ctrl+C. No credentials or Python installation are needed to explore the bundled supplier data or run the planning demo. Map tiles and climate panels use public network services.
+Open http://localhost:3000. Public incident, routing and place-search services need network access but no credentials. Place lookup uses an explicit search action through [Photon](https://github.com/komoot/photon#demo-server) with a bounded per-process cache and request spacing; PHOTON_SEARCH_URL can select a separately hosted service. For a production preview run `npm run build` followed by `npm start`.
 
-`package-lock.json` is the canonical JavaScript lockfile. `npm ci` also applies the checked-in `metal-fx` patch. Use `npm run build` followed by `npm start` to run the production build on port 3000.
+```sh
+npm test
+npm run lint
+npm run build
+PLAYWRIGHT_USE_PRODUCTION=1 npm run test:e2e
+```
 
-Repository: [Sy-D/openai-devday-hackathon-oct-berlin](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin). The original frontend integration was merged into main in [PR #2](https://github.com/Sy-D/openai-devday-hackathon-oct-berlin/pull/2); the earlier FORMA draft is preserved at `c89d43b` on `codex/forma-first-draft`. Both branches are available to teammates. See [the handoff](docs/HANDOFF.md) for verification and hosting status.
+The JavaScript lockfile is canonical; `npm ci` applies the existing metal-fx patch. Browser fixtures are confined to tests and are never substituted for failed live providers. See [test coverage](tests/README.md).
 
-## Optional AI features
+## Runtime and source limits
 
-Keep credentials server-side in the ignored root `.env` file. If no `.env` exists, copy `.env.example` to `.env`, then fill in only the providers you intend to use. Do not overwrite an existing configuration or commit secrets. Restart the server after changing configuration.
+Provider requests are bounded and cached per process. Incident failures retain last-good reports with stale status; routing failures show an error or retain a baseline with an explicit avoidance warning. There is no durable event archive or cross-instance polling coordinator. Public routing and Photon search are fair-use demo services; a production deployment needs appropriate service arrangements. Attribution remains on the map.
 
-| Feature | Requirements |
-| --- | --- |
-| Planning copilot at `/planning` | `OPENAI_API_KEY`; optional `OPENAI_MODEL`. Without a key, it uses an explicitly labelled deterministic demo reply. |
-| Supplier dataset analyst | Python setup below, `data/suppliers.duckdb`, and `NEBIUS_API_KEY`. |
-| Standalone company research | Python setup below, `NEBIUS_API_KEY` and `TAVILY_API_KEY`. No dashboard UI. |
+Simon’s shared design is retained with selected control, spacing and touch-target improvements. His new branch was not merged wholesale, and none of its simulated backend behavior replaced this workflow. The separate removal of his legacy supplier implementation remains teammate-owned. The following material is historical setup for that retained code, not the current application path.
 
-The two AI integrations have separate configuration. Setting an OpenAI key does not configure the supplier agents. Never prefix secrets with `NEXT_PUBLIC_` or `VITE_`. Planning API details and the one-request live check are in [docs/AI.md](docs/AI.md).
-
-### Supplier agent setup
+### Legacy supplier agent setup (separate removal pending)
 
 Install Python 3.12 or later, then run these commands from the repository root:
 
@@ -63,7 +58,7 @@ The last command builds the local database used by the dataset analyst. The dash
 
 Supplier defaults are `NEBIUS_MODEL=MiniMaxAI/MiniMax-M3` and `NEBIUS_BASE_URL=https://api.tokenfactory.nebius.com/v1`. Research streams progress while it runs; duration depends on provider and search response times.
 
-The research agent UI is currently removed. Its backend and CLI remain available:
+The research agent can also run on its own:
 
 ```sh
 cd deep-research-agent
@@ -89,7 +84,9 @@ It serves the same application routes on port 3000. Optional provider values com
 - **Search**: start typing or press Cmd+K / Ctrl+K. Arrow keys and Enter open a supplier profile; Cmd/Ctrl+Enter sends the text to the analyst chat.
 - **Analyst chat**: asks the configured Nebius model to generate a read-only SQL query over the local supplier database, then explains the result. It supports follow-up questions and optional structured answer blocks. This feature needs the Python setup and Nebius key above.
 - **Table and filters**: sort columns and filter by risk level, maximum total or financial risk, minimum delivery rating and sourcing risk.
-- **Selection and chart**: select suppliers to focus the chart and fact cards. Open supplier profiles from the chart or table.
+- **Selection and chart**: select up to 20 suppliers to focus the chart and fact cards. Open supplier profiles from the chart or table.
+- **Compare and export**: compare selected suppliers on `/compare` or export a shortlist memo.
+- **Research a real company**: check existing matches, resolve the official name, and watch eight criteria groups gather evidence and score risk. The result includes reasons and source URLs. Researched rows use `RSCH_` IDs alongside anonymized `SUPP_` rows.
 
 Risk scores run from 0 (no risk) to 100 (maximum risk); higher delivery ratings are better. [Column definitions](data/risk_criteria_description.md) explain the schema. Public-source model estimates need review before procurement decisions.
 
@@ -116,9 +113,8 @@ After configuring the production assistant's key, `npm run test:live` makes one 
 
 ```text
 app/                    Next.js App Router
-  page.tsx              POD delivery overview
-  suppliers/            Supplier dashboard
-  supplier/             Single-supplier profile pages
+  page.tsx              Supplier dashboard
+  compare/, supplier/   Supplier comparison and profile pages
   planning/             Production planner inside the shared shell
   api/resolve/          Company-name resolution
   api/research/         Supplier research and scoring (SSE)

@@ -1,9 +1,12 @@
-import { createDisruptionStream } from "@/server/disruption-stream"
-
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
-export const maxDuration = 60
 
-export function GET(request: Request) {
-  return createDisruptionStream(request)
+export function GET() {
+  return Response.json(
+    {
+      error:
+        "Scripted disruptions have been retired. Use /api/incidents/stream for provider reports.",
+    },
+    { status: 410 }
+  )
 }

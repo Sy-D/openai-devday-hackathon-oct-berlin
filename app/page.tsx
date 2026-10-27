@@ -1,12 +1,16 @@
 import type { Metadata } from "next"
-import DsxDashboard from "@/components/dsx/dsx-dashboard"
+import LiveDsxDashboard from "@/components/dsx/live-dsx-dashboard"
 
 export const metadata: Metadata = {
-  title: "POD delivery overview | FORMA",
+  title: "Infrastructure workspace | FORMA",
   description:
-    "Inspect every infrastructure component and recover disrupted supplier deliveries.",
+    "Explore sourced hardware and plan real deliveries against live incident reports.",
 }
-
-export default function Page() {
-  return <DsxDashboard />
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ component?: string; mode?: string }>
+}) {
+  const { component } = await searchParams
+  return <LiveDsxDashboard initialComponent={component} />
 }

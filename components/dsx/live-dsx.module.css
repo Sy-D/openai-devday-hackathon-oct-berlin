@@ -1,0 +1,406 @@
+@reference "../../app/globals.css";
+/* Shared Card surfaces keep the overview consistent with the Base UI template. */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.metricContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.metricContent strong {
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+.metricContent > span {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.actionTile {
+  padding: 0;
+  gap: 0;
+  min-width: 0;
+}
+.actionTile:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.modelSurface {
+  padding: 8px 0 0;
+  gap: 0;
+  border: 0;
+}
+.modelSurface > div {
+  border: 0;
+}
+.modelSurface [role="group"] {
+  border: 0;
+}
+.nextAction {
+  --primary-action-color: #4f7fee;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  margin-bottom: 0;
+  border: 0;
+  border-radius: var(--radius-2xl);
+  background: var(--card);
+}
+.actionArea {
+  margin-bottom: 24px;
+  font-variant-numeric: tabular-nums;
+}
+.nextAction[data-status="ready"] {
+  border-color: color-mix(in oklab, #4f7fee 35%, var(--border));
+  background: color-mix(in oklab, #4f7fee 7%, var(--card));
+}
+.nextAction[data-status="changed"] {
+  --primary-action-color: var(--risk-critical);
+  border-color: color-mix(in oklab, var(--risk-critical) 40%, var(--border));
+  background: color-mix(in oklab, var(--risk-critical) 7%, var(--card));
+}
+.nextAction[data-status="ready"] > svg {
+  color: #4f7fee;
+}
+.nextAction[data-status="changed"] > svg {
+  color: var(--risk-critical);
+}
+.nextAction[data-status="exposed"] {
+  --primary-action-color: var(--risk-medium);
+  border-color: color-mix(in oklab, var(--risk-medium) 40%, var(--border));
+  background: color-mix(in oklab, var(--risk-medium) 7%, var(--card));
+}
+.nextAction[data-status="exposed"] > svg {
+  color: var(--risk-medium);
+}
+.primaryActionIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  color: var(--primary-action-color);
+  background: color-mix(in oklab, var(--primary-action-color) 12%, transparent);
+}
+.actionEyebrow {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  color: var(--muted-foreground);
+  margin-bottom: 5px;
+}
+.actionArea .nextAction h2 {
+  font-size: 18px;
+  letter-spacing: -0.025em;
+}
+.nextAction > a {
+  min-height: 44px;
+}
+.actionRail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.actionCard {
+  --action-color: #4f7fee;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  padding: 16px;
+  border: 0;
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  transition: background 150ms ease-out;
+}
+.actionCard:hover {
+  background: var(--muted);
+}
+.actionCard > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.actionCard > svg {
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+.actionCard strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.actionCard small {
+  display: block;
+  font-size: 11px;
+  color: var(--action-color);
+  line-height: 1.5;
+  margin-top: 3px;
+}
+.actionIndicator {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  color: var(--action-color);
+}
+.actionCard[data-status="changed"],
+.part[data-status="changed"] {
+  --action-color: var(--risk-critical);
+}
+.actionCard[data-status="exposed"],
+.part[data-status="exposed"] {
+  --action-color: var(--risk-medium);
+}
+.actionCard[data-status="reviewed"],
+.part[data-status="reviewed"] {
+  --action-color: var(--risk-low);
+}
+.actionCard:focus-visible,
+.partInspect:focus-visible,
+.partState:focus-visible,
+.geometryNote summary:focus-visible,
+.evidenceNote summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.geometryNote {
+  max-width: 330px;
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.geometryNote summary,
+.evidenceNote summary {
+  cursor: pointer;
+  min-height: 32px;
+  display: list-item;
+  align-content: center;
+}
+.geometryNote p {
+  line-height: 1.5;
+  padding-bottom: 6px;
+}
+.partInspect {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-height: 112px;
+  text-align: left;
+  cursor: pointer;
+}
+.partInspect > span {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.partState {
+  --action-color: #4f7fee;
+  font-size: 11px;
+  min-height: 44px;
+  color: var(--action-color);
+  padding-top: 10px;
+}
+.part[data-status="changed"] .partState {
+  color: var(--risk-critical);
+}
+.part[data-status="exposed"] .partState {
+  color: var(--risk-medium);
+}
+.part[data-status="reviewed"] .partState {
+  color: var(--risk-low);
+}
+.nextAction > svg {
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+.nextAction > div {
+  flex: 1;
+  min-width: 0;
+}
+.nextAction h2 {
+  font-size: 14px;
+  font-weight: 600;
+}
+.nextAction p {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.6;
+  max-width: 790px;
+  margin-top: 4px;
+}
+.overview {
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 340px;
+}
+.inspection {
+  min-width: 0;
+  border: 0;
+  border-radius: var(--radius-2xl);
+  padding: 18px;
+  background: var(--card);
+}
+.inspectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.inspectionHeader h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+.emptyInspection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 10px 0;
+}
+.emptyInspection > svg {
+  color: var(--muted-foreground);
+}
+.emptyInspection h2 {
+  font-size: 18px;
+  font-weight: 500;
+}
+.emptyInspection p,
+.evidenceNote p {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.evidenceNote {
+  padding: 16px 0;
+  margin-top: 16px;
+}
+.evidenceNote strong {
+  font-size: 12px;
+}
+.evidenceNote p {
+  margin: 6px 0 12px;
+}
+.evidenceNote a,
+.subtleLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.subtleLink {
+  color: var(--muted-foreground);
+}
+.caption {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+.inventory {
+  margin: 26px 0;
+}
+.sectionHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.sectionHeading h2 {
+  font-size: 15px;
+  font-weight: 600;
+}
+.sectionHeading > span {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 16px;
+}
+.part {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px;
+  text-align: left;
+  border: 0;
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  transition:
+    background 0.18s,
+    border-color 0.18s;
+}
+.part:hover,
+.part:has(.partInspect[aria-pressed="true"]) {
+  background: var(--muted);
+  border-color: var(--muted-foreground);
+}
+.part:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.part strong {
+  font-size: 13px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.part > span {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.partCategory {
+  font-weight: 500;
+}
+.partState {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 7px;
+}
+.partState svg {
+  flex-shrink: 0;
+}
+@media (max-width: 1200px) {
+  .overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 650px) {
+  .metrics,
+  .actionRail {
+    grid-template-columns: 1fr;
+  }
+  .nextAction {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .nextAction > div {
+    flex-basis: calc(100% - 58px);
+  }
+  .nextAction > a {
+    margin-left: 58px;
+  }
+}

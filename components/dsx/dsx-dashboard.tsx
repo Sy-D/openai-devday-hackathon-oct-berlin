@@ -2,36 +2,26 @@
 
 import dynamic from "next/dynamic"
 import Link from "next/link"
-import { useMemo, useRef, useState } from "react"
+import { useMemo, useState } from "react"
 import {
   ArrowRight,
+  Box,
+  CheckCircle2,
   ChevronRight,
   Cuboid,
   Layers3,
+  Package,
   RotateCcw,
   Search,
+  ShieldCheck,
   Truck,
   X,
 } from "lucide-react"
 import { AppShell } from "@/components/dashboard/app-shell"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card"
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select"
-import type { PartAssessment } from "@/src/lib/dsx-routing"
 import { Input } from "@/components/ui/input"
+import type { AssemblyView } from "./rack-geometry"
 import { dsxParts, disruptionEvents } from "@/src/data/dsx"
 import {
   getPartStatus,
@@ -53,15 +43,6 @@ const RackViewer = dynamic(() => import("./rack-viewer"), {
     </div>
   ),
 })
-type StatusFilter = "all" | "attention" | PartAssessment["status"]
-const filterOptions = [
-  { value: "all", label: "All delivery states" },
-  { value: "attention", label: "Needs action" },
-  { value: "blocked", label: "Delivery blocked" },
-  { value: "delayed", label: "Delivery delayed" },
-  { value: "on-track", label: "On track" },
-  { value: "delivered", label: "Delivered" },
-] satisfies { value: StatusFilter; label: string }[]
 const statusLabels = {
   blocked: "Delivery blocked",
   delayed: "Delivery delayed",
@@ -78,12 +59,12 @@ const euro = (value: number) =>
 export default function DsxDashboard() {
   const { activeEventIds } = useDisruptions()
   const { assignments } = useConfirmedRoutes()
-  const selectionTrigger = useRef<HTMLElement | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [mode, setMode] = useState<"solid" | "wireframe" | "schematic">("solid")
   const [resetKey, setResetKey] = useState(0)
+  const [assemblyView, setAssemblyView] = useState<AssemblyView>("cutaway")
   const [partQuery, setPartQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
+  const [statusFilter, setStatusFilter] = useState("all")
   const assessed = useMemo(
     () =>
       dsxParts.map((part) => {
@@ -115,21 +96,15 @@ export default function DsxDashboard() {
   const selectedDecision = assignments.find(
     (item) => item.componentId === selected?.part.id
   )
-  function selectPart(id: string) {
-    selectionTrigger.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null
-    setSelectedId(id)
-  }
-  function closeInspection() {
-    setSelectedId(null)
-    selectionTrigger.current?.focus()
-  }
   function inspectPart(id: string) {
     setPartQuery("")
     setStatusFilter("all")
-    selectPart(id)
+    setAssemblyView("cutaway")
+    setSelectedId(id)
+  }
+  function selectPart(id: string) {
+    setAssemblyView("cutaway")
+    setSelectedId(id)
   }
   const alternative = selected
     ? recommendedRoute(getPartRoutes(selected.part.id, activeEventIds))
@@ -141,47 +116,54 @@ export default function DsxDashboard() {
   }))
 
   return (
-    <AppShell breadcrumb={["Workspace", "Overview"]}>
+    <AppShell breadcrumb={["Workspace", "Recovery rehearsal"]}>
       <main id="main" className={styles.workspace} tabIndex={-1}>
         <header className={styles.hero}>
           <div>
-            <h1>POD 01 delivery</h1>
+            <div className={styles.eyebrow}>
+              <span className={styles.greenDot} /> FORMA / INFRASTRUCTURE
+              DELIVERY
+            </div>
+            <h1>One pod. Every dependency.</h1>
             <p>
-              Berlin integration site · {dsxParts.length} tracked subsystems ·{" "}
-              {attention.length} require action
+              See what is holding your AI infrastructure back. Go from a part to
+              a recovery plan.
             </p>
           </div>
           <div className={styles.heroActions}>
-            <Badge variant="outline">Simulated workspace</Badge>
+            <Badge variant="outline">Recovery rehearsal · simulated</Badge>
             <FeedStatus />
           </div>
         </header>
         <section className={styles.readiness} aria-label="Delivery overview">
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>Deployment</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div>
+            <span className={styles.metricIcon}>
+              <Cuboid size={20} />
+            </span>
+            <div>
+              <small>DEPLOYMENT</small>
               <strong>Berlin · POD 01</strong>
-              <span>DSX POD reference model</span>
-            </CardContent>
-          </Card>
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>Requires action</CardTitle>
-            </CardHeader>
-            <CardContent>
+              <span>DSX POD inspired reference</span>
+            </div>
+          </div>
+          <div>
+            <span className={styles.metricIcon} data-tone="red">
+              <Package size={20} />
+            </span>
+            <div>
+              <small>REQUIRES ACTION</small>
               <strong data-testid="dsx-action-count">
                 {attention.length} <em>of {dsxParts.length} parts</em>
               </strong>
-              <span>Blocked or delayed deliveries</span>
-            </CardContent>
-          </Card>
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>On track or delivered</CardTitle>
-            </CardHeader>
-            <CardContent>
+              <span>Delivery issues, not hardware failures</span>
+            </div>
+          </div>
+          <div>
+            <span className={styles.metricIcon} data-tone="green">
+              <ShieldCheck size={20} />
+            </span>
+            <div>
+              <small>DELIVERY READINESS</small>
               <strong>
                 {
                   assessed.filter(
@@ -189,22 +171,23 @@ export default function DsxDashboard() {
                       item.status === "on-track" || item.status === "delivered"
                   ).length
                 }{" "}
-                <em>of {dsxParts.length} parts</em>
+                <em>on track or delivered</em>
               </strong>
-              <span>Based on current delivery routes</span>
-            </CardContent>
-          </Card>
+              <span>Updated from current routes</span>
+            </div>
+          </div>
         </section>
         <IncomingAlert />
         <div className={styles.overviewGrid}>
-          <Card
-            className={`gap-0 py-0 ${styles.modelCard}`}
-            role="region"
+          <section
+            className={styles.modelCard}
             aria-label="Interactive DSX POD model"
           >
-            <CardHeader className={styles.modelToolbar}>
+            <div className={styles.modelToolbar}>
               <div>
-                <CardTitle className={styles.modelTitle}>Pod model</CardTitle>
+                <span className={styles.modelTitle}>
+                  <Box size={15} /> POD 01 <small>/ DIGITAL OVERVIEW</small>
+                </span>
               </div>
               <div className={styles.modelActions}>
                 <div
@@ -242,9 +225,10 @@ export default function DsxDashboard() {
                 <Button
                   size="xs"
                   variant="outline"
-                  title="Restore the full 3D model and clear the selected part"
+                  title="Restore the full 3D cutaway and clear selection and filters"
                   onClick={() => {
                     setMode("solid")
+                    setAssemblyView("cutaway")
                     setSelectedId(null)
                     setPartQuery("")
                     setStatusFilter("all")
@@ -255,8 +239,46 @@ export default function DsxDashboard() {
                   Reset view
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent
+            </div>
+            <div className={styles.assemblyToolbar}>
+              <div
+                className={styles.viewControls}
+                role="group"
+                aria-label="Enclosure assembly view"
+              >
+                {(
+                  [
+                    ["cutaway", "Cutaway"],
+                    ["enclosed", "Enclosed"],
+                    ["exploded", "Exploded"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <Button
+                    key={value}
+                    size="xs"
+                    variant={assemblyView === value ? "secondary" : "ghost"}
+                    aria-pressed={assemblyView === value}
+                    disabled={mode === "schematic"}
+                    onClick={() => {
+                      setSelectedId(null)
+                      setAssemblyView(value)
+                    }}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+              <span aria-live="polite">
+                {mode === "schematic"
+                  ? "Choose 3D or wireframe to explore the enclosure."
+                  : assemblyView === "exploded"
+                    ? "Panels and cooling deck separate to reveal the layers."
+                    : assemblyView === "enclosed"
+                      ? "The complete shell. Select a part to see inside."
+                      : "Open shell. Inspect the racks and service connections."}
+              </span>
+            </div>
+            <div
               className={styles.modelSearch}
               role="search"
               aria-label="Find pod components"
@@ -271,29 +293,23 @@ export default function DsxDashboard() {
                   onChange={(event) => setPartQuery(event.target.value)}
                 />
               </div>
-              <Select<StatusFilter>
-                items={filterOptions}
+              <select
+                aria-label="Filter parts by delivery state"
                 value={statusFilter}
-                onValueChange={(value) => {
-                  if (value) setStatusFilter(value)
-                }}
+                onChange={(event) => setStatusFilter(event.target.value)}
               >
-                <SelectTrigger aria-label="Filter parts by delivery state">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent alignItemWithTrigger={false}>
-                  {filterOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="all">All delivery states</option>
+                <option value="attention">Needs action</option>
+                <option value="blocked">Delivery blocked</option>
+                <option value="delayed">Delivery delayed</option>
+                <option value="on-track">On track</option>
+                <option value="delivered">Delivered</option>
+              </select>
               <span role="status">
                 {filteredParts.length} of {dsxParts.length} parts
               </span>
-            </CardContent>
-            <CardContent className={styles.modelStage}>
+            </div>
+            <div className={styles.modelStage}>
               <RackViewer
                 parts={viewerParts}
                 visibleIds={visibleIds}
@@ -301,9 +317,10 @@ export default function DsxDashboard() {
                 onSelect={selectPart}
                 mode={mode}
                 resetKey={resetKey}
+                assemblyView={assemblyView}
               />
-            </CardContent>
-            <CardFooter className={styles.modelFooter}>
+            </div>
+            <div className={styles.modelFooter}>
               <span>Drag to orbit · scroll to zoom · right-drag to pan</span>
               <div>
                 <i data-status="blocked" />
@@ -311,16 +328,16 @@ export default function DsxDashboard() {
                 Delayed <i data-status="on-track" />
                 On track
               </div>
-            </CardFooter>
-          </Card>
-          <Card
-            role="complementary"
-            className={`py-0 ${styles.inspection}`}
+            </div>
+          </section>
+          <aside
+            className={styles.inspection}
             aria-label="Component inspection"
           >
             {selected ? (
-              <CardContent
-                role="region"
+              <section
+                role="dialog"
+                aria-modal="false"
                 aria-labelledby="inspection-title"
                 className={styles.inspectionBody}
                 key={selected.part.id}
@@ -330,24 +347,18 @@ export default function DsxDashboard() {
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={closeInspection}
+                    onClick={() => setSelectedId(null)}
                     aria-label="Close part inspection"
                   >
                     <X size={16} />
                   </Button>
                 </div>
-                <Badge
-                  variant="secondary"
-                  className={styles.pill}
-                  data-status={selected.status}
-                >
+                <span className={styles.pill} data-status={selected.status}>
                   {selected.review
                     ? "Confirmation needs review"
                     : statusLabels[selected.status]}
-                </Badge>
-                <CardTitle>
-                  <h2 id="inspection-title">{selected.part.name}</h2>
-                </CardTitle>
+                </span>
+                <h2 id="inspection-title">{selected.part.name}</h2>
                 <p>{selected.part.description}</p>
                 <dl className={styles.facts}>
                   <div>
@@ -432,16 +443,20 @@ export default function DsxDashboard() {
                     </Link>
                   </>
                 )}
-                <Link className={styles.textLink} href="/suppliers">
-                  Explore supplier intelligence <ChevronRight size={14} />
+                <Link
+                  className={styles.textLink}
+                  href={`/?component=${selected.part.id}`}
+                >
+                  View researched hardware <ChevronRight size={14} />
                 </Link>
-              </CardContent>
+              </section>
             ) : (
-              <CardContent className={styles.inspectionBody}>
+              <div className={styles.inspectionBody}>
+                <span className={styles.eyebrow}>YOUR NEXT MOVE</span>
                 <h2>
                   {attention.length
-                    ? "Deliveries requiring action"
-                    : "All deliveries on track"}
+                    ? "Start with the red dots."
+                    : "Every delivery is on track."}
                 </h2>
                 <p>
                   Select a part to inspect its supplier, delivery route and
@@ -449,8 +464,7 @@ export default function DsxDashboard() {
                 </p>
                 <div className={styles.actionList}>
                   {attention.map((item) => (
-                    <Button
-                      variant="ghost"
+                    <button
                       key={item.part.id}
                       onClick={() => inspectPart(item.part.id)}
                     >
@@ -467,27 +481,33 @@ export default function DsxDashboard() {
                         </small>
                       </div>
                       <ChevronRight size={16} />
-                    </Button>
+                    </button>
                   ))}
                 </div>
-              </CardContent>
+                <div className={styles.inspectionNote}>
+                  <CheckCircle2 size={18} />
+                  <p>
+                    All ten subsystems are selectable. A confirmed recovery
+                    route updates this overview.
+                  </p>
+                </div>
+              </div>
             )}
-          </Card>
+          </aside>
         </div>
         <section
           className={styles.partsSection}
           aria-label="Pod component inventory"
         >
           <div className={styles.sectionHeading}>
-            <h2>Component inventory</h2>
+            <h2>Inside the pod</h2>
             <span>
               {filteredParts.length} of {dsxParts.length} tracked subsystems
             </span>
           </div>
           <div className={styles.partInventory}>
             {filteredParts.map((item) => (
-              <Button
-                variant="outline"
+              <button
                 key={item.part.id}
                 aria-pressed={selectedId === item.part.id}
                 onClick={() => selectPart(item.part.id)}
@@ -506,7 +526,7 @@ export default function DsxDashboard() {
                       : statusLabels[item.status]}
                   </small>
                 </span>
-              </Button>
+              </button>
             ))}
           </div>
           {filteredParts.length === 0 && (
@@ -528,6 +548,9 @@ export default function DsxDashboard() {
         </section>
         <DisruptionFeed />
         <footer className={styles.pageFooter}>
+          <span>
+            <strong>forma.</strong> Make the connection.
+          </span>
           <p>
             Schematic inspired by{" "}
             <a

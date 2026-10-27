@@ -5,9 +5,9 @@ import { useTheme } from "next-themes"
 import {
   Building2,
   ChevronRight,
-  Factory,
+  Truck,
   LayoutDashboard,
-  Boxes,
+  Radio,
   Moon,
   Sun,
 } from "lucide-react"
@@ -30,13 +30,16 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { DeliveryChatLauncher } from "@/components/procurement/delivery-chat-entry"
 
+/** Shared design system with navigation for the FORMA workspace. */
 export function AppShell({
   breadcrumb,
   children,
   overlay,
 }: {
   breadcrumb: string[]
+  compareCount?: number
   children: React.ReactNode
   overlay?: React.ReactNode
 }) {
@@ -57,9 +60,7 @@ export function AppShell({
                 <Building2 className="size-5" />
               </div>
               <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-                <p className="text-sm font-semibold tracking-tight">
-                  FORMA
-                </p>
+                <p className="text-sm font-semibold tracking-tight">FORMA</p>
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   Infrastructure intelligence
                 </p>
@@ -82,19 +83,23 @@ export function AppShell({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton isActive={breadcrumb.at(-1) === "Suppliers"} tooltip="Suppliers" render={<Link href="/suppliers" />}>
-                      <Boxes />
-                      <span>Suppliers</span>
+                    <SidebarMenuButton
+                      isActive={breadcrumb.at(-1) === "Incidents"}
+                      tooltip="Incidents"
+                      render={<Link href="/incidents" />}
+                    >
+                      <Radio />
+                      <span>Incidents</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton
-                      isActive={breadcrumb.at(-1) === "Production planning"}
-                      tooltip="Production planning"
+                      isActive={breadcrumb.at(-1) === "Delivery planning"}
+                      tooltip="Delivery planning"
                       render={<Link href="/planning" />}
                     >
-                      <Factory />
-                      <span>Production planning</span>
+                      <Truck />
+                      <span>Delivery planning</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -108,9 +113,7 @@ export function AppShell({
               </div>
               <div className="group-data-[collapsible=icon]:hidden">
                 <p className="text-xs font-medium">Procurement workspace</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  FORMA
-                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">FORMA</p>
               </div>
             </div>
           </SidebarFooter>
@@ -122,9 +125,12 @@ export function AppShell({
               <SidebarTrigger className="size-10" />
               <Separator orientation="vertical" className="mr-1 h-4" />
               {breadcrumb.map((crumb, i) => (
-                <span key={i} className="flex items-center gap-3">
+                <span
+                  key={i}
+                  className={`${i < breadcrumb.length - 1 ? "hidden sm:flex" : "flex"} items-center gap-3`}
+                >
                   {i > 0 && (
-                    <ChevronRight className="size-3 text-muted-foreground" />
+                    <ChevronRight className="hidden size-3 text-muted-foreground sm:block" />
                   )}
                   <span
                     className={`text-sm ${i < breadcrumb.length - 1 ? "text-muted-foreground" : ""}`}
@@ -135,6 +141,7 @@ export function AppShell({
               ))}
             </div>
             <div className="flex items-center gap-2">
+              <DeliveryChatLauncher />
               <Button
                 variant="ghost"
                 size="icon-lg"
